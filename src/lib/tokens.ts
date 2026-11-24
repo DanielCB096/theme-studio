@@ -21,6 +21,22 @@ export const BUTTON_SIZE_SPEC: Record<
   lg: { heightFactor: 12, paddingFactor: 6, fontSizeVar: "--font-size-lg" },
 };
 
+/** Escala tipográfica derivada. `scale` controla los encabezados; los tamaños pequeños usan ratios fijos para seguir legibles. */
+export function typeScale(
+  baseSize: number,
+  scale: number,
+): Record<"xs" | "sm" | "base" | "lg" | "xl" | "2xl", number> {
+  const round = (value: number) => Math.round(value * 10) / 10;
+  return {
+    xs: round(baseSize * 0.75),
+    sm: round(baseSize * 0.875),
+    base: baseSize,
+    lg: round(baseSize * scale),
+    xl: round(baseSize * scale ** 2),
+    "2xl": round(baseSize * scale ** 3),
+  };
+}
+
 /** Convierte el tema en variables CSS listas para aplicar en un contenedor. */
 export function themeToCssVars(theme: Theme): ThemeCssVars {
   const { colors, typography, shape, spacing, components } = theme;
@@ -28,6 +44,7 @@ export function themeToCssVars(theme: Theme): ThemeCssVars {
   const scale = typography.scale;
   const unit = spacing.unit;
   const button = BUTTON_SIZE_SPEC[components.buttonSize];
+  const type = typeScale(base, scale);
 
   return {
     "--color-primary": colors.primary,
@@ -46,11 +63,11 @@ export function themeToCssVars(theme: Theme): ThemeCssVars {
 
     "--font-family": FONT_STACKS[typography.fontFamily],
     "--font-size-base": `${base}px`,
-    "--font-size-xs": `${round(base * 0.75)}px`,
-    "--font-size-sm": `${round(base * 0.875)}px`,
-    "--font-size-lg": `${round(base * scale)}px`,
-    "--font-size-xl": `${round(base * scale ** 2)}px`,
-    "--font-size-2xl": `${round(base * scale ** 3)}px`,
+    "--font-size-xs": `${type.xs}px`,
+    "--font-size-sm": `${type.sm}px`,
+    "--font-size-lg": `${type.lg}px`,
+    "--font-size-xl": `${type.xl}px`,
+    "--font-size-2xl": `${type["2xl"]}px`,
     "--type-scale": String(scale),
 
     "--radius": `${shape.radius}px`,
@@ -69,8 +86,4 @@ export function themeToCssVars(theme: Theme): ThemeCssVars {
     "--btn-height-lg": `${unit * BUTTON_SIZE_SPEC.lg.heightFactor}px`,
     "--btn-padding-lg": `${unit * BUTTON_SIZE_SPEC.lg.paddingFactor}px`,
   };
-}
-
-function round(value: number): number {
-  return Math.round(value * 10) / 10;
 }

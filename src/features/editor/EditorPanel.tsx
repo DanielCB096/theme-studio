@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { ColorControl } from "@/features/editor/controls/ColorControl";
 import { SliderControl } from "@/features/editor/controls/SliderControl";
+import { ExportThemeDialog } from "@/features/themes/ExportThemeDialog";
+import { ImportThemeDialog } from "@/features/themes/ImportThemeDialog";
 import { useThemeStore } from "@/store/themeStore";
 import {
   BUTTON_SIZE_LABELS,
@@ -267,6 +269,8 @@ export function EditorHeader() {
       <ThemeNameField />
       <UndoRedoButtons />
       <ResetButton />
+      <ImportThemeDialog />
+      <ExportThemeDialog />
     </header>
   );
 }
