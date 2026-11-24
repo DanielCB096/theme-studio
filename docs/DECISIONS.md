@@ -57,3 +57,5 @@ Una entrada por decisión, en orden cronológico.
 - Cero providers y renders mínimos: cada control se suscribe a su slice.
 - El historial es explícito y probable; no dependemos de middleware temporal.
 - Persistir solo el tema en curso, nunca tokens de sesión.
+- Se agrupan los cambios de una misma propiedad dentro de una ventana de 600 ms; sin esa coalescencia, arrastrar un slider llenaría el historial y `Ctrl+Z` dejaría de ser útil.
+- El borrador rehidratado se valida con Zod. Un JSON manipulado o de una versión anterior se ignora, con el coste asumido de perder ese borrador.

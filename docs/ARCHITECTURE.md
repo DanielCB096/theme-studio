@@ -49,6 +49,24 @@ Los tokens de `:root` (en `src/index.css`) gobiernan el chrome del editor y sirv
 
 `src/features/preview/GalleryApp.tsx` es una aplicación de muestra (panel de facturación) que ejercita botones en tres tamaños, inputs, select, checkbox, tarjetas, tabla, alerta, navegación lateral y modal. Se reorganiza con **container queries** (`@container`, `@2xl:`, …) porque en la vista previa importa el ancho del marco, no el del viewport. La tabla se convierte en lista de tarjetas y la navegación lateral pasa a un menú desplegable cuando el contenedor es estrecho.
 
+## Flujo de datos del editor
+
+```mermaid
+flowchart LR
+  C[Control] -->|"setColor / setRadius / …"| S[(Zustand)]
+  S -->|"selector granular"| C
+  S -->|"theme"| V["themeToCssVars → style"]
+  V --> P[Vista previa]
+  S -.->|"persist + Zod"| L[(localStorage)]
+  K["Ctrl/Cmd+Z"] --> S
+```
+
+- Cada control se suscribe a **su** campo (`state.theme.shape.radius`), no al tema completo; mover un slider solo repinta la vista previa.
+- `commit` guarda el estado anterior en `past` (máx. 50) y limpia `future`. Cambios de la misma propiedad dentro de 600 ms se agrupan en un paso de historial, para que arrastrar un slider no genere cientos de entradas.
+- `undo`/`redo` mueven el tema entre `past` y `future`; cualquier cambio nuevo descarta el futuro.
+- `persist` guarda solo `theme`. Al rehidratar, el JSON de localStorage se valida con Zod: un borrador corrupto o de otra versión se descarta en lugar de romper la app.
+- El atajo global ignora los campos de texto, donde el deshacer debe ser el nativo del navegador.
+
 ## Decisiones
 
 Cada decisión con sus alternativas está en [`DECISIONS.md`](DECISIONS.md).

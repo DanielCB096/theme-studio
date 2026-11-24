@@ -61,3 +61,31 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 **Siguiente**
 
 - Fase 2: store de Zustand, panel de controles, undo/redo y autoguardado local.
+
+## Fase 2 — Panel de controles y estado (2026-11-24)
+
+**Hecho**
+
+- Store de Zustand con acciones tipadas para colores, tipografía, forma, espaciado, densidad, tamaño de botón, nombre y modo.
+- Historial acotado a 50 estados con agrupación de cambios rápidos (600 ms) y deshacer/rehacer; los atajos `Ctrl/Cmd+Z` y `Ctrl/Cmd+Shift+Z` ignoran los campos de texto para no romper el deshacer nativo.
+- Autoguardado en localStorage con validación Zod al rehidratar.
+- Panel de controles: paleta nativa + hex por color, sliders, select de fuente, densidad y tamaño de botón, alternador claro/oscuro.
+- Vista previa suscrita solo al tema, con actualización en vivo de las variables CSS.
+- Pruebas del store (acciones, límites, mezcla, undo/redo, persistencia, borrador inválido) y de la interfaz (slider, color, selects, atajos, renombrado).
+
+**Pruebas**
+
+- `npm run lint` — pasa.
+- `npm run typecheck` — pasa.
+- `npm test` — 8 archivos, 44 pruebas, en verde.
+- Comprobación visual en navegador: pendiente; el navegador del entorno sigue desconectado.
+
+**Problemas**
+
+- Radix Slider requiere `setPointerCapture`, que jsdom no implementa: se añadieron stubs en `src/test/setup.ts`.
+- Pasar `storage: undefined` a `persist` hacía que el middleware no resolviera localStorage: ahora la opción solo se incluye cuando se inyecta un storage explícito (pruebas).
+- El cambio de modo aplica los neutros por defecto del modo y conserva las marcas de color. La derivación completa (5.3) queda pendiente.
+
+**Siguiente**
+
+- Fase 3: vista previa multidispositivo con marcos, rotación y modo "todas a la vez".
