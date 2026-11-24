@@ -13,3 +13,5 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - CI en GitHub Actions (lint, formato, typecheck, tests, build).
 - Dockerfile multi-stage con nginx y fallback de SPA.
 - Documentación base: README, ARCHITECTURE, DECISIONS, TESTING, ACCESSIBILITY.
+- Sistema de tokens: modelo `Theme`, esquema Zod, temas claro/oscuro por defecto y mapeo de Tailwind a variables CSS.
+- Galería de componentes accesible (Radix UI) con container queries: navegación, tabla, formulario, alertas y modal.

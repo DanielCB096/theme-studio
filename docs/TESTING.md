@@ -22,6 +22,7 @@ npm run test:e2e
 
 ## Registro de ejecuciones
 
-| Fecha      | Fase | Comando                              | Resultado              |
-| ---------- | ---- | ------------------------------------ | ---------------------- |
-| 2026-11-24 | 0    | `lint`, `typecheck`, `test`, `build` | Pendiente de registrar |
+| Fecha      | Fase | Comando                              | Resultado                     |
+| ---------- | ---- | ------------------------------------ | ----------------------------- |
+| 2026-11-24 | 0    | `lint`, `typecheck`, `test`, `build` | Pasa: 1 archivo / 1 prueba    |
+| 2026-11-24 | 1    | `lint`, `typecheck`, `test`, `build` | Pasa: 5 archivos / 18 pruebas |

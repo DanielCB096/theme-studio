@@ -38,6 +38,7 @@ Una entrada por decisión, en orden cronológico.
 - Los componentes no contienen valores literales: todo degrada a variables.
 - La exportación a "configuración de Tailwind" es natural porque el proyecto ya usa ese formato.
 - Tailwind 4 (CSS-first) queda como mejora futura documentada: migrar requiere reemplazar el config por `@theme` y revisar la sintaxis de utilidades.
+- Las container queries no son core en Tailwind 3: se usa el plugin oficial `@tailwindcss/container-queries` (dependencia de desarrollo, sin coste en el bundle).
 
 ## ADR-003 · Zustand para el estado del editor
 
