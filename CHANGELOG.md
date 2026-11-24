@@ -17,3 +17,5 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Galería de componentes accesible (Radix UI) con container queries: navegación, tabla, formulario, alertas y modal.
 - Store de Zustand con historial acotado, undo/redo, atajos de teclado y autoguardado local validado con Zod.
 - Panel de controles de color, tipografía, forma, espaciado y componentes, con vista previa en vivo.
+- Vista previa multidispositivo (375/768/1280 px), rotación, ancho libre y modo "todas a la vez".
+- Pruebas E2E con Playwright: reflujo por ancho y persistencia tras recarga.

@@ -89,3 +89,30 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 **Siguiente**
 
 - Fase 3: vista previa multidispositivo con marcos, rotación y modo "todas a la vez".
+
+## Fase 3 — Vista previa multidispositivo (2026-11-24)
+
+**Hecho**
+
+- `DevicePreview` con modos móvil (375), tableta (768), escritorio (1280), ancho libre (320–1440) y "todas a la vez".
+- Marcos con rótulo, dimensiones y porcentaje de escala; rotación vertical/horizontal en móvil y tableta.
+- Escalado con `ResizeObserver` + `transform: scale()`: el contenido mantiene el ancho real del dispositivo.
+- Verificación real en navegador: a 1280 px aparecen barra lateral y tabla; a 358 px de contenedor, la barra lateral y la tabla están en `display: none`, el menú desplegable y la lista de tarjetas visibles.
+- Playwright configurado con arranque automático de Vite en `127.0.0.1:4173` y dos pruebas E2E (reflujo por ancho y persistencia tras recarga).
+
+**Pruebas**
+
+- `npm run lint`, `npm run typecheck` — pasan.
+- `npm test` — 9 archivos, 50 pruebas, en verde.
+- `npx playwright test` — 2 pruebas en verde (chromium headless).
+- `npm run build` — pasa.
+
+**Problemas**
+
+- El servidor de desarrollo no aplicó el plugin de container queries hasta reiniciarlo: Vite recarga el CSS al cambiar `tailwind.config.ts`, pero la incorporación de un plugin exige arranque limpio. Se documentó en el ADR-004.
+- Playwright no detectaba el servidor porque Vite escuchaba en `::1` y la comprobación iba a `127.0.0.1`; se fijó `--host 127.0.0.1`.
+- Las pruebas de la app completa son lentas en jsdom (renderiza toda la galería); se mitigó con un mock de `GalleryApp` en las pruebas de `DevicePreview`. Optimizar el resto queda para la Fase 6.
+
+**Siguiente**
+
+- Fase 4: Supabase (auth, RLS, CRUD), exportación/importación y enlaces compartidos. Requiere credenciales del proyecto Supabase.

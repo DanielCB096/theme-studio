@@ -49,6 +49,26 @@ Los tokens de `:root` (en `src/index.css`) gobiernan el chrome del editor y sirv
 
 `src/features/preview/GalleryApp.tsx` es una aplicación de muestra (panel de facturación) que ejercita botones en tres tamaños, inputs, select, checkbox, tarjetas, tabla, alerta, navegación lateral y modal. Se reorganiza con **container queries** (`@container`, `@2xl:`, …) porque en la vista previa importa el ancho del marco, no el del viewport. La tabla se convierte en lista de tarjetas y la navegación lateral pasa a un menú desplegable cuando el contenedor es estrecho.
 
+## Vista previa multidispositivo
+
+`DevicePreview` mantiene un estado local (no del tema) con el modo, la orientación y el ancho libre:
+
+| Modo       | Tamaño            | Notas                         |
+| ---------- | ----------------- | ----------------------------- |
+| Móvil      | 375 × 812         | Rotable a 812 × 375           |
+| Tableta    | 768 × 1024        | Rotable                       |
+| Escritorio | 1280 × 800        | No rota                       |
+| Libre      | 320–1440 × 900    | Ancho con control arrastrable |
+| Todas      | los tres a la vez | Comparación lado a lado       |
+
+Cada `DeviceFrame` mide su hueco con `ResizeObserver` y aplica `transform: scale()` si el dispositivo no cabe. El contenido se renderiza con el ancho real del dispositivo, por lo que las container queries (no las media queries del navegador) deciden cuándo la navegación lateral pasa a menú y cuándo la tabla pasa a tarjetas.
+
+```
+marco (ancho medido) ──scale──▶ pantalla (375/768/1280 px) ──@container──▶ galería
+```
+
+Prueba E2E (`e2e/preview.spec.ts`): a 375 px comprueba que la barra lateral y la tabla están ocultas y el menú y las tarjetas visibles; a 1280 px, lo contrario. jsdom no calcula CSS, así que esta comprobación solo tiene sentido en un navegador real.
+
 ## Flujo de datos del editor
 
 ```mermaid

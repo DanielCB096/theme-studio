@@ -59,16 +59,18 @@ npm run dev
 
 Comandos:
 
-| Comando                 | Qué hace                        |
-| ----------------------- | ------------------------------- |
-| `npm run dev`           | Servidor de desarrollo          |
-| `npm run build`         | Typecheck + build de producción |
-| `npm run preview`       | Sirve el build                  |
-| `npm run lint`          | ESLint (0 warnings permitidos)  |
-| `npm run typecheck`     | `tsc --noEmit`                  |
-| `npm test`              | Vitest una vez                  |
-| `npm run test:coverage` | Vitest con cobertura            |
-| `npm run test:e2e`      | Playwright                      |
+| Comando                 | Qué hace                            |
+| ----------------------- | ----------------------------------- |
+| `npm run dev`           | Servidor de desarrollo              |
+| `npm run build`         | Typecheck + build de producción     |
+| `npm run preview`       | Sirve el build                      |
+| `npm run lint`          | ESLint (0 warnings permitidos)      |
+| `npm run typecheck`     | `tsc --noEmit`                      |
+| `npm test`              | Vitest una vez                      |
+| `npm run test:coverage` | Vitest con cobertura                |
+| `npm run test:e2e`      | Playwright (reflujo y persistencia) |
+
+Antes de la primera ejecución E2E: `npx playwright install chromium`.
 
 ### Docker
 
