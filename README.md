@@ -1,5 +1,8 @@
 # Theme Studio
 
+[![CI](https://github.com/DanielCB096/theme-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/DanielCB096/theme-studio/actions/workflows/ci.yml)
+[![Demo](https://img.shields.io/badge/demo-Vercel-000000?logo=vercel)](https://theme-studio-queserabernal.vercel.app)
+
 Editor visual de temas que aplica tus decisiones de diseño **en tiempo real** sobre una galería de componentes, con vista previa simultánea en móvil, tableta y escritorio.
 
 > Demo: **https://theme-studio-queserabernal.vercel.app**
