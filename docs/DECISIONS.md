@@ -325,22 +325,21 @@ Una entrada por decisión, en orden cronológico.
 - La ampliación aumenta el alcance del producto y exige revisar seguridad y accesibilidad en cada bloque.
 - El tag `v1.0-theme-editor` conserva un punto de retorno del editor de temas terminado.
 
-## ADR-018 � Modelo de p�gina normalizado y tema en snapshot
+## ADR-018 · Modelo de página normalizado y tema en snapshot
 
-**Contexto.** El builder necesita un documento manipulable, validable y renderizable sin duplicar datos. Adem�s, una p�gina publicada no deber�a cambiar de aspecto si el autor sigue editando su tema.
+**Contexto.** El builder necesita un documento manipulable, validable y renderizable sin duplicar datos. Además, una página publicada no debería cambiar de aspecto si el autor sigue editando su tema.
 
 **Opciones consideradas.**
 
-1. �rbol anidado con hijos dentro de cada bloque.
-2. Lista plana de secciones con order.
-3. Mapa normalizado por id +
-   ootIds para el orden.
+1. Árbol anidado con hijos dentro de cada bloque.
+2. Lista plana de secciones con `order`.
+3. Mapa normalizado por id + `rootIds` para el orden.
 
-**Decisi�n.** Opci�n 3 para el Hito 1, sin anidaci�n (childIds vac�o) y con heme como snapshot dentro del documento. PageRenderer es �nico y el registro de bloques aporta schema, defaults, renderer e inspector.
+**Decisión.** Opción 3 para el Hito 1, sin anidación (`childIds` vacío) y con `theme` como snapshot dentro del documento. `PageRenderer` es único y el registro de bloques aporta schema, defaults, renderer e inspector.
 
 **Consecuencias.**
 
-- Operaciones simples e inmutables (a�adir, quitar, mover, actualizar props) y validaci�n de hu�rfanos/duplicados con Zod.
-- Cambiar el tema global no altera p�ginas ya creadas; para actualizarlas habr�a que editar el snapshot (Hito futuro).
-- La anidaci�n queda preparada en el modelo, pero fuera de alcance hasta que el producto la necesite.
-- Un solo renderer evita divergencias entre builder y p�gina publicada.
+- Operaciones simples e inmutables (añadir, quitar, mover, actualizar props) y validación de huérfanos/duplicados con Zod.
+- Cambiar el tema global no altera páginas ya creadas; para actualizarlas habría que editar el snapshot (Hito futuro).
+- La anidación queda preparada en el modelo, pero fuera de alcance hasta que el producto la necesite.
+- Un solo renderer evita divergencias entre builder y página publicada.
