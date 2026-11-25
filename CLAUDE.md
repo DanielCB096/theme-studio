@@ -326,3 +326,78 @@ Formato _Keep a Changelog_.
 - No dejar el README con texto de plantilla.
 - No marcar tareas como hechas sin haber ejecutado las pruebas correspondientes.
 - No agregar dependencias pesadas sin justificarlas en un ADR.
+
+---
+
+## Anexo A — Evolución a constructor de páginas (Page Builder)
+
+> **Precedencia:** este anexo complementa el cuerpo principal y, donde lo contradiga, prevalece sobre él.
+> Decisiones de alcance cerradas: no se cambian sin un nuevo ADR aprobado.
+
+### A.1 Preparación
+
+Antes de escribir código de producto:
+
+1. Crear el tag anotado `v1.0-theme-editor` sobre `main`.
+2. Crear la rama `feat/page-builder`.
+3. Escribir el ADR de evolución del producto en `docs/DECISIONS.md`.
+4. Abrir las secciones de Page Builder en `PROGRESS.md` y `CHANGELOG.md`.
+
+### A.2 Alcance cerrado
+
+1. **Páginas alojadas en `/p/:slug`**. No se genera código fuente (React/HTML) como entregable: la página se renderiza desde su JSON. La exportación e importación se limitan al **JSON de la página**.
+2. **Backend solo Supabase** (Postgres + Auth + RLS). Nada de APIs externas arbitrarias ni claves de terceros en el cliente.
+3. **Mismo repositorio**, rama `feat/page-builder`, con el tag `v1.0-theme-editor` creado antes de empezar.
+
+Se conserva el editor de temas como pilar: sus tokens se aplican a las páginas y el tema se guarda como **snapshot** en la página.
+
+### A.3 Principios técnicos obligatorios
+
+- **Un único `PageRenderer`** para builder, vista previa y página publicada. Sin renderers duplicados.
+- **Registro de bloques**: un archivo o carpeta por bloque con schema, defaults, renderer e inspector. El registro es la única fuente de tipos y metadatos.
+- **Árbol normalizado**: los bloques viven en un mapa por id y el orden se expresa con ids; sin estructuras duplicadas ni índices frágiles.
+- **Zod para todo lo que entra**: JSON de plantilla, importación, datos de Supabase, respuestas y parámetros de ruta.
+- **Saneamiento de URLs**: solo `https:`, `http:`, `mailto:`, `tel:` y rutas internas; bloqueo explícito de `javascript:` y `data:`.
+- Sin `dangerouslySetInnerHTML` ni HTML/CSS libres por bloque en el Hito 1.
+- Accesibilidad: controles etiquetados, foco visible y navegación por teclado.
+
+### A.4 Bloques y entregable del Hito 1
+
+Máximo **9 tipos**: `navbar`, `hero`, `features`, `pricing`, `form`, `table`, `cta`, `footer`, `textImage`.
+
+**Solo Hito 1.** No iniciar el Hito 2 hasta que el Hito 1 esté desplegado, probado, documentado y revisado.
+
+Entregable: una **landing creada desde plantilla**, editada en el builder, guardada en Supabase, publicada en `/p/:slug` y visible correctamente en móvil, tableta y escritorio.
+
+### A.5 Datos y RLS
+
+Tabla `pages` con `user_id`, `name`, `slug` único, `data jsonb`, `theme jsonb` (snapshot), `is_public` y timestamps.
+
+**Propuesta inicial pendiente de validación antes de ejecutar:**
+
+```sql
+create table public.pages (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null check (char_length(name) between 1 and 80),
+  slug text not null unique check (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
+  data jsonb not null check (jsonb_typeof(data) = 'object'),
+  theme jsonb not null check (jsonb_typeof(theme) = 'object'),
+  is_public boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+grant select on public.pages to anon;
+grant select, insert, update, delete on public.pages to authenticated;
+```
+
+Reglas: lectura privada solo para el dueño; lectura pública si `is_public = true`; insert solo con `user_id` propio; update y delete solo del dueño; `with check` en update; trigger `touch_updated_at`.
+
+Si la revisión cambia estas políticas, se actualiza este anexo antes de la migración.
+
+### A.6 Flujo de trabajo y paradas
+
+- Al terminar el Hito 1: `lint`, `typecheck`, tests reales (sin simular), build y E2E; actualizar `docs/PAGE_BUILDER.md`, `DECISIONS.md`, `PROGRESS.md` y `README.md`; commits con Conventional Commits.
+- **Detenerse y avisar** ante una credencial faltante, una decisión no cubierta o un problema de seguridad/diseño (incluidas las RLS de A.5).
+- No avanzar al Hito 2 sin revisión humana del Hito 1.
