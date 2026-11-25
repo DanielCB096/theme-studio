@@ -18,7 +18,7 @@ test("crear página desde plantilla, editar, guardar, publicar y abrir en tres a
   // Selecciona el hero en la estructura y edita su título.
   await page.getByRole("button", { name: /2\. hero/i }).click();
   const inspector = page.getByRole("complementary", { name: "Propiedades del bloque" });
-  await inspector.getByLabel("Título").fill(title);
+  await inspector.getByLabel("Título", { exact: true }).fill(title);
 
   await page.getByLabel("Nombre de la página").fill(pageName);
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
