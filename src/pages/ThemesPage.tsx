@@ -98,6 +98,11 @@ export default function ThemesPage() {
       setItems(await listThemes());
     });
 
+  const handleCopyLink = async (id: string) => {
+    const copied = await copyText(shareUrl(id));
+    setCopiedId(copied ? id : null);
+  };
+
   const handleDeleted = (id: string) => {
     setItems((current) => current?.filter((item) => item.id !== id) ?? null);
     if (copiedId === id) setCopiedId(null);
@@ -181,7 +186,27 @@ export default function ThemesPage() {
                       ) : null}
                     </CardHeader>
 
-                    <CardContent className="flex-1" />
+                    <CardContent className="flex-1 space-y-2">
+                      {item.isPublic ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            to={`/t/${item.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="truncate rounded-sm text-xs text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            {shareUrl(item.id)}
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => void handleCopyLink(item.id)}
+                          >
+                            Copiar enlace
+                          </Button>
+                        </div>
+                      ) : null}
+                    </CardContent>
 
                     <CardFooter className="flex flex-wrap gap-2">
                       <Button size="sm" onClick={() => void handleOpen(item.id)} disabled={busy}>

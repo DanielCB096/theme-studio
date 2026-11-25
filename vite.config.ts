@@ -19,6 +19,11 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     css: false,
+    // Las pruebas no deben depender del `.env` real ni tocar Supabase.
+    env: {
+      VITE_SUPABASE_URL: "",
+      VITE_SUPABASE_ANON_KEY: "",
+    },
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",

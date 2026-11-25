@@ -87,6 +87,52 @@ flowchart LR
 - `persist` guarda solo `theme`. Al rehidratar, el JSON de localStorage se valida con Zod: un borrador corrupto o de otra versión se descarta en lugar de romper la app.
 - El atajo global ignora los campos de texto, donde el deshacer debe ser el nativo del navegador.
 
+## Modelo de datos y RLS
+
+```mermaid
+erDiagram
+  auth_users ||--o{ themes : "user_id"
+  auth_users {
+    uuid id PK
+    text email
+  }
+  themes {
+    uuid id PK
+    uuid user_id FK
+    text name
+    jsonb data
+    boolean is_public
+    timestamptz created_at
+    timestamptz updated_at
+  }
+```
+
+`data` guarda el `Theme` completo. Al leerlo se valida otra vez con Zod: una fila manipulada o de una versión antigua produce un error legible en lugar de romper la interfaz.
+
+| Operación         | anon | Dueño autenticado         | Otro usuario autenticado |
+| ----------------- | ---- | ------------------------- | ------------------------ |
+| Leer tema privado | ✗    | ✓                         | ✗                        |
+| Leer tema público | ✓    | ✓                         | ✓                        |
+| Insertar          | ✗    | ✓ (solo `user_id` propio) | ✗                        |
+| Actualizar        | ✗    | ✓                         | ✗                        |
+| Borrar            | ✗    | ✓                         | ✗                        |
+
+Las políticas incluyen `with check` en `update`: sin él, un dueño podría reasignar `user_id` y transferir la fila. La matriz se verifica con `npm run verify:rls` sobre dos usuarios reales (9 comprobaciones).
+
+## Autenticación y sesión
+
+- `AuthSync` se monta una vez, recupera la sesión y escucha `onAuthStateChange`.
+- Dos métodos: enlace mágico (`signInWithOtp`) y correo + contraseña (`signInWithPassword` / `signUp`).
+- `ProtectedRoute` espera a que termine la carga; si no hay sesión redirige a `/entrar?redirect=…`.
+- `safeRedirect` solo acepta rutas internas, para evitar open redirects.
+- La sesión la gestiona el SDK de Supabase en localStorage; nunca guardamos tokens a mano.
+
+## Guardado y compartición
+
+`saveTheme` intenta actualizar la fila con el id actual. Si RLS no devuelve fila (no existe, es ajena o el id no es un UUID), inserta una copia con un id nuevo. Consecuencia: guardar nunca puede sobrescribir un tema ajeno, aunque el JSON importado traiga ese id.
+
+Compartir activa `is_public`. `/t/:id` es público y de solo lectura; «Duplicar a mi cuenta» exige sesión y crea una copia propia.
+
 ## Decisiones
 
 Cada decisión con sus alternativas está en [`DECISIONS.md`](DECISIONS.md).

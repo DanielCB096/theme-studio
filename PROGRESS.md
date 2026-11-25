@@ -116,3 +116,37 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 **Siguiente**
 
 - Fase 4: Supabase (auth, RLS, CRUD), exportación/importación y enlaces compartidos. Requiere credenciales del proyecto Supabase.
+
+## Fase 4 — Persistencia, autenticación y compartición (2026-11-25)
+
+**Hecho**
+
+- Migración `supabase/migrations/001_themes.sql`: tabla, índices, trigger de `updated_at`, permisos explícitos para `anon`/`authenticated` y RLS con `with check`.
+- Cliente Supabase validado con Zod; la app funciona en modo local si faltan claves y explica cómo configurarlas.
+- Autenticación con enlace mágico y con correo + contraseña (registro y acceso). `AuthSync` mantiene la sesión; rutas protegidas y `safeRedirect` contra open redirects.
+- CRUD: guardar (actualiza la fila propia o inserta copia si el id no es suyo), listar, abrir, duplicar, renombrar (nombre del tema) y eliminar con confirmación.
+- Compartir: `is_public`, URL `/t/:id` visible en «Mis temas», página de solo lectura y duplicado a la cuenta propia.
+- Exportación JSON/CSS/Tailwind e importación validada.
+- Verificación real de RLS con dos usuarios: **9/9 comprobaciones** (privado invisible, público visible, sin update/delete/insert cruzados).
+- E2E: registro → guardado → recarga y enlace compartido anónimo → duplicado pedido con sesión.
+
+**Pruebas**
+
+- `npm run lint`, `npm run typecheck` — pasan.
+- `npm test` — 17 archivos, 87 pruebas.
+- `npx playwright test` — 4 pruebas (preview ×2, auth, share).
+- `npm run verify:rls` — 9/9.
+- `npm run build` — pasa (aviso de chunk > 500 kB por el SDK de Supabase; se abordará en la Fase 6).
+
+**Problemas**
+
+- Vitest cargaba el `.env` real y las pruebas pasaban a depender de Supabase: se fijaron `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` a vacío en `test.env`.
+- Tras el registro, la app redirige a `/temas` (destino por defecto), no a `/`; se ajustó el E2E.
+- El diálogo tenía dos botones «Cerrar» (pie y aspa), lo que rompía el modo estricto de Playwright; se seleccionó el primero.
+- El enlace compartido solo se copiaba al portapapeles; si fallaba, el usuario no podía obtenerlo. Ahora se muestra la URL y hay botón «Copiar enlace».
+- «Confirm email» está desactivado en el proyecto para permitir E2E con usuarios nuevos. Documentado en ADR-010 con la recomendación de reactivarlo para uso real.
+- Los usuarios de prueba (`theme-studio-*@example.com`) quedan en `auth.users`; se pueden borrar desde el dashboard.
+
+**Siguiente**
+
+- Fase 5: verificador de contraste WCAG y generador de paletas con IA (requiere clave de Anthropic solo en servidor).

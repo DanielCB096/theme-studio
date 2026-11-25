@@ -32,6 +32,11 @@ create trigger themes_touch_updated_at
 
 alter table public.themes enable row level security;
 
+-- Permisos de tabla explícitos. RLS sigue decidiendo qué filas ve cada rol:
+-- `anon` solo puede leer (y solo filas públicas); `authenticated` opera sujeto a las políticas.
+grant select on public.themes to anon;
+grant select, insert, update, delete on public.themes to authenticated;
+
 -- Políticas idempotentes: el archivo se puede reejecutar sin duplicarlas.
 drop policy if exists "owner can read own" on public.themes;
 create policy "owner can read own" on public.themes

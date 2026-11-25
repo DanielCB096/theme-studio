@@ -13,8 +13,8 @@ Elegir una paleta, una escala tipográfica y un radio de borde "a ojo" y descubr
 - Editor de tokens: colores, tipografía, radios, bordes, espaciado y densidad.
 - Vista previa multidispositivo (375 / 768 / 1280 px y ancho libre) con container queries.
 - Deshacer / rehacer con historial acotado y atajos de teclado.
-- Verificador de contraste WCAG 2.x con corrección sugerida.
-- Generación de paletas con IA, validada del lado del cliente.
+- Verificador de contraste WCAG 2.x con corrección sugerida (Fase 5).
+- Generación de paletas con IA, validada del lado del cliente (Fase 5).
 - Guardar, duplicar, exportar e importar temas; compartir por enlace de solo lectura.
 
 ## Stack
@@ -59,18 +59,21 @@ npm run dev
 
 Comandos:
 
-| Comando                 | Qué hace                            |
-| ----------------------- | ----------------------------------- |
-| `npm run dev`           | Servidor de desarrollo              |
-| `npm run build`         | Typecheck + build de producción     |
-| `npm run preview`       | Sirve el build                      |
-| `npm run lint`          | ESLint (0 warnings permitidos)      |
-| `npm run typecheck`     | `tsc --noEmit`                      |
-| `npm test`              | Vitest una vez                      |
-| `npm run test:coverage` | Vitest con cobertura                |
-| `npm run test:e2e`      | Playwright (reflujo y persistencia) |
+| Comando                 | Qué hace                               |
+| ----------------------- | -------------------------------------- |
+| `npm run dev`           | Servidor de desarrollo                 |
+| `npm run build`         | Typecheck + build de producción        |
+| `npm run preview`       | Sirve el build                         |
+| `npm run lint`          | ESLint (0 warnings permitidos)         |
+| `npm run typecheck`     | `tsc --noEmit`                         |
+| `npm test`              | Vitest una vez                         |
+| `npm run test:coverage` | Vitest con cobertura                   |
+| `npm run test:e2e`      | Playwright (reflujo, auth y compartir) |
+| `npm run verify:rls`    | Matriz RLS con dos usuarios reales     |
 
 Antes de la primera ejecución E2E: `npx playwright install chromium`.
+
+Las pruebas E2E de auth y compartición necesitan `.env` con el proyecto Supabase y «Confirm email» desactivado (ver [`docs/TESTING.md`](docs/TESTING.md)).
 
 ### Docker
 
@@ -86,8 +89,10 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 ## Seguridad
 
 - La clave de Anthropic vive solo en la función serverless (`api/`), nunca en el bundle.
-- El cliente usa únicamente la clave `anon` de Supabase; RLS restringe cada fila a su dueño.
-- Todo dato externo (respuesta de IA, JSON importado, enlaces compartidos) se valida con Zod.
+- El cliente usa únicamente la clave pública (`publishable`/`anon`) de Supabase; RLS restringe cada fila a su dueño. La matriz se verifica con dos usuarios reales (`npm run verify:rls`).
+- Las políticas de `update` incluyen `with check`, así que un dueño no puede transferir sus filas a otro usuario.
+- Todo dato externo (respuesta de IA, JSON importado, enlaces compartidos, `data` leído de la base de datos) se valida con Zod.
+- **En la demo** «Confirm email» está desactivado en Supabase para permitir el registro automatizado. Antes de un uso real hay que reactivarlo (ADR-010).
 
 ## Limitaciones conocidas
 

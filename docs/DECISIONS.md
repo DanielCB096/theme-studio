@@ -134,3 +134,78 @@ Una entrada por decisión, en orden cronológico.
 - Las pruebas E2E comprueban CSS real: tabla oculta y menú visible a 375 px.
 - Se evita pagar un build en cada ejecución local.
 - CI instalará Chromium y ejecutará las mismas pruebas.
+
+## ADR-008 · Supabase para auth, base de datos y RLS
+
+**Contexto.** El proyecto necesita cuentas, persistencia por usuario y una autorización que no dependa de código de cliente. También debe poder demostrarse con dos usuarios sin montar un backend propio.
+
+**Opciones consideradas.**
+
+1. Firebase (Firestore + Auth).
+2. Backend propio (Node + Postgres) con sesiones.
+3. Supabase (Postgres + Auth + Row Level Security).
+
+**Decisión.** Supabase. El cliente usa solo la clave pública `publishable`/`anon`; todas las reglas viven en políticas RLS de Postgres.
+
+**Consecuencias.**
+
+- La autorización es comprobable en la base de datos, no en el bundle: se validó con dos usuarios reales (9/9 comprobaciones) que nadie lee ni modifica filas ajenas.
+- La clave pública puede estar en el cliente sin riesgo mientras RLS esté bien definida; la `service_role` nunca se usa en la app.
+- Menos código propio: sin API intermedia para el CRUD.
+- A cambio, la lógica de negocio del guardado (actualizar o insertar copia) vive en el cliente y depende de RLS para ser segura.
+- La validación Zod del `data` es imprescindible: la base de datos solo garantiza que es un objeto JSON.
+
+## ADR-009 · RLS con `with check` en las actualizaciones
+
+**Contexto.** Una política `for update using (auth.uid() = user_id)` decide qué filas se pueden leer para actualizar, pero no qué valores puede dejar el resultado.
+
+**Opciones consideradas.**
+
+1. Solo `using`.
+2. `using` + `with check`.
+3. Trigger que reescriba `user_id`.
+
+**Decisión.** `using` y `with check` con `auth.uid() = user_id`.
+
+**Consecuencias.**
+
+- Un dueño no puede transferir su tema a otro usuario ni cambiar `user_id`.
+- La regla es declarativa y se prueba con la matriz de dos usuarios.
+- Si en el futuro se comparten temas con permisos por fila, habrá que ampliar la política de forma explícita.
+
+## ADR-010 · Contraseña además del enlace mágico
+
+**Contexto.** La especificación pide email + enlace mágico. Para automatizar el E2E «entrar → modificar → guardar → recargar» haría falta acceso a un buzón real en cada ejecución.
+
+**Opciones consideradas.**
+
+1. Solo enlace mágico y E2E manual.
+2. Enlace mágico + contraseña.
+3. OAuth con GitHub (requiere configurar una OAuth App y una cuenta de prueba).
+
+**Decisión.** Mantener el enlace mágico y añadir correo + contraseña con `signUp`/`signInWithPassword`. Para el proyecto de demo se desactiva **Confirm email**, de modo que el registro devuelve sesión inmediata.
+
+**Consecuencias.**
+
+- El E2E crea usuarios reales (`@example.com`) y verifica el flujo completo sin buzón.
+- La pantalla de acceso conserva el enlace mágico, que es el método principal de la spec.
+- **Tradeoff de seguridad:** con la confirmación desactivada, cualquiera puede registrar un correo que no controla. Es aceptable en una demo con datos de prueba; antes de un uso real hay que reactivar «Confirm email» y el E2E deberá usar un proveedor de correo de pruebas o el admin API.
+- Los usuarios de prueba se acumulan en `auth.users`; se limpian desde el dashboard.
+
+## ADR-011 · Validar el entorno de Supabase sin romper la app
+
+**Contexto.** El editor debe funcionar como demo local aunque no haya credenciales, pero las zonas de cuenta necesitan una configuración válida.
+
+**Opciones consideradas.**
+
+1. Fallar al arrancar si faltan variables.
+2. `createClient` con cadenas vacías.
+3. Validar con Zod y degradar a modo local.
+
+**Decisión.** Zod valida `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`; si faltan, `supabase` es `null`, el editor sigue operativo y las rutas protegidas explican qué configurar.
+
+**Consecuencias.**
+
+- El proyecto se puede clonar y probar sin cuenta de Supabase.
+- Un error de configuración se explica en pantalla, no con un stack trace.
+- Las pruebas fijan esas variables a vacío para no depender del `.env` real ni tocar la red.

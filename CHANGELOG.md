@@ -19,3 +19,6 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Panel de controles de color, tipografía, forma, espaciado y componentes, con vista previa en vivo.
 - Vista previa multidispositivo (375/768/1280 px), rotación, ancho libre y modo "todas a la vez".
 - Pruebas E2E con Playwright: reflujo por ancho y persistencia tras recarga.
+- Autenticación con Supabase: enlace mágico y correo + contraseña.
+- CRUD de temas en Supabase con RLS verificada con dos usuarios, y perfil protegido `/temas`.
+- Compartición pública con URL `/t/:id` de solo lectura y duplicado a la cuenta propia.
