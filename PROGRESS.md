@@ -229,12 +229,13 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Anexo A incorporado a `AGENTS.md` y `CLAUDE.md`, con A.1–A.6 y la propuesta RLS de A.5 aprobada.
 - Decisiones cerradas: páginas alojadas en `/p/:slug`, backend solo Supabase, JSON de página como único export, tema en snapshot y `theme_id` opcional.
 
-**Hito 1 (en curso)**
+**Hito 1 (implementado, pendiente de revisión)**
 
 - Modelo `PageDocument` con árbol normalizado, esquema Zod y saneamiento de URLs.
 - Nueve bloques con schema, defaults, renderer e inspector; registro único y `PageRenderer` compartido por builder y página pública.
 - Builder con paleta, estructura (subir/bajar/eliminar), inspector de propiedades y vista previa multidispositivo reutilizada.
 - Persistencia: migración `002_pages.sql`, repositorio, rutas `/pages`, `/builder` y `/p/:slug`, y publicación.
 - 27 pruebas nuevas (esquema, URLs, operaciones, renderer, repositorio y store); total 162 en verde.
-- **Bloqueado para integración**: falta ejecutar `supabase/migrations/002_pages.sql` en el proyecto. Sin esa tabla no se pueden probar guardado, publicación, RLS de páginas ni el E2E.
-- Criterio de parada: no empezar el Hito 2 hasta desplegar, probar, documentar y recibir revisión.
+- Migración `002_pages.sql` aplicada. RLS verificada con dos usuarios: **14/14** (9 de temas + 5 de páginas).
+- E2E de páginas: plantilla → editar hero → guardar → publicar → abrir `/p/:slug` anónimo en 375/768/1280. **6/6 E2E** en verde.
+- Criterio de parada: no empezar el Hito 2 hasta revisión humana del Hito 1.

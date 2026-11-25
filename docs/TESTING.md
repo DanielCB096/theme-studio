@@ -41,6 +41,8 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 | 2026-11-25 | 6    | Lighthouse (preview)                 | A11y 100 · Best Practices 100 · SEO 100           |
 | 2026-11-25 | 6    | `check:deploy` (Vercel)              | Pasa: Supabase, login, IA y aplicación en preview |
 | 2026-11-25 | A.1  | `test`                               | Pasa: 30 archivos / 162 pruebas                   |
+| 2026-11-25 | A.1  | `test:e2e`                           | Pasa: 6 pruebas (incluye Page Builder)            |
+| 2026-11-25 | A.1  | `verify:rls`                         | Pasa: 14/14 (temas + paginas)                     |
 
 ## Page Builder (Anexo A)
 
@@ -54,7 +56,7 @@ Pruebas añadidas en el Hito 1:
 - `pageBuilderStore.test.ts`: carga, selección, edición, guardado y estado sucio.
 - `e2e/pages.spec.ts`: plantilla → editar hero → guardar → publicar → abrir `/p/:slug` en 375/768/1280.
 
-Pendiente de ejecutar tras aplicar `002_pages.sql`: E2E de páginas y la matriz RLS ampliada de `npm run verify:rls`.
+Se ejecutaron tras aplicar `002_pages.sql`: 6/6 E2E y 14/14 comprobaciones RLS.
 
 ## Cobertura
 
