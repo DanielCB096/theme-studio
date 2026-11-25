@@ -181,3 +181,34 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 **Siguiente**
 
 - Fase 6: cobertura ≥ 70 %, Lighthouse, Error Boundary, Docker, despliegue en Vercel y README final. Para la IA real hace falta una clave gratuita de Google AI Studio.
+
+## Fase 6 — Calidad, rendimiento y despliegue (2026-11-25)
+
+**Hecho**
+
+- `ErrorBoundary` global con mensaje accionable, botón de recarga, enlace al inicio y detalle solo en desarrollo; probado con un componente que lanza.
+- Rutas secundarias con `React.lazy` y `Suspense`; vendors separados (`react`, `supabase`) en `manualChunks`. El chunk mayor baja de 500 kB a 231 kB y desaparece el aviso de Vite.
+- CI: cobertura con umbral 70 %, artefacto de cobertura y job E2E con Chromium. Sin secretos de Supabase, las pruebas de auth y compartir se omiten solas.
+- Docker verificado de punta a punta (build, run, HTTP 200) y con secretos de BuildKit para el build con Supabase. Se eliminaron los `ARG`/`ENV` de claves que marcaban los warnings.
+- `robots.txt` añadido.
+- Lighthouse sobre el build de producción: **Accesibilidad 100, Buenas prácticas 100, SEO 100**.
+- Cobertura: **93,71 %** de líneas y 92,11 % de ramas en `src/lib` y `src/store`.
+
+**Pruebas**
+
+- `npm test` — 23 archivos, 129 pruebas (pendiente de confirmar el recuento final).
+- `npm run test:coverage` — pasa con 93,71 %.
+- `npm run test:e2e` — 4 pruebas.
+- `docker build` + `docker run` — HTTP 200; con `--secret` el bundle incluye Supabase.
+- Lighthouse — 100/100/100.
+
+**Problemas**
+
+- El primer Lighthouse dio SEO 80 por `robots.txt`; corregido.
+- Docker marcaba las claves `VITE_*` como secretos por el nombre; se pasó a secreto de BuildKit y se documentó.
+- **Pendiente de credenciales:** el despliegue en Vercel y la llamada real a Gemini no se han ejecutado. La URL de demo del README sigue sin rellenar.
+- Los usuarios y temas de prueba de los E2E se acumulan en el proyecto de Supabase; el script de RLS limpia sus temas, no las cuentas.
+
+**Siguiente**
+
+- Desplegar en Vercel con `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `GEMINI_API_KEY` y `GEMINI_MODEL`, probar la demo en móvil real y cerrar README con la URL.

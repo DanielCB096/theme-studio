@@ -102,6 +102,25 @@ docker build -t theme-studio .
 docker run --rm -p 8080:80 theme-studio
 ```
 
+Para incluir la configuración de Supabase en el build (como secreto de BuildKit, sin dejarla en capas):
+
+```bash
+docker build --secret id=vite_env,src=.env -t theme-studio .
+docker run --rm -p 8080:80 theme-studio
+```
+
+## Métricas
+
+| Métrica                           | Valor                                                           |
+| --------------------------------- | --------------------------------------------------------------- |
+| Cobertura `src/lib` + `src/store` | 93,71 % de líneas · 92,11 % de ramas                            |
+| Lighthouse · Accesibilidad        | 100                                                             |
+| Lighthouse · Buenas prácticas     | 100                                                             |
+| Lighthouse · SEO                  | 100                                                             |
+| Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                            |
+| Pruebas                           | 129 unitarias/componentes · 4 E2E · 9 comprobaciones RLS        |
+| Respuesta de la IA                | Pendiente de medir con clave real (timeout de 20 s en servidor) |
+
 ## Pruebas
 
 Ver [`docs/TESTING.md`](docs/TESTING.md).
@@ -116,11 +135,21 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 
 ## Limitaciones conocidas
 
-- Pendiente de completar al cerrar la Fase 6.
+- **La demo pública aún no está desplegada**: falta la cuenta de Vercel y la URL está pendiente.
+- La llamada real a Gemini no se ha verificado sin clave; los tests cubren la integración completa con el proveedor simulado.
+- El rate limit de la IA vive en memoria: no es global entre instancias serverless ni sustituye a una cuota de producción.
+- «Confirm email» está desactivado en Supabase para permitir los E2E; es un tradeoff de demo, no una configuración recomendable en producción.
+- Los usuarios de prueba de los E2E se acumulan en `auth.users` (sus temas sí se limpian con el script de RLS).
+- Tailwind 3: la migración a Tailwind 4 (`@theme`) queda como mejora futura.
+- El SDK de Supabase se carga en el bundle inicial; se podría diferir hasta la primera acción de cuenta.
 
 ## Lo que aprendí
 
-- Pendiente de completar al cerrar la Fase 6.
+- **Las container queries bastan para una vista previa propia**, pero jsdom no calcula CSS: sin Playwright, el reflujo por ancho sería una promesa sin evidencia.
+- **RLS se demuestra con dos usuarios reales**, no con la interfaz. Añadir `with check` al `update` fue la diferencia entre «no ves filas ajenas» y «no puedes apropiártelas».
+- **La salida de un modelo necesita validación doble y una corrección posterior**: la paleta más bonita es inútil si el texto no se lee.
+- **El historial necesita coalescencia**: sin agrupar arrastres, deshacer deja de ser una herramienta y se convierte en un castigo.
+- **Aislar el proveedor de IA en una función** permitió cambiar de Anthropic a Gemini sin tocar el editor y sin poner la clave en el navegador.
 
 ## Licencia
 

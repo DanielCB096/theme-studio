@@ -26,3 +26,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Variante clara/oscura derivada conservando el tono de las marcas.
 - Generador de paletas con IA en función serverless (Gemini free tier), con clave solo en servidor, validación doble y corrección de contraste.
 - Configuración de Vercel con rewrites de SPA y función de IA.
+- Error Boundary global con recuperación y detalle solo en desarrollo.
+- Code splitting de rutas y vendors: el chunk mayor pasa de 500 kB a 231 kB.
+- CI con cobertura mínima del 70 %, artefacto de cobertura y job E2E.
+- Docker verificado con secretos de BuildKit; `robots.txt` y Lighthouse 100/100/100.

@@ -14,6 +14,17 @@ export default defineConfig({
       "@": path.resolve(rootDir, "src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Separa los vendors grandes para que el editor cargue antes y mejor caché.
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",

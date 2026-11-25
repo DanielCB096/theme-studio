@@ -24,17 +24,61 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 
 ## Registro de ejecuciones
 
-| Fecha      | Fase | Comando                              | Resultado                       |
-| ---------- | ---- | ------------------------------------ | ------------------------------- |
-| 2026-11-24 | 0    | `lint`, `typecheck`, `test`, `build` | Pasa: 1 archivo / 1 prueba      |
-| 2026-11-24 | 1    | `lint`, `typecheck`, `test`, `build` | Pasa: 5 archivos / 18 pruebas   |
-| 2026-11-24 | 2    | `lint`, `typecheck`, `test`, `build` | Pasa: 8 archivos / 44 pruebas   |
-| 2026-11-24 | 3    | `test`                               | Pasa: 9 archivos / 50 pruebas   |
-| 2026-11-24 | 3    | `test:e2e`                           | Pasa: 2 pruebas (chromium)      |
-| 2026-11-25 | 4    | `test`                               | Pasa: 17 archivos / 87 pruebas  |
-| 2026-11-25 | 4    | `test:e2e`                           | Pasa: 4 pruebas (chromium)      |
-| 2026-11-25 | 4    | `verify:rls`                         | Pasa: 9/9 comprobaciones        |
-| 2026-11-25 | 5    | `test`                               | Pasa: 23 archivos / 125 pruebas |
+| Fecha      | Fase | Comando                              | Resultado                               |
+| ---------- | ---- | ------------------------------------ | --------------------------------------- |
+| 2026-11-24 | 0    | `lint`, `typecheck`, `test`, `build` | Pasa: 1 archivo / 1 prueba              |
+| 2026-11-24 | 1    | `lint`, `typecheck`, `test`, `build` | Pasa: 5 archivos / 18 pruebas           |
+| 2026-11-24 | 2    | `lint`, `typecheck`, `test`, `build` | Pasa: 8 archivos / 44 pruebas           |
+| 2026-11-24 | 3    | `test`                               | Pasa: 9 archivos / 50 pruebas           |
+| 2026-11-24 | 3    | `test:e2e`                           | Pasa: 2 pruebas (chromium)              |
+| 2026-11-25 | 4    | `test`                               | Pasa: 17 archivos / 87 pruebas          |
+| 2026-11-25 | 4    | `test:e2e`                           | Pasa: 4 pruebas (chromium)              |
+| 2026-11-25 | 4    | `verify:rls`                         | Pasa: 9/9 comprobaciones                |
+| 2026-11-25 | 5    | `test`                               | Pasa: 23 archivos / 128 pruebas         |
+| 2026-11-25 | 6    | `test:coverage`                      | Pasa: 93,71 % líneas / 92,11 % ramas    |
+| 2026-11-25 | 6    | `test:e2e`                           | Pasa: 4 pruebas (chromium)              |
+| 2026-11-25 | 6    | Lighthouse (preview)                 | A11y 100 · Best Practices 100 · SEO 100 |
+
+## Cobertura
+
+Umbral mínimo en CI: **70 %** en `src/lib` y `src/store` (líneas, funciones, ramas y sentencias).
+
+| Área  | Sentencias | Ramas   | Funciones | Líneas  |
+| ----- | ---------- | ------- | --------- | ------- |
+| lib   | 93,46 %    | 91,78 % | 92,10 %   | 93,46 % |
+| store | 94,59 %    | 92,98 % | 91,66 %   | 94,59 % |
+| total | 93,71 %    | 92,11 % | 91,93 %   | 93,71 % |
+
+Los huecos restantes son `file.ts` (descarga en navegador) y `supabase.ts` (creación del cliente), que dependen de APIs del navegador y del entorno.
+
+## Lighthouse
+
+Ejecutado con Lighthouse sobre el build de producción servido por `vite preview`:
+
+| Categoría        | Puntuación |
+| ---------------- | ---------- |
+| Accesibilidad    | 100        |
+| Buenas prácticas | 100        |
+| SEO              | 100        |
+
+El primer intento dio SEO 80 por falta de `robots.txt`; se añadió `public/robots.txt` y se repitió.
+
+## Docker
+
+Verificado en local:
+
+```bash
+docker build -t theme-studio .
+docker run --rm -p 8080:80 theme-studio   # responde 200 y sirve la SPA
+```
+
+Con configuración de Supabase, las variables viajan como secreto de BuildKit (no quedan en capas ni en el historial):
+
+```bash
+docker build --secret id=vite_env,src=.env -t theme-studio .
+```
+
+Se comprobó dentro del contenedor que el bundle incluía la URL de Supabase en el segundo caso.
 
 ## Pruebas de IA
 
