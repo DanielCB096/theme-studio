@@ -1,21 +1,56 @@
 import { Button } from "@/components/ui/button";
-import { ListField, TextField } from "@/features/page-builder/builder/fields";
+import { ListField, SelectField, TextField } from "@/features/page-builder/builder/fields";
 import type { BlockDefinition } from "@/features/page-builder/blocks/definition";
-import { navbarSchema, navbarDefaults } from "@/features/page-builder/blocks/navbar/schema";
+import { navbarDefaults, navbarSchema } from "@/features/page-builder/blocks/navbar/schema";
+import { cn } from "@/lib/utils";
+
+const PLACEMENT_LABELS = {
+  top: "Arriba (horizontal)",
+  bottom: "Abajo (horizontal)",
+  left: "Izquierda (vertical)",
+  right: "Derecha (vertical)",
+} as const;
 
 export const navbarBlock: BlockDefinition<"navbar"> = {
   type: "navbar",
   label: "Navegación",
-  description: "Barra superior con marca, enlaces y botón.",
+  description: "Barra horizontal o columna lateral, en cualquiera de los cuatro lados.",
   schema: navbarSchema,
   defaultProps: navbarDefaults,
-  Renderer: ({ props }) => (
-    <header className="border-b bg-surface px-density py-3">
-      <div className="flex flex-wrap items-center gap-density">
-        <span className="mr-auto text-base font-semibold tracking-tight">{props.brand}</span>
+  Renderer: ({ props }) => {
+    const vertical = props.placement === "left" || props.placement === "right";
+
+    return (
+      <header
+        data-nav-placement={props.placement}
+        className={cn(
+          "bg-surface text-fg",
+          vertical
+            ? "flex flex-wrap items-center gap-density border-b p-density @2xl:h-full @2xl:w-56 @2xl:flex-col @2xl:items-stretch @2xl:border-b-0"
+            : "px-density py-3",
+          props.placement === "top" && "border-b",
+          props.placement === "bottom" && "border-t",
+          props.placement === "left" && "@2xl:border-r",
+          props.placement === "right" && "@2xl:border-l",
+        )}
+      >
+        <span
+          className={cn(
+            "text-base font-semibold tracking-tight",
+            vertical ? "@2xl:mr-0" : "mr-auto",
+          )}
+        >
+          {props.brand}
+        </span>
+
         <nav
           aria-label="Navegación principal"
-          className="flex flex-wrap items-center gap-3 text-sm"
+          className={cn(
+            "flex gap-3 text-sm",
+            vertical
+              ? "flex-wrap items-center @2xl:flex-col @2xl:items-stretch"
+              : "flex-wrap items-center",
+          )}
         >
           {props.links.map((link) => (
             <a
@@ -27,12 +62,15 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
             </a>
           ))}
         </nav>
-        <Button asChild size="sm">
-          <a href={props.ctaHref}>{props.ctaLabel}</a>
-        </Button>
-      </div>
-    </header>
-  ),
+
+        <div className={cn(vertical ? "ml-auto @2xl:ml-0 @2xl:w-full" : "")}>
+          <Button asChild size="sm" className={vertical ? "@2xl:w-full" : ""}>
+            <a href={props.ctaHref}>{props.ctaLabel}</a>
+          </Button>
+        </div>
+      </header>
+    );
+  },
   Inspector: ({ props, onChange }) => (
     <div className="space-y-density">
       <TextField
@@ -40,6 +78,17 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
         value={props.brand}
         maxLength={40}
         onChange={(brand) => onChange({ ...props, brand })}
+      />
+      <SelectField
+        label="Ubicación"
+        value={props.placement}
+        options={[
+          { value: "top", label: PLACEMENT_LABELS.top },
+          { value: "bottom", label: PLACEMENT_LABELS.bottom },
+          { value: "left", label: PLACEMENT_LABELS.left },
+          { value: "right", label: PLACEMENT_LABELS.right },
+        ]}
+        onChange={(placement) => onChange({ ...props, placement })}
       />
       <TextField
         label="Etiqueta CTA"

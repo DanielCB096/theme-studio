@@ -10,7 +10,14 @@ import type { PageBlock, PageBlockPropsMap, PageBlockType, PageDocument } from "
 import type { Theme } from "@/types/theme";
 
 function makeBlock<T extends PageBlockType>(type: T, props: PageBlockPropsMap[T]): PageBlock {
-  return { id: crypto.randomUUID(), type, childIds: [], props } as PageBlock;
+  // Clonar: si no, todas las páginas compartirían los mismos objetos de props
+  // y editar una modificaría los defaults globales.
+  return {
+    id: crypto.randomUUID(),
+    type,
+    childIds: [],
+    props: structuredClone(props),
+  } as PageBlock;
 }
 
 /** Landing inicial: una página real editable y publicable. */

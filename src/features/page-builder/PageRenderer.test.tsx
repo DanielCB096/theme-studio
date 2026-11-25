@@ -36,6 +36,18 @@ describe("PageRenderer", () => {
     expect(onSelect).toHaveBeenCalledWith(page.rootIds[1]);
   });
 
+  it("coloca la navbar a los lados sin sacar el resto del contenido", () => {
+    const pageWithSidebar = structuredClone(page);
+    const navbar = pageWithSidebar.blocks[pageWithSidebar.rootIds[0] ?? ""];
+    if (navbar?.type !== "navbar") throw new Error("Falta la navbar");
+    navbar.props.placement = "left";
+
+    const { container } = render(<PageRenderer page={pageWithSidebar} />);
+
+    expect(container.querySelector('[data-nav-placement="left"]')).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: /tu producto/i })).toBeInTheDocument();
+  });
+
   it("muestra un estado vacío sin bloques", () => {
     render(<PageRenderer page={{ ...page, rootIds: [], blocks: {} }} />);
     expect(screen.getByText(/no tiene bloques/i)).toBeInTheDocument();

@@ -12,7 +12,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Modelo de página con árbol normalizado, registro de bloques y `PageRenderer` único.
 - Nueve bloques: navbar, hero, features, pricing, form, table, cta, footer y textImage.
 - Builder con paleta, estructura, inspector y vista previa multidispositivo.
+- Navbar configurable en cuatro ubicaciones (arriba, abajo, izquierda, derecha), adaptándose a barra superior en móvil.
 - Migración `002_pages.sql` con RLS, repositorio, rutas `/pages`, `/builder` y `/p/:slug`.
+- Corrección de defaults clonados por página.
 
 ### Añadido
 

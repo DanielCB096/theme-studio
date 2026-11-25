@@ -22,6 +22,15 @@ export const pageDocumentSchema = z
   .superRefine((page, ctx) => {
     const keys = Object.keys(page.blocks);
 
+    const navbars = Object.values(page.blocks).filter((block) => block.type === "navbar");
+    if (navbars.length > 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Solo se permite una navbar por página",
+        path: ["blocks"],
+      });
+    }
+
     if (new Set(page.rootIds).size !== page.rootIds.length) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Hay ids repetidos en rootIds" });
     }

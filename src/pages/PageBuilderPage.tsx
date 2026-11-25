@@ -137,6 +137,7 @@ export default function PageBuilderPage() {
   };
 
   const selectedBlock = page && selectedId ? page.blocks[selectedId] : undefined;
+  const hasNavbar = page ? blocksInOrder(page).some((block) => block.type === "navbar") : false;
 
   return (
     <div className="flex h-dvh flex-col bg-background">
@@ -237,7 +238,9 @@ export default function PageBuilderPage() {
                     variant="outline"
                     size="sm"
                     className="justify-start"
-                    disabled={page.rootIds.length >= 30}
+                    disabled={
+                      page.rootIds.length >= 30 || (definition.type === "navbar" && hasNavbar)
+                    }
                     onClick={() => add(createPageBlock(definition.type))}
                   >
                     <Plus aria-hidden="true" className="h-3 w-3" />

@@ -234,9 +234,12 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Modelo `PageDocument` con árbol normalizado, esquema Zod y saneamiento de URLs.
 - Nueve bloques con schema, defaults, renderer e inspector; registro único y `PageRenderer` compartido por builder y página pública.
 - Builder con paleta, estructura (subir/bajar/eliminar), inspector de propiedades y vista previa multidispositivo reutilizada.
+- Navbar configurable en los cuatro lados (arriba, abajo, izquierda, derecha); en móvil, las laterales se convierten en barra superior.
+- Corrección: la plantilla comparte defaults clonados; editar una página ya no muta los valores por defecto del registro.
 - Persistencia: migración `002_pages.sql`, repositorio, rutas `/pages`, `/builder` y `/p/:slug`, y publicación.
-- 27 pruebas nuevas (esquema, URLs, operaciones, renderer, repositorio y store); total 162 en verde.
+- 30 pruebas nuevas (esquema, URLs, operaciones, renderer, repositorio y store); total 165 en verde.
 - Migración `002_pages.sql` aplicada. RLS verificada con dos usuarios: **14/14** (9 de temas + 5 de páginas).
 - E2E de páginas: plantilla → editar hero → guardar → publicar → abrir `/p/:slug` anónimo en 375/768/1280. **6/6 E2E** en verde.
 - Preview desplegada de la rama: **https://theme-studio-git-feat-page-builder-queserabernal.vercel.app**
+- Revisión de la persona responsable: navbar con ubicación configurable (arriba, abajo, izquierda y derecha); en móvil, las laterales se convierten en barra superior. Pendiente de definir el sistema de layout interno por bloque.
 - Criterio de parada: no empezar el Hito 2 hasta revisión humana del Hito 1.

@@ -72,6 +72,31 @@ describe("pageDocumentSchema", () => {
     if (!result.ok) expect(result.errors.join(" ")).toMatch(/anidación/i);
   });
 
+  it("aplica placement top por defecto en páginas antiguas", () => {
+    const page = landing();
+    const navbar = page.blocks[page.rootIds[0] ?? ""];
+    if (navbar?.type !== "navbar") throw new Error("Falta la navbar");
+    delete (navbar.props as { placement?: string }).placement;
+
+    const result = parsePageDocument(page);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const parsedNavbar = result.page.blocks[result.page.rootIds[0] ?? ""];
+      expect(parsedNavbar?.type === "navbar" ? parsedNavbar.props.placement : null).toBe("top");
+    }
+  });
+
+  it("rechaza más de una navbar", () => {
+    const page = landing();
+    const navbar = page.blocks[page.rootIds[0] ?? ""];
+    if (!navbar) throw new Error("Falta la navbar");
+    page.blocks["navbar-2"] = { ...navbar, id: "navbar-2" };
+    page.rootIds.push("navbar-2");
+    const result = parsePageDocument(page);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.join(" ")).toMatch(/una navbar/i);
+  });
+
   it("rechaza un tema inválido dentro de la página", () => {
     const page = landing();
     const raw = structuredClone(page) as unknown as Record<string, unknown>;

@@ -19,11 +19,16 @@ export interface BlockLink {
   href: string;
 }
 
+export const NAVBAR_PLACEMENTS = ["top", "bottom", "left", "right"] as const;
+export type NavbarPlacement = (typeof NAVBAR_PLACEMENTS)[number];
+
 export interface NavbarProps {
   brand: string;
   links: BlockLink[];
   ctaLabel: string;
   ctaHref: string;
+  /** Arriba/abajo = barra; izquierda/derecha = columna lateral en escritorio. */
+  placement: NavbarPlacement;
 }
 
 export interface HeroProps {

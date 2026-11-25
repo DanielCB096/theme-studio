@@ -12,6 +12,8 @@ export const navbarSchema = blockBase(
       links: z.array(linkSchema).max(5),
       ctaLabel: blockText(30),
       ctaHref: safeUrlSchema,
+      // Compatibilidad: páginas antiguas sin placement se interpretan como "top".
+      placement: z.enum(["top", "bottom", "left", "right"]).default("top"),
     })
     .strict(),
 );
@@ -25,4 +27,5 @@ export const navbarDefaults: NavbarProps = {
   ],
   ctaLabel: "Empezar",
   ctaHref: "#contacto",
+  placement: "top",
 };
