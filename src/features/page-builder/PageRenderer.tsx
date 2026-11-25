@@ -1,5 +1,3 @@
-import { Pencil } from "lucide-react";
-
 import { renderBlockContent } from "@/features/page-builder/blocks/registry";
 import { blocksInOrder } from "@/features/page-builder/pageOps";
 import { ThemeScope } from "@/features/preview/ThemeScope";
@@ -14,7 +12,8 @@ interface PageRendererProps {
 
 /**
  * Único renderer de páginas. Lo usan el builder, la vista previa y `/p/:slug`;
- * la única diferencia es que el builder pasa `onSelect`.
+ * la única diferencia es que el builder pasa `onSelect`, que añade una capa
+ * transparente para seleccionar el bloque sin tapar su contenido con botones.
  */
 export function PageRenderer({ page, selectedId = null, onSelect }: PageRendererProps) {
   const blocks = blocksInOrder(page);
@@ -43,16 +42,13 @@ export function PageRenderer({ page, selectedId = null, onSelect }: PageRenderer
                     type="button"
                     onClick={() => onSelect(block.id)}
                     className={cn(
-                      "absolute right-2 top-2 z-10 flex items-center gap-1 rounded-md border bg-surface px-2 py-1 text-[10px] font-medium text-muted shadow-panel",
-                      "hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      selected && "text-primary",
+                      "absolute inset-0 z-10 cursor-pointer bg-transparent",
+                      "transition-shadow hover:ring-1 hover:ring-inset hover:ring-primary",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
                     )}
                     aria-label={`Seleccionar bloque ${index + 1}: ${block.type}`}
                     aria-pressed={selected}
-                  >
-                    <Pencil aria-hidden="true" className="h-3 w-3" />
-                    {block.type}
-                  </button>
+                  />
                 ) : null}
                 {renderBlockContent(block)}
               </div>
