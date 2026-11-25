@@ -19,7 +19,10 @@ const colorsSchema = z
 const requestSchema = z
   .object({
     prompt: z
-      .string()
+      .string({
+        required_error: "El prompt es obligatorio.",
+        invalid_type_error: "El prompt debe ser texto.",
+      })
       .trim()
       .min(3, "Describe la paleta con al menos 3 caracteres.")
       .max(200, "El prompt admite como máximo 200 caracteres."),
@@ -49,7 +52,10 @@ Requisitos:
 - Nada de comentarios, nombres ni claves adicionales.`;
 
 const DEFAULT_MODEL = "gemini-3.5-flash-lite";
+/** Si el primero está saturado, se prueban estos en orden. */
+const FALLBACK_MODELS = ["gemini-3.1-flash-lite-preview", "gemini-flash-lite-latest"];
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
+const ATTEMPT_TIMEOUT_MS = 10_000;
 const RATE_LIMIT = { max: 8, windowMs: 10 * 60 * 1000 } as const;
 
 /** Fuerza la forma exacta de la respuesta; evita markdown y claves de más. */
@@ -118,6 +124,49 @@ function extractJson(text: string): unknown {
   return JSON.parse(cleaned.slice(start, end + 1)) as unknown;
 }
 
+function hslToHex(hue: number, saturation: number, lightness: number): string {
+  const s = saturation / 100;
+  const l = lightness / 100;
+  const normalized = (((hue % 360) + 360) % 360) / 360;
+
+  const channel = (n: number) => {
+    const k = (n + normalized * 12) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const value = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(value * 255)
+      .toString(16)
+      .padStart(2, "0");
+  };
+
+  return `#${channel(0)}${channel(8)}${channel(4)}`;
+}
+
+/**
+ * Última red: paleta determinista a partir del prompt, sin IA. Se etiqueta como
+ * `source: "local"` para que la interfaz no la presente como generación real.
+ */
+function localPalette(prompt: string) {
+  let hash = 0;
+  for (const character of prompt.toLowerCase()) {
+    hash = (hash * 31 + character.charCodeAt(0)) % 360;
+  }
+
+  const hue = hash;
+  const dark = /(oscuro|noche|dark|midnight|negro)/i.test(prompt);
+
+  return {
+    primary: hslToHex(hue, 65, dark ? 62 : 42),
+    secondary: hslToHex(hue + 42, 55, dark ? 66 : 40),
+    background: hslToHex(hue, dark ? 18 : 25, dark ? 8 : 97),
+    surface: hslToHex(hue, dark ? 20 : 10, dark ? 13 : 100),
+    text: hslToHex(hue, 12, dark ? 94 : 12),
+    muted: hslToHex(hue, 10, dark ? 66 : 42),
+    border: hslToHex(hue, 16, dark ? 24 : 90),
+    success: hslToHex(145, 55, dark ? 55 : 32),
+    danger: hslToHex(5, 65, dark ? 62 : 45),
+  };
+}
+
 function clientIp(req: VercelRequest): string {
   const forwarded = req.headers["x-forwarded-for"];
   const header = Array.isArray(forwarded) ? forwarded[0] : forwarded;
@@ -170,59 +219,69 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45_000);
+  const models = [model, ...FALLBACK_MODELS.filter((candidate) => candidate !== model)];
+  const requestBody = JSON.stringify({
+    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents: [{ role: "user", parts: [{ text: parsed.data.prompt }] }],
+    generationConfig: {
+      temperature: 0.4,
+      maxOutputTokens: 2000,
+      responseMimeType: "application/json",
+      responseSchema: RESPONSE_SCHEMA,
+    },
+  });
 
-  try {
-    const response = await fetch(
-      `${GEMINI_ENDPOINT}/${encodeURIComponent(model)}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ role: "user", parts: [{ text: parsed.data.prompt }] }],
-          generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 2000,
-            responseMimeType: "application/json",
-            responseSchema: RESPONSE_SCHEMA,
+  for (const candidate of models) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), ATTEMPT_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(
+        `${GEMINI_ENDPOINT}/${encodeURIComponent(candidate)}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
           },
-        }),
-        signal: controller.signal,
-      },
-    );
+          body: requestBody,
+          signal: controller.signal,
+        },
+      );
 
-    if (!response.ok) {
-      console.error("generate-palette: proveedor respondió", response.status);
-      res.status(502).json({
-        error: "El proveedor de IA rechazó la petición. Inténtalo de nuevo en unos segundos.",
-      });
+      if (!response.ok) {
+        console.error("generate-palette: modelo", candidate, "respondió", response.status);
+        if (response.status === 401 || response.status === 403) {
+          res.status(500).json({
+            error: "La clave de IA no es válida o no tiene permisos para este modelo.",
+          });
+          return;
+        }
+        continue;
+      }
+
+      const payload: unknown = await response.json();
+      const gemini = geminiResponseSchema.parse(payload);
+      const text = gemini.candidates[0]?.content.parts.map((part) => part.text ?? "").join("\n");
+
+      if (!text) {
+        throw new Error("La respuesta del modelo está vacía.");
+      }
+
+      const colors = colorsSchema.parse(extractJson(text));
+      res.status(200).json({ colors, source: "gemini" });
       return;
+    } catch (error) {
+      console.error(
+        "generate-palette: fallo con",
+        candidate,
+        error instanceof Error ? error.message : "error desconocido",
+      );
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const payload: unknown = await response.json();
-    const gemini = geminiResponseSchema.parse(payload);
-    const text = gemini.candidates[0]?.content.parts.map((part) => part.text ?? "").join("\n");
-
-    if (!text) {
-      throw new Error("La respuesta del modelo está vacía.");
-    }
-
-    const colors = colorsSchema.parse(extractJson(text));
-    res.status(200).json({ colors });
-  } catch (error) {
-    console.error(
-      "generate-palette:",
-      error instanceof Error ? error.message : "error desconocido",
-    );
-    res.status(502).json({
-      error: "No se pudo generar la paleta. Inténtalo de nuevo en unos segundos.",
-    });
-  } finally {
-    clearTimeout(timeout);
   }
+
+  // Ningún modelo respondió: paleta local determinista, claramente etiquetada.
+  res.status(200).json({ colors: localPalette(parsed.data.prompt), source: "local" });
 }

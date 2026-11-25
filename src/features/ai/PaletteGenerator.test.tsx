@@ -43,7 +43,7 @@ describe("PaletteGenerator", () => {
 
   it("genera, corrige contraste y aplica la paleta", async () => {
     const user = userEvent.setup();
-    mockGenerate.mockResolvedValue(generated);
+    mockGenerate.mockResolvedValue({ colors: generated, source: "gemini" });
     render(<PaletteGenerator />);
 
     await user.type(screen.getByLabelText("Describe la paleta"), "  desierto suave  ");
@@ -83,9 +83,21 @@ describe("PaletteGenerator", () => {
     expect(mockGenerate).not.toHaveBeenCalled();
   });
 
+  it("avisa cuando la paleta viene del modo local", async () => {
+    const user = userEvent.setup();
+    mockGenerate.mockResolvedValue({ colors: generated, source: "local" });
+    render(<PaletteGenerator />);
+
+    await user.type(screen.getByLabelText("Describe la paleta"), "bosque");
+    await user.click(screen.getByRole("button", { name: "Generar paleta" }));
+
+    expect(await screen.findByText(/modo local \(sin ia\)/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Aplicar paleta" })).toBeInTheDocument();
+  });
+
   it("permite descartar la propuesta", async () => {
     const user = userEvent.setup();
-    mockGenerate.mockResolvedValue(generated);
+    mockGenerate.mockResolvedValue({ colors: generated, source: "gemini" });
     render(<PaletteGenerator />);
 
     await user.type(screen.getByLabelText("Describe la paleta"), "bosque");

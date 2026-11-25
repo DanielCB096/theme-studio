@@ -16,7 +16,9 @@ export function PaletteGenerator() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [preview, setPreview] = useState<PaletteCorrection | null>(null);
+  const [preview, setPreview] = useState<
+    (PaletteCorrection & { source: "gemini" | "local" }) | null
+  >(null);
   const [applied, setApplied] = useState(false);
 
   const handleGenerate = async (event: FormEvent<HTMLFormElement>) => {
@@ -33,8 +35,9 @@ export function PaletteGenerator() {
     setApplied(false);
 
     try {
-      const colors = await generatePalette(trimmed);
-      setPreview(ensureAccessibleColors(colors));
+      const result = await generatePalette(trimmed);
+      const correction = ensureAccessibleColors(result.colors);
+      setPreview({ ...correction, source: result.source });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "No se pudo generar la paleta.");
     } finally {
@@ -77,6 +80,18 @@ export function PaletteGenerator() {
           <div className="space-y-1">
             <AlertTitle>No se generó la paleta</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
+          </div>
+        </Alert>
+      ) : null}
+
+      {preview?.source === "local" ? (
+        <Alert>
+          <div className="space-y-1">
+            <AlertTitle>Modo local (sin IA)</AlertTitle>
+            <AlertDescription>
+              El proveedor de IA no respondió ahora mismo, así que la paleta se generó con reglas
+              locales deterministas a partir de tu descripción. No se ha usado ningún modelo.
+            </AlertDescription>
           </div>
         </Alert>
       ) : null}

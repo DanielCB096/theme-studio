@@ -30,6 +30,10 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     css: false,
+    // La suite renderiza la app completa muchas veces; con cobertura el entorno
+    // es más lento y 5 s provoca fallos intermitentes.
+    testTimeout: 20_000,
+    hookTimeout: 20_000,
     // Las pruebas no deben depender del `.env` real ni tocar Supabase.
     env: {
       VITE_SUPABASE_URL: "",

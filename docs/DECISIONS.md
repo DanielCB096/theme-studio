@@ -211,6 +211,7 @@ Una entrada por decisión, en orden cronológico.
 - El nivel gratuito de Gemini tiene cuota y puede variar; si se agota, la función devuelve 502 con un mensaje accionable.
 - El rate limit en memoria (8/10 min por IP) no es global entre instancias serverless: es una barrera de demo, no una cuota facturable. En producción haría falta un almacén compartido o el límite del proveedor.
 - La validación de la respuesta (ADR-012) no depende del proveedor: si mañana se vuelve a Anthropic, se mantiene.
+- El free tier devuelve 503 con frecuencia: se prueban tres modelos lite en cadena y, si todos fallan, se responde con una paleta local determinista marcada `source: "local"`. La UI la etiqueta como «Modo local (sin IA)».
 
 ## ADR-012 · Validar la salida del modelo antes de aplicarla
 
@@ -265,3 +266,21 @@ Una entrada por decisión, en orden cronológico.
 - El proyecto se puede clonar y probar sin cuenta de Supabase.
 - Un error de configuración se explica en pantalla, no con un stack trace.
 - Las pruebas fijan esas variables a vacío para no depender del `.env` real ni tocar la red.
+
+## ADR-015 · Demo pública sin Deployment Protection
+
+**Contexto.** Vercel activa Vercel Authentication en los proyectos nuevos. La URL de producción devolvía 302 a `vercel.com/sso-api`, así que la demo no era accesible para un reclutador ni para Lighthouse.
+
+**Opciones consideradas.**
+
+1. Compartir un enlace de bypass temporal.
+2. Mantener la protección y pedir login a quien quiera ver la demo.
+3. Desactivar SSO para este proyecto y dejar solo la protección de los datos reales (RLS).
+
+**Decisión.** Opción 3: `vercel project protection disable theme-studio --sso`. La aplicación es pública; los datos siguen protegidos por Supabase Auth + RLS y la clave de Gemini vive en variables de entorno del servidor.
+
+**Consecuencias.**
+
+- La demo es accesible y verificable sin cuenta.
+- Cualquiera puede registrarse (la confirmación de correo está desactivada) y crear sus propios temas; no puede leer los de otros.
+- Si el proyecto se reutiliza con datos reales, hay que reactivar la protección y la confirmación de correo.

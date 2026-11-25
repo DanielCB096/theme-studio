@@ -123,7 +123,7 @@ describe("POST /api/generate-palette", () => {
     await handler(createRequest({ prompt: "bosque sereno" }, "10.0.0.14"), res);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual({ colors });
+    expect(res.body).toEqual({ colors, source: "gemini" });
 
     const [input, init] = fetchMock.mock.calls[0] ?? [];
     const calledUrl =
@@ -149,34 +149,69 @@ describe("POST /api/generate-palette", () => {
     expect(calledUrl).toContain("gemini-3.5-flash:generateContent");
   });
 
-  it("devuelve 502 si el modelo no produce un JSON válido", async () => {
+  it("prueba el siguiente modelo si el primero está saturado", async () => {
+    const fetchMock = vi
+      .mocked(fetch)
+      .mockResolvedValueOnce(errorResponse(503))
+      .mockResolvedValueOnce(geminiResponse(JSON.stringify(colors)));
+
+    const res = createResponse();
+    await handler(createRequest({ prompt: "bosque sereno" }, "10.0.0.20"), res);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ colors, source: "gemini" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("cae al modo local si el modelo no produce un JSON válido", async () => {
     vi.mocked(fetch).mockResolvedValue(geminiResponse("no hay json"));
     const res = createResponse();
     await handler(createRequest({ prompt: "bosque sereno" }, "10.0.0.16"), res);
-    expect(res.statusCode).toBe(502);
+
+    const body = res.body as { source: string; colors: Record<string, string> };
+    expect(res.statusCode).toBe(200);
+    expect(body.source).toBe("local");
+    expect(Object.keys(body.colors)).toHaveLength(9);
+    expect(body.colors.primary).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  it("devuelve 502 si los colores no pasan la validación", async () => {
+  it("cae al modo local si los colores no pasan la validación", async () => {
     vi.mocked(fetch).mockResolvedValue(
       geminiResponse(JSON.stringify({ ...colors, primary: "azul" })),
     );
     const res = createResponse();
     await handler(createRequest({ prompt: "bosque sereno" }, "10.0.0.17"), res);
-    expect(res.statusCode).toBe(502);
+
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { source: string }).source).toBe("local");
   });
 
-  it("devuelve 502 si el proveedor responde con error", async () => {
+  it("cae al modo local si el proveedor responde con error", async () => {
     vi.mocked(fetch).mockResolvedValue(errorResponse(429));
     const res = createResponse();
     await handler(createRequest({ prompt: "bosque sereno" }, "10.0.0.18"), res);
-    expect(res.statusCode).toBe(502);
+
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { source: string }).source).toBe("local");
+    expect(fetch).toHaveBeenCalledTimes(3);
   });
 
-  it("devuelve 502 si falla la red", async () => {
+  it("cae al modo local si falla la red", async () => {
     vi.mocked(fetch).mockRejectedValue(new TypeError("fetch failed"));
     const res = createResponse();
     await handler(createRequest({ prompt: "bosque sereno" }, "10.0.0.19"), res);
-    expect(res.statusCode).toBe(502);
+
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { source: string }).source).toBe("local");
+  });
+
+  it("no oculta una clave inválida detrás del modo local", async () => {
+    vi.mocked(fetch).mockResolvedValue(errorResponse(401));
+    const res = createResponse();
+    await handler(createRequest({ prompt: "bosque sereno" }, "10.0.0.21"), res);
+
+    expect(res.statusCode).toBe(500);
+    expect((res.body as { error: string }).error).toMatch(/clave/i);
   });
 
   it("limita las peticiones por IP", async () => {

@@ -24,20 +24,22 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 
 ## Registro de ejecuciones
 
-| Fecha      | Fase | Comando                              | Resultado                               |
-| ---------- | ---- | ------------------------------------ | --------------------------------------- |
-| 2026-11-24 | 0    | `lint`, `typecheck`, `test`, `build` | Pasa: 1 archivo / 1 prueba              |
-| 2026-11-24 | 1    | `lint`, `typecheck`, `test`, `build` | Pasa: 5 archivos / 18 pruebas           |
-| 2026-11-24 | 2    | `lint`, `typecheck`, `test`, `build` | Pasa: 8 archivos / 44 pruebas           |
-| 2026-11-24 | 3    | `test`                               | Pasa: 9 archivos / 50 pruebas           |
-| 2026-11-24 | 3    | `test:e2e`                           | Pasa: 2 pruebas (chromium)              |
-| 2026-11-25 | 4    | `test`                               | Pasa: 17 archivos / 87 pruebas          |
-| 2026-11-25 | 4    | `test:e2e`                           | Pasa: 4 pruebas (chromium)              |
-| 2026-11-25 | 4    | `verify:rls`                         | Pasa: 9/9 comprobaciones                |
-| 2026-11-25 | 5    | `test`                               | Pasa: 23 archivos / 128 pruebas         |
-| 2026-11-25 | 6    | `test:coverage`                      | Pasa: 93,71 % líneas / 92,11 % ramas    |
-| 2026-11-25 | 6    | `test:e2e`                           | Pasa: 4 pruebas (chromium)              |
-| 2026-11-25 | 6    | Lighthouse (preview)                 | A11y 100 · Best Practices 100 · SEO 100 |
+| Fecha      | Fase | Comando                              | Resultado                                         |
+| ---------- | ---- | ------------------------------------ | ------------------------------------------------- |
+| 2026-11-24 | 0    | `lint`, `typecheck`, `test`, `build` | Pasa: 1 archivo / 1 prueba                        |
+| 2026-11-24 | 1    | `lint`, `typecheck`, `test`, `build` | Pasa: 5 archivos / 18 pruebas                     |
+| 2026-11-24 | 2    | `lint`, `typecheck`, `test`, `build` | Pasa: 8 archivos / 44 pruebas                     |
+| 2026-11-24 | 3    | `test`                               | Pasa: 9 archivos / 50 pruebas                     |
+| 2026-11-24 | 3    | `test:e2e`                           | Pasa: 2 pruebas (chromium)                        |
+| 2026-11-25 | 4    | `test`                               | Pasa: 17 archivos / 87 pruebas                    |
+| 2026-11-25 | 4    | `test:e2e`                           | Pasa: 4 pruebas (chromium)                        |
+| 2026-11-25 | 4    | `verify:rls`                         | Pasa: 9/9 comprobaciones                          |
+| 2026-11-25 | 5    | `test`                               | Pasa: 23 archivos / 128 pruebas                   |
+| 2026-11-25 | 6    | `test`                               | Pasa: 24 archivos / 133 pruebas                   |
+| 2026-11-25 | 6    | `test:coverage`                      | Pasa: 93,75 % líneas / 92,07 % ramas              |
+| 2026-11-25 | 6    | `test:e2e`                           | Pasa: 5 pruebas (incluye Pixel 5 emulado)         |
+| 2026-11-25 | 6    | Lighthouse (preview)                 | A11y 100 · Best Practices 100 · SEO 100           |
+| 2026-11-25 | 6    | `check:deploy` (Vercel)              | Pasa: Supabase, login, IA y aplicación en preview |
 
 ## Cobertura
 
@@ -45,9 +47,9 @@ Umbral mínimo en CI: **70 %** en `src/lib` y `src/store` (líneas, funciones, r
 
 | Área  | Sentencias | Ramas   | Funciones | Líneas  |
 | ----- | ---------- | ------- | --------- | ------- |
-| lib   | 93,46 %    | 91,78 % | 92,10 %   | 93,46 % |
+| lib   | 93,51 %    | 91,72 % | 92,10 %   | 93,51 % |
 | store | 94,59 %    | 92,98 % | 91,66 %   | 94,59 % |
-| total | 93,71 %    | 92,11 % | 91,93 %   | 93,71 % |
+| total | 93,75 %    | 92,07 % | 91,93 %   | 93,75 % |
 
 Los huecos restantes son `file.ts` (descarga en navegador) y `supabase.ts` (creación del cliente), que dependen de APIs del navegador y del entorno.
 

@@ -3,7 +3,18 @@ import { z } from "zod";
 import { themeColorsSchema } from "@/lib/themeSchema";
 import type { ThemeColors } from "@/types/theme";
 
-const responseSchema = z.object({ colors: themeColorsSchema }).strict();
+const responseSchema = z
+  .object({
+    colors: themeColorsSchema,
+    source: z.enum(["gemini", "local"]).default("gemini"),
+  })
+  .strict();
+
+export interface PaletteResult {
+  colors: ThemeColors;
+  /** `local` indica que el proveedor no respondió y se usó la reserva determinista. */
+  source: "gemini" | "local";
+}
 
 export const GENERATION_TIMEOUT_MS = 50_000;
 
@@ -11,7 +22,7 @@ export const GENERATION_TIMEOUT_MS = 50_000;
  * Llama a la función serverless y valida la respuesta con Zod antes de
  * devolverla. La clave del proveedor nunca pasa por el navegador.
  */
-export async function generatePalette(prompt: string): Promise<ThemeColors> {
+export async function generatePalette(prompt: string): Promise<PaletteResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
 
@@ -52,5 +63,5 @@ export async function generatePalette(prompt: string): Promise<ThemeColors> {
     throw new Error("La respuesta del modelo no tiene la forma esperada. No se ha aplicado nada.");
   }
 
-  return parsed.data.colors;
+  return parsed.data;
 }

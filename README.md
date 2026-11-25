@@ -2,9 +2,11 @@
 
 Editor visual de temas que aplica tus decisiones de diseño **en tiempo real** sobre una galería de componentes, con vista previa simultánea en móvil, tableta y escritorio.
 
-> Demo: pendiente de despliegue (Fase 6).
+> Demo: **https://theme-studio-queserabernal.vercel.app**
 
 ![Editor de Theme Studio con vista previa de escritorio y panel de accesibilidad](docs/assets/editor.png)
+
+![Paleta generada y aplicada desde el panel de IA](docs/assets/demo.png)
 
 ## Problema que resuelve
 
@@ -65,6 +67,8 @@ Detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 Una respuesta inválida no modifica el tema: se muestra el error y tu trabajo sigue intacto.
 
+**Reserva local.** Si el proveedor no responde (el nivel gratuito devuelve 503 con frecuencia), la función prueba otros modelos y, como último recurso, genera una paleta determinista a partir del prompt. La interfaz la marca como «Modo local (sin IA)»: nunca se presenta como generación del modelo. Esa paleta también pasa por la validación y la corrección de contraste.
+
 ## Ejecutar en local
 
 Requisitos: Node 20.19+ y npm 10+.
@@ -111,15 +115,15 @@ docker run --rm -p 8080:80 theme-studio
 
 ## Métricas
 
-| Métrica                           | Valor                                                           |
-| --------------------------------- | --------------------------------------------------------------- |
-| Cobertura `src/lib` + `src/store` | 93,71 % de líneas · 92,11 % de ramas                            |
-| Lighthouse · Accesibilidad        | 100                                                             |
-| Lighthouse · Buenas prácticas     | 100                                                             |
-| Lighthouse · SEO                  | 100                                                             |
-| Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                            |
-| Pruebas                           | 129 unitarias/componentes · 4 E2E · 9 comprobaciones RLS        |
-| Respuesta de la IA                | Pendiente de medir con clave real (timeout de 20 s en servidor) |
+| Métrica                           | Valor                                                       |
+| --------------------------------- | ----------------------------------------------------------- |
+| Cobertura `src/lib` + `src/store` | 93,75 % de líneas · 92,07 % de ramas                        |
+| Lighthouse · Accesibilidad        | 100                                                         |
+| Lighthouse · Buenas prácticas     | 100                                                         |
+| Lighthouse · SEO                  | 100                                                         |
+| Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                        |
+| Pruebas                           | 133 unitarias/componentes · 5 E2E (Pixel 5 emulado) · 9 RLS |
+| Respuesta de la IA                | 2–22 s según el modelo disponible; reserva local si falla   |
 
 ## Pruebas
 
@@ -135,8 +139,8 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 
 ## Limitaciones conocidas
 
-- **La demo pública aún no está desplegada**: falta la cuenta de Vercel y la URL está pendiente.
-- La llamada real a Gemini no se ha verificado sin clave; los tests cubren la integración completa con el proveedor simulado.
+- **Enlace mágico en producción**: su destino depende de _Redirect URLs_ en Supabase. Si no añades `https://theme-studio-queserabernal.vercel.app/**`, el correo apuntará a `localhost`. El acceso con contraseña sí funciona en la demo.
+- El nivel gratuito de Gemini devuelve 503 con frecuencia; la función prueba varios modelos y, si todos fallan, responde con la reserva local etiquetada como tal.
 - El rate limit de la IA vive en memoria: no es global entre instancias serverless ni sustituye a una cuota de producción.
 - «Confirm email» está desactivado en Supabase para permitir los E2E; es un tradeoff de demo, no una configuración recomendable en producción.
 - Los usuarios de prueba de los E2E se acumulan en `auth.users` (sus temas sí se limpian con el script de RLS).
@@ -149,7 +153,7 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 - **RLS se demuestra con dos usuarios reales**, no con la interfaz. Añadir `with check` al `update` fue la diferencia entre «no ves filas ajenas» y «no puedes apropiártelas».
 - **La salida de un modelo necesita validación doble y una corrección posterior**: la paleta más bonita es inútil si el texto no se lee.
 - **El historial necesita coalescencia**: sin agrupar arrastres, deshacer deja de ser una herramienta y se convierte en un castigo.
-- **Aislar el proveedor de IA en una función** permitió cambiar de Anthropic a Gemini sin tocar el editor y sin poner la clave en el navegador.
+- **Aislar el proveedor de IA en una función** permitió cambiar de Anthropic a Gemini sin tocar el editor y sin poner la clave en el navegador. Añadir una reserva local hizo que la demo sobreviviera a los 503 del nivel gratuito sin mentir al usuario.
 
 ## Licencia
 

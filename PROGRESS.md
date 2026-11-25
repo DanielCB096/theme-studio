@@ -192,23 +192,28 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Docker verificado de punta a punta (build, run, HTTP 200) y con secretos de BuildKit para el build con Supabase. Se eliminaron los `ARG`/`ENV` de claves que marcaban los warnings.
 - `robots.txt` añadido.
 - Lighthouse sobre el build de producción: **Accesibilidad 100, Buenas prácticas 100, SEO 100**.
-- Cobertura: **93,71 %** de líneas y 92,11 % de ramas en `src/lib` y `src/store`.
+- Cobertura: **93,75 %** de líneas y 92,07 % de ramas en `src/lib` y `src/store`.
+- Desplegado en Vercel: **https://theme-studio-queserabernal.vercel.app** con las variables de Supabase y Gemini. SSO de Deployment Protection desactivado para que la demo sea pública (ADR-015).
+- `npm run check:deploy` verifica en producción: Supabase configurado, `/temas` redirige a login, pestaña de contraseña, generación de paleta (IA o reserva local) y aplicación a la vista previa, sin errores de consola.
 
 **Pruebas**
 
-- `npm test` — 23 archivos, 129 pruebas (pendiente de confirmar el recuento final).
-- `npm run test:coverage` — pasa con 93,71 %.
-- `npm run test:e2e` — 4 pruebas.
+- `npm test` — 24 archivos, 133 pruebas.
+- `npm run test:coverage` — pasa con 93,75 %.
+- `npm run test:e2e` — 5 pruebas, incluida una pasada en Pixel 5 emulado.
 - `docker build` + `docker run` — HTTP 200; con `--secret` el bundle incluye Supabase.
 - Lighthouse — 100/100/100.
+- `npm run check:deploy` — pasa contra la URL de producción.
 
 **Problemas**
 
 - El primer Lighthouse dio SEO 80 por `robots.txt`; corregido.
 - Docker marcaba las claves `VITE_*` como secretos por el nombre; se pasó a secreto de BuildKit y se documentó.
-- **Pendiente de credenciales:** el despliegue en Vercel y la llamada real a Gemini no se han ejecutado. La URL de demo del README sigue sin rellenar.
-- Los usuarios y temas de prueba de los E2E se acumulan en el proyecto de Supabase; el script de RLS limpia sus temas, no las cuentas.
+- Vercel activaba Deployment Protection y la demo devolvía 302; se desactivó SSO para el proyecto.
+- Gemini free tier devuelve 503 con frecuencia y `gemini-2.5` ya no está disponible para cuentas nuevas: se añadió cadena de modelos lite y una reserva local etiquetada.
+- Los usuarios y temas de prueba de los E2E se acumulan en Supabase; el script de RLS limpia los temas, no las cuentas.
+- El enlace mágico en producción requiere añadir el dominio de Vercel a las Redirect URLs de Supabase.
 
 **Siguiente**
 
-- Desplegar en Vercel con `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `GEMINI_API_KEY` y `GEMINI_MODEL`, probar la demo en móvil real y cerrar README con la URL.
+- Opcional: configurar las Redirect URLs de Supabase para el enlace mágico y limpiar los usuarios de prueba desde el dashboard.

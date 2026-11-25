@@ -22,6 +22,7 @@
     "test:e2e": "playwright test",
     "verify:rls": "node --env-file=.env scripts/verify-rls.mjs",
     "smoke:ai": "node --env-file=.env scripts/smoke-ai.mjs",
+    "check:deploy": "node scripts/check-deploy.mjs",
     "prepare": "husky"
   },
   "dependencies": {

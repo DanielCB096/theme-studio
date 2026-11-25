@@ -31,7 +31,10 @@ describe("generatePalette", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockResponse({ colors }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(generatePalette("atardecer minimalista")).resolves.toEqual(colors);
+    await expect(generatePalette("atardecer minimalista")).resolves.toEqual({
+      colors,
+      source: "gemini",
+    });
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/generate-palette",
@@ -40,6 +43,12 @@ describe("generatePalette", () => {
         body: JSON.stringify({ prompt: "atardecer minimalista" }),
       }),
     );
+  });
+
+  it("propaga que la paleta vino del modo local", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(mockResponse({ colors, source: "local" })));
+
+    await expect(generatePalette("prueba")).resolves.toEqual({ colors, source: "local" });
   });
 
   it("propaga el mensaje del servidor (rate limit)", async () => {
