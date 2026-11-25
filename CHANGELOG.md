@@ -5,6 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [No publicado]
 
+### En desarrollo — Anexo A · Page Builder
+
+- Rama `feat/page-builder` y tag `v1.0-theme-editor` como punto de retorno.
+- ADR-017: evolución de editor de temas a constructor de páginas alojadas.
+- Modelo de página con árbol normalizado, registro de bloques y `PageRenderer` único.
+
 ### Añadido
 
 - Inicialización del proyecto: Vite + React 18 + TypeScript estricto.

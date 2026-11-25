@@ -218,3 +218,19 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 **Siguiente**
 
 - Opcional: configurar las Redirect URLs de Supabase para el enlace mágico y limpiar los usuarios de prueba desde el dashboard.
+
+## Anexo A — Page Builder (2026-11-25)
+
+**A.1 Preparación**
+
+- Tag anotado `v1.0-theme-editor` creado sobre `main` como punto de retorno del editor de temas.
+- Rama `feat/page-builder` creada.
+- ADR-017 de evolución del producto añadido a `docs/DECISIONS.md`.
+- Anexo A incorporado a `AGENTS.md` y `CLAUDE.md`, con A.1–A.6 y la propuesta RLS de A.5 aprobada.
+- Decisiones cerradas: páginas alojadas en `/p/:slug`, backend solo Supabase, JSON de página como único export, tema en snapshot y `theme_id` opcional.
+
+**Hito 1 (en curso)**
+
+- Estado: implementación del modelo, registro de bloques, builder, persistencia y publicación.
+- Pendiente de ejecutar la migración `002_pages.sql` en Supabase antes de las pruebas de integración y el E2E.
+- Criterio de parada: no empezar el Hito 2 hasta desplegar, probar, documentar y recibir revisión.

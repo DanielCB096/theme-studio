@@ -303,3 +303,24 @@ Una entrada por decisión, en orden cronológico.
 - La caché de servidor no es global entre instancias serverless ni sobrevive a un arranque en frío; la del navegador sí persiste para ese usuario.
 - Los datos cacheados se validan con Zod al leerlos; una entrada corrupta se ignora.
 - Si se quiere una caché compartida y persistente, habría que añadir un almacén externo (ADR futuro).
+
+## ADR-017 · Evolución a constructor de páginas (Anexo A)
+
+**Contexto.** La especificación original define un editor de tokens con un tema global y una galería fija. El objetivo real del producto cambia: el usuario quiere **componer páginas completas** y publicarlas, y después conectarles funcionalidad de backend. Mantener solo el editor de temas no cubre esa necesidad.
+
+**Opciones consideradas.**
+
+1. Quedarse en el editor de temas y exportar CSS/Tailwind.
+2. Constructor que genere código React/HTML para llevarlo a otro proyecto.
+3. Constructor de páginas **alojadas**, renderizadas desde JSON, con Supabase como backend.
+
+**Decisión.** Opción 3, detallada en el **Anexo A** de `AGENTS.md`: páginas en `/p/:slug`, backend exclusivamente Supabase, exportación/importación solo del JSON de la página, tema guardado como snapshot, árbol normalizado de bloques, registro con un archivo por bloque, un único `PageRenderer`, Zod para todo dato externo y saneamiento de URLs. Se trabaja en `feat/page-builder` con el tag `v1.0-theme-editor`.
+
+**Consecuencias.**
+
+- El editor de temas pasa a ser el panel de «Estilo global» del builder; no se reescribe.
+- Aparece una nueva entidad (`pages`) con su migración, RLS, repositorio, rutas y E2E.
+- El snapshot del tema hace que una página publicada no cambie si después se edita el tema, y `theme_id` opcional queda para trazabilidad.
+- No se genera código fuente: el entregable es una página renderizada y su JSON.
+- La ampliación aumenta el alcance del producto y exige revisar seguridad y accesibilidad en cada bloque.
+- El tag `v1.0-theme-editor` conserva un punto de retorno del editor de temas terminado.
