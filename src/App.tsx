@@ -8,6 +8,9 @@ import EditorPage from "@/pages/EditorPage";
 const SignInPage = lazy(() => import("@/pages/SignInPage"));
 const ThemesPage = lazy(() => import("@/pages/ThemesPage"));
 const SharedThemePage = lazy(() => import("@/pages/SharedThemePage"));
+const PagesPage = lazy(() => import("@/pages/PagesPage"));
+const PageBuilderPage = lazy(() => import("@/pages/PageBuilderPage"));
+const PublicPage = lazy(() => import("@/pages/PublicPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 function RouteFallback() {
@@ -38,6 +41,31 @@ export default function App() {
             }
           />
           <Route path="/t/:id" element={<SharedThemePage />} />
+          <Route
+            path="/pages"
+            element={
+              <ProtectedRoute>
+                <PagesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/builder"
+            element={
+              <ProtectedRoute>
+                <PageBuilderPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/builder/:id"
+            element={
+              <ProtectedRoute>
+                <PageBuilderPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/p/:slug" element={<PublicPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

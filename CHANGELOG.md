@@ -10,6 +10,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Rama `feat/page-builder` y tag `v1.0-theme-editor` como punto de retorno.
 - ADR-017: evolución de editor de temas a constructor de páginas alojadas.
 - Modelo de página con árbol normalizado, registro de bloques y `PageRenderer` único.
+- Nueve bloques: navbar, hero, features, pricing, form, table, cta, footer y textImage.
+- Builder con paleta, estructura, inspector y vista previa multidispositivo.
+- Migración `002_pages.sql` con RLS, repositorio, rutas `/pages`, `/builder` y `/p/:slug`.
 
 ### Añadido
 

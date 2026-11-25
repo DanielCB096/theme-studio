@@ -231,6 +231,10 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 **Hito 1 (en curso)**
 
-- Estado: implementación del modelo, registro de bloques, builder, persistencia y publicación.
-- Pendiente de ejecutar la migración `002_pages.sql` en Supabase antes de las pruebas de integración y el E2E.
+- Modelo `PageDocument` con árbol normalizado, esquema Zod y saneamiento de URLs.
+- Nueve bloques con schema, defaults, renderer e inspector; registro único y `PageRenderer` compartido por builder y página pública.
+- Builder con paleta, estructura (subir/bajar/eliminar), inspector de propiedades y vista previa multidispositivo reutilizada.
+- Persistencia: migración `002_pages.sql`, repositorio, rutas `/pages`, `/builder` y `/p/:slug`, y publicación.
+- 27 pruebas nuevas (esquema, URLs, operaciones, renderer, repositorio y store); total 162 en verde.
+- **Bloqueado para integración**: falta ejecutar `supabase/migrations/002_pages.sql` en el proyecto. Sin esa tabla no se pueden probar guardado, publicación, RLS de páginas ni el E2E.
 - Criterio de parada: no empezar el Hito 2 hasta desplegar, probar, documentar y recibir revisión.

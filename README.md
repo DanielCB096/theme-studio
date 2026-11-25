@@ -24,6 +24,13 @@ Elegir una paleta, una escala tipográfica y un radio de borde "a ojo" y descubr
 - Variante clara/oscura derivada conservando la identidad de color.
 - Generación de paletas con IA, validada y corregida antes de aplicarla.
 - Guardar, duplicar, exportar e importar temas; compartir por enlace de solo lectura.
+- **Constructor de páginas**: landing desde plantilla, 9 tipos de bloque, edición de contenido, publicación en `/p/:slug` y vista previa móvil/tableta/escritorio.
+
+## Constructor de páginas
+
+Con una cuenta, entra en **Páginas → Nueva página**: se crea una landing desde plantilla con nueve tipos de bloque (navbar, hero, features, pricing, form, table, cta, footer, textImage). Puedes añadir, reordenar y eliminar bloques, editar sus propiedades, verla en móvil/tableta/escritorio, guardarla en Supabase y publicarla en `/p/:slug`.
+
+Guía y alcance: [`docs/PAGE_BUILDER.md`](docs/PAGE_BUILDER.md).
 
 ## Stack
 
@@ -39,6 +46,7 @@ Elegir una paleta, una escala tipográfica y un radio de borde "a ojo" y descubr
 | Pruebas     | Vitest + Testing Library + Playwright | Unidad, componentes y flujo E2E                 |
 
 Decisiones y alternativas descartadas: [`docs/DECISIONS.md`](docs/DECISIONS.md).
+Alcance del Page Builder: **Anexo A** en [`AGENTS.md`](AGENTS.md) y guía técnica en [`docs/PAGE_BUILDER.md`](docs/PAGE_BUILDER.md).
 
 ## Arquitectura
 
@@ -127,7 +135,7 @@ docker run --rm -p 8080:80 theme-studio
 | Lighthouse · Buenas prácticas     | 100                                                         |
 | Lighthouse · SEO                  | 100                                                         |
 | Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                        |
-| Pruebas                           | 135 unitarias/componentes · 5 E2E (Pixel 5 emulado) · 9 RLS |
+| Pruebas                           | 162 unitarias/componentes · 5 E2E (Pixel 5 emulado) · 9 RLS |
 | Respuesta de la IA                | 2–22 s según el modelo disponible; reserva local si falla   |
 
 ## Pruebas

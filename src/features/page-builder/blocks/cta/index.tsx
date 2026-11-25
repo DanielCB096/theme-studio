@@ -1,0 +1,50 @@
+import { Button } from "@/components/ui/button";
+import { TextAreaField, TextField } from "@/features/page-builder/builder/fields";
+import type { BlockDefinition } from "@/features/page-builder/blocks/definition";
+import { ctaDefaults, ctaSchema } from "@/features/page-builder/blocks/cta/schema";
+
+export const ctaBlock: BlockDefinition<"cta"> = {
+  type: "cta",
+  label: "Llamada a la acción",
+  description: "Bloque de cierre con botón.",
+  schema: ctaSchema,
+  defaultProps: ctaDefaults,
+  Renderer: ({ props }) => (
+    <section className="border-b bg-surface px-density py-[calc(var(--space-unit)*10)]">
+      <div className="mx-auto flex max-w-2xl flex-col items-center gap-density text-center">
+        <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
+        {props.description ? <p className="text-sm text-muted">{props.description}</p> : null}
+        <Button asChild>
+          <a href={props.buttonHref}>{props.buttonLabel}</a>
+        </Button>
+      </div>
+    </section>
+  ),
+  Inspector: ({ props, onChange }) => (
+    <div className="space-y-density">
+      <TextField
+        label="Título"
+        value={props.title}
+        maxLength={90}
+        onChange={(title) => onChange({ ...props, title })}
+      />
+      <TextAreaField
+        label="Descripción"
+        value={props.description}
+        maxLength={200}
+        onChange={(description) => onChange({ ...props, description })}
+      />
+      <TextField
+        label="Etiqueta del botón"
+        value={props.buttonLabel}
+        maxLength={30}
+        onChange={(buttonLabel) => onChange({ ...props, buttonLabel })}
+      />
+      <TextField
+        label="Enlace del botón"
+        value={props.buttonHref}
+        onChange={(buttonHref) => onChange({ ...props, buttonHref })}
+      />
+    </div>
+  ),
+};

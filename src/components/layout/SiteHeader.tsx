@@ -29,9 +29,14 @@ export function SiteHeader() {
 
         <nav aria-label="Principal" className="ml-auto flex items-center gap-1">
           {status === "authenticated" ? (
-            <NavLink to="/temas" className={navLinkClass}>
-              Mis temas
-            </NavLink>
+            <>
+              <NavLink to="/temas" className={navLinkClass}>
+                Mis temas
+              </NavLink>
+              <NavLink to="/pages" className={navLinkClass}>
+                Páginas
+              </NavLink>
+            </>
           ) : null}
         </nav>
 
