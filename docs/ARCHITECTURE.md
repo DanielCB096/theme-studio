@@ -87,6 +87,37 @@ flowchart LR
 - `persist` guarda solo `theme`. Al rehidratar, el JSON de localStorage se valida con Zod: un borrador corrupto o de otra versión se descarta en lugar de romper la app.
 - El atajo global ignora los campos de texto, donde el deshacer debe ser el nativo del navegador.
 
+## Paleta con IA
+
+```mermaid
+sequenceDiagram
+  participant U as Panel
+  participant C as Cliente
+  participant F as Función /api/generate-palette
+  participant A as API de Anthropic
+  U->>C: prompt (máx. 200)
+  C->>F: POST { prompt }
+  F->>F: Zod + rate limit por IP
+  F->>A: messages.create (clave solo en servidor)
+  A-->>F: texto con JSON
+  F->>F: extrae JSON + Zod de colores
+  F-->>C: { colors }
+  C->>C: Zod otra vez + corrección AA
+  C->>U: propuesta con swatches
+```
+
+Tres barreras antes de tocar el tema:
+
+1. **Servidor**: prompt validado; la clave vive en `ANTHROPIC_API_KEY` y nunca se serializa al cliente.
+2. **Servidor**: la respuesta del modelo se recorta a su objeto JSON y se valida con Zod; un color mal formado produce 502, no una paleta a medias.
+3. **Cliente**: se valida de nuevo y se corrige el contraste con `ensureAccessibleColors` antes de mostrar «Aplicar».
+
+Límites: 8 peticiones por IP cada 10 minutos (mapa en memoria, best-effort en serverless), timeout de 20 s en servidor y 25 s en cliente, y modelo obligatorio en `ANTHROPIC_MODEL` para no fijar un nombre que caduque.
+
+## Variante automática de modo
+
+`deriveVariant` reconstruye los neutros con el tono del fondo actual y la luminosidad del modo destino; después ajusta texto, atenuado y colores de marca hasta cumplir contraste (7:1 para texto, 4.5:1 para marcas). El tono de las marcas se conserva, así que cambiar de claro a oscuro mantiene la identidad.
+
 ## Modelo de datos y RLS
 
 ```mermaid

@@ -26,4 +26,25 @@ Umbrales:
 
 Valores de referencia usados en pruebas: negro sobre blanco = 21:1; gris `#767676` sobre blanco ≈ 4.54:1.
 
-Implementación y pruebas: `src/lib/contrast.ts` (Fase 5).
+## Implementación
+
+`src/lib/contrast.ts` calcula la razón y clasifica el resultado:
+
+- `AAA`: ≥ 7:1 (texto normal).
+- `AA`: ≥ 4.5:1.
+- `Solo texto grande`: ≥ 3:1; válido para texto ≥ 24 px o ≥ 18.66 px en negrita.
+- `Falla`: por debajo de 3:1.
+
+El panel (`src/features/accessibility/ContrastPanel.tsx`) evalúa cinco pares en vivo:
+
+1. Texto sobre fondo.
+2. Texto sobre superficie.
+3. Atenuado sobre superficie.
+4. Primario sobre fondo.
+5. Texto del botón primario (se deriva del primario y siempre se recalcula).
+
+Cada fila muestra la razón, un semáforo y, si no llega a AA, un botón **Corregir a AA** que ajusta la luminosidad conservando tono y saturación (`adjustForContrast`). Si el fondo es un gris medio y el objetivo es imposible, se devuelve el extremo con mayor contraste en lugar de un color que tampoco cumpliría.
+
+Las paletas generadas por IA pasan por `ensureAccessibleColors` antes de mostrarse; la corrección se anuncia en la interfaz y queda en el historial, así que se puede deshacer.
+
+Pruebas: `src/lib/contrast.test.ts`, `src/lib/palette.test.ts` y `src/features/accessibility/ContrastPanel.test.tsx` (valores de referencia, clasificación, corrección, panel y botón).

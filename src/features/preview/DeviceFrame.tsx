@@ -50,7 +50,7 @@ export function DeviceFrame({ theme, label, width, height, device, className }: 
 
   return (
     <figure
-      className={cn("m-0 flex min-w-0 flex-col items-center gap-2", className)}
+      className={cn("m-0 flex w-full min-w-0 flex-col items-center gap-2", className)}
       data-device={device}
       data-device-width={width}
       data-device-height={height}

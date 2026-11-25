@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_THEME, DEFAULT_THEMES } from "@/lib/defaultThemes";
+import { hexToRgb, relativeLuminance, rgbToHsl } from "@/lib/color";
+import { contrastRatio } from "@/lib/contrast";
 import { HISTORY_LIMIT, MERGE_WINDOW_MS, createThemeStore } from "@/store/themeStore";
 
 class MemoryStorage implements Storage {
@@ -173,9 +175,12 @@ describe("themeStore", () => {
 
     const { theme } = store.getState();
     expect(theme.mode).toBe("dark");
-    expect(theme.colors.primary).toBe("#ff0000");
-    expect(theme.colors.background).toBe(DEFAULT_THEMES.dark.colors.background);
-    expect(theme.colors.text).toBe(DEFAULT_THEMES.dark.colors.text);
+    expect(relativeLuminance(theme.colors.background)).toBeLessThan(0.1);
+    expect(contrastRatio(theme.colors.text, theme.colors.surface)).toBeGreaterThanOrEqual(7);
+
+    const before = rgbToHsl(hexToRgb("#ff0000")).h;
+    const after = rgbToHsl(hexToRgb(theme.colors.primary)).h;
+    expect(Math.abs(before - after)).toBeLessThan(3);
   });
 
   it("restablece los valores por defecto conservando el nombre", () => {

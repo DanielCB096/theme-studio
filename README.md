@@ -4,6 +4,8 @@ Editor visual de temas que aplica tus decisiones de diseño **en tiempo real** s
 
 > Demo: pendiente de despliegue (Fase 6).
 
+![Editor de Theme Studio con vista previa de escritorio y panel de accesibilidad](docs/assets/editor.png)
+
 ## Problema que resuelve
 
 Elegir una paleta, una escala tipográfica y un radio de borde "a ojo" y descubrir en producción que la interfaz se rompe en móvil. Theme Studio separa las decisiones de diseño (tokens) de su aplicación: editas tokens, ves el resultado en tres anchos reales y exportas el tema como CSS, JSON o configuración de Tailwind.
@@ -13,8 +15,9 @@ Elegir una paleta, una escala tipográfica y un radio de borde "a ojo" y descubr
 - Editor de tokens: colores, tipografía, radios, bordes, espaciado y densidad.
 - Vista previa multidispositivo (375 / 768 / 1280 px y ancho libre) con container queries.
 - Deshacer / rehacer con historial acotado y atajos de teclado.
-- Verificador de contraste WCAG 2.x con corrección sugerida (Fase 5).
-- Generación de paletas con IA, validada del lado del cliente (Fase 5).
+- Verificador de contraste WCAG 2.x con corrección sugerida.
+- Variante clara/oscura derivada conservando la identidad de color.
+- Generación de paletas con IA, validada y corregida antes de aplicarla.
 - Guardar, duplicar, exportar e importar temas; compartir por enlace de solo lectura.
 
 ## Stack
@@ -47,6 +50,21 @@ flowchart LR
 
 Detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+## Qué hace la IA y qué hace el código propio
+
+**La IA** interpreta una descripción en lenguaje natural («atardecer mediterráneo, sereno y cálido») y propone nueve colores con una forma concreta.
+
+**El código** hace todo lo demás:
+
+- Valida el prompt con Zod (3–200 caracteres) y limita a 8 peticiones por IP cada 10 minutos.
+- Llama a Anthropic con timeout y sin exponer la clave (vive solo en la función serverless).
+- Extrae el objeto JSON de la respuesta (aunque venga con markdown) y lo valida con Zod.
+- Vuelve a validar en el cliente antes de enseñar nada.
+- Corrige automáticamente el contraste AA de texto y primario, conservando el tono.
+- No aplica nada hasta que pulsas «Aplicar»; queda en el historial para deshacer.
+
+Una respuesta inválida no modifica el tema: se muestra el error y tu trabajo sigue intacto.
+
 ## Ejecutar en local
 
 Requisitos: Node 20.19+ y npm 10+.
@@ -56,6 +74,8 @@ npm install
 cp .env.example .env   # rellena Supabase; la clave de IA solo va en el servidor
 npm run dev
 ```
+
+La IA usa una función serverless: en local necesitas `vercel dev` (y `ANTHROPIC_API_KEY` + `ANTHROPIC_MODEL` en `.env`). Con `npm run dev`, el resto de la app funciona y el panel de IA explica que el endpoint no está disponible.
 
 Comandos:
 

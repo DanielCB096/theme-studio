@@ -24,7 +24,7 @@ export default defineConfig({
       VITE_SUPABASE_URL: "",
       VITE_SUPABASE_ANON_KEY: "",
     },
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}", "api/**/*.test.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],

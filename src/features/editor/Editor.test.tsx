@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import App from "@/App";
+import { hexToRgb, rgbToHsl } from "@/lib/color";
 import { DEFAULT_THEME } from "@/lib/defaultThemes";
 import { useThemeStore } from "@/store/themeStore";
 
@@ -68,8 +69,13 @@ describe("Editor", () => {
 
     const { theme } = useThemeStore.getState();
     expect(theme.mode).toBe("dark");
-    expect(theme.colors.primary).toBe("#2563eb");
-    expect(themeScope().style.getPropertyValue("--color-background")).toBe("#0b1220");
+    expect(themeScope().style.getPropertyValue("--color-background")).not.toBe("#f8fafc");
+    expect(themeScope().style.getPropertyValue("--color-primary")).toBe(theme.colors.primary);
+
+    // Conserva la identidad de marca: mismo tono, luminosidad ajustada.
+    const before = rgbToHsl(hexToRgb("#2563eb")).h;
+    const after = rgbToHsl(hexToRgb(theme.colors.primary)).h;
+    expect(Math.abs(before - after)).toBeLessThan(3);
   });
 
   it("aplica un color escrito a mano a la vista previa", async () => {

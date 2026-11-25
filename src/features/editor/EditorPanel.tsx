@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { ContrastPanel } from "@/features/accessibility/ContrastPanel";
+import { PaletteGenerator } from "@/features/ai/PaletteGenerator";
 import { ColorControl } from "@/features/editor/controls/ColorControl";
 import { SliderControl } from "@/features/editor/controls/SliderControl";
 import { ExportThemeDialog } from "@/features/themes/ExportThemeDialog";
@@ -38,6 +40,14 @@ export function EditorPanel() {
               <ColorControl key={key} colorKey={key} />
             ))}
           </div>
+        </Section>
+
+        <Section title="Accesibilidad" id="section-accesibilidad">
+          <ContrastPanel />
+        </Section>
+
+        <Section title="Paleta con IA" id="section-ia">
+          <PaletteGenerator />
         </Section>
 
         <Section title="Tipografía" id="section-tipografia">

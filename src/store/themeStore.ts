@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import { normalizeHex } from "@/lib/color";
 import { DEFAULT_THEME, DEFAULT_THEMES } from "@/lib/defaultThemes";
+import { deriveVariant } from "@/lib/palette";
 import { themeSchema } from "@/lib/themeSchema";
 import {
   THEME_LIMITS,
@@ -61,23 +62,6 @@ export interface CreateThemeStoreOptions {
 function clamp(value: number, min: number, max: number): number {
   if (Number.isNaN(value)) return min;
   return Math.min(max, Math.max(min, value));
-}
-
-/** Neutros que se intercambian al cambiar de modo; las marcas de color se conservan. */
-function applyModeToNeutrals(theme: Theme, mode: ThemeMode): Theme {
-  const palette = DEFAULT_THEMES[mode].colors;
-  return {
-    ...theme,
-    mode,
-    colors: {
-      ...theme.colors,
-      background: palette.background,
-      surface: palette.surface,
-      text: palette.text,
-      muted: palette.muted,
-      border: palette.border,
-    },
-  };
 }
 
 export function createThemeStore(
@@ -206,7 +190,7 @@ export function createThemeStore(
 
       setMode: (mode) => {
         if (get().theme.mode === mode) return;
-        update("mode", (theme) => applyModeToNeutrals(theme, mode));
+        update("mode", (theme) => deriveVariant(theme));
       },
 
       applyColors: (colors) =>

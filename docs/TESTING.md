@@ -24,16 +24,23 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 
 ## Registro de ejecuciones
 
-| Fecha      | Fase | Comando                              | Resultado                      |
-| ---------- | ---- | ------------------------------------ | ------------------------------ |
-| 2026-11-24 | 0    | `lint`, `typecheck`, `test`, `build` | Pasa: 1 archivo / 1 prueba     |
-| 2026-11-24 | 1    | `lint`, `typecheck`, `test`, `build` | Pasa: 5 archivos / 18 pruebas  |
-| 2026-11-24 | 2    | `lint`, `typecheck`, `test`, `build` | Pasa: 8 archivos / 44 pruebas  |
-| 2026-11-24 | 3    | `test`                               | Pasa: 9 archivos / 50 pruebas  |
-| 2026-11-24 | 3    | `test:e2e`                           | Pasa: 2 pruebas (chromium)     |
-| 2026-11-25 | 4    | `test`                               | Pasa: 17 archivos / 87 pruebas |
-| 2026-11-25 | 4    | `test:e2e`                           | Pasa: 4 pruebas (chromium)     |
-| 2026-11-25 | 4    | `verify:rls`                         | Pasa: 9/9 comprobaciones       |
+| Fecha      | Fase | Comando                              | Resultado                       |
+| ---------- | ---- | ------------------------------------ | ------------------------------- |
+| 2026-11-24 | 0    | `lint`, `typecheck`, `test`, `build` | Pasa: 1 archivo / 1 prueba      |
+| 2026-11-24 | 1    | `lint`, `typecheck`, `test`, `build` | Pasa: 5 archivos / 18 pruebas   |
+| 2026-11-24 | 2    | `lint`, `typecheck`, `test`, `build` | Pasa: 8 archivos / 44 pruebas   |
+| 2026-11-24 | 3    | `test`                               | Pasa: 9 archivos / 50 pruebas   |
+| 2026-11-24 | 3    | `test:e2e`                           | Pasa: 2 pruebas (chromium)      |
+| 2026-11-25 | 4    | `test`                               | Pasa: 17 archivos / 87 pruebas  |
+| 2026-11-25 | 4    | `test:e2e`                           | Pasa: 4 pruebas (chromium)      |
+| 2026-11-25 | 4    | `verify:rls`                         | Pasa: 9/9 comprobaciones        |
+| 2026-11-25 | 5    | `test`                               | Pasa: 23 archivos / 125 pruebas |
+
+## Pruebas de IA
+
+- `src/lib/aiPalette.test.ts`: respuesta válida, rate limit, colores mal formados, JSON ilegible, 404, fallo de red y timeout, con `fetch` simulado.
+- `api/generate-palette.test.ts`: método, prompt fuera de rango, claves extra, falta de configuración, JSON con markdown, respuesta inválida y límite por IP, con el SDK de Anthropic simulado.
+- La llamada real al modelo no se ejecuta en las pruebas: requiere clave y consume cuota.
 
 ## Verificación de RLS
 
