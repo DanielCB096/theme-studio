@@ -128,7 +128,7 @@ describe("POST /api/generate-palette", () => {
     const [input, init] = fetchMock.mock.calls[0] ?? [];
     const calledUrl =
       typeof input === "string" ? input : input instanceof URL ? input.href : (input?.url ?? "");
-    expect(calledUrl).toContain("gemini-flash-latest:generateContent");
+    expect(calledUrl).toContain("gemini-3.5-flash-lite:generateContent");
     expect(init?.headers).toMatchObject({ "x-goog-api-key": "gemini-test-key" });
     const rawBody = init?.body;
     const payload = JSON.parse(typeof rawBody === "string" ? rawBody : "{}") as {
@@ -138,7 +138,7 @@ describe("POST /api/generate-palette", () => {
   });
 
   it("usa GEMINI_MODEL si está definido", async () => {
-    process.env.GEMINI_MODEL = "gemini-2.5-flash";
+    process.env.GEMINI_MODEL = "gemini-3.5-flash";
     const fetchMock = vi.mocked(fetch).mockResolvedValue(geminiResponse(JSON.stringify(colors)));
 
     await handler(createRequest({ prompt: "bosque" }, "10.0.0.15"), createResponse());
@@ -146,7 +146,7 @@ describe("POST /api/generate-palette", () => {
     const input = fetchMock.mock.calls[0]?.[0];
     const calledUrl =
       typeof input === "string" ? input : input instanceof URL ? input.href : (input?.url ?? "");
-    expect(calledUrl).toContain("gemini-2.5-flash:generateContent");
+    expect(calledUrl).toContain("gemini-3.5-flash:generateContent");
   });
 
   it("devuelve 502 si el modelo no produce un JSON válido", async () => {

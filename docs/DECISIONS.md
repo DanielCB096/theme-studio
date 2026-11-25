@@ -202,7 +202,7 @@ Una entrada por decisión, en orden cronológico.
 2. Gemini con nivel gratuito y llamada REST desde la función serverless.
 3. Motor local determinista disfrazado de IA.
 
-**Decisión.** Gemini (`generativelanguage.googleapis.com`) con la clave en `GEMINI_API_KEY`, solo en el servidor. La llamada se hace con `fetch` desde `api/generate-palette.ts`; no se añade SDK. El cliente solo conoce `/api/generate-palette`. El modelo se toma de `GEMINI_MODEL` con alias por defecto `gemini-flash-latest`.
+**Decisión.** Gemini (`generativelanguage.googleapis.com`) con la clave en `GEMINI_API_KEY`, solo en el servidor. La llamada se hace con `fetch` desde `api/generate-palette.ts`; no se añade SDK. El cliente solo conoce `/api/generate-palette`. El modelo se toma de `GEMINI_MODEL`; el valor por defecto es `gemini-3.5-flash-lite`, elegido tras comprobar que `gemini-flash-latest` devolv?a 503 por saturaci?n y que `gemini-2.5-flash` ya no existe para cuentas nuevas.
 
 **Consecuencias.**
 

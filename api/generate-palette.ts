@@ -48,9 +48,47 @@ Requisitos:
 - Elige claro u oscuro según lo que pida la persona, manteniendo coherencia entre superficie y fondo.
 - Nada de comentarios, nombres ni claves adicionales.`;
 
-const DEFAULT_MODEL = "gemini-flash-latest";
+const DEFAULT_MODEL = "gemini-3.5-flash-lite";
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 const RATE_LIMIT = { max: 8, windowMs: 10 * 60 * 1000 } as const;
+
+/** Fuerza la forma exacta de la respuesta; evita markdown y claves de más. */
+const RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    primary: { type: "STRING" },
+    secondary: { type: "STRING" },
+    background: { type: "STRING" },
+    surface: { type: "STRING" },
+    text: { type: "STRING" },
+    muted: { type: "STRING" },
+    border: { type: "STRING" },
+    success: { type: "STRING" },
+    danger: { type: "STRING" },
+  },
+  required: [
+    "primary",
+    "secondary",
+    "background",
+    "surface",
+    "text",
+    "muted",
+    "border",
+    "success",
+    "danger",
+  ],
+  propertyOrdering: [
+    "primary",
+    "secondary",
+    "background",
+    "surface",
+    "text",
+    "muted",
+    "border",
+    "success",
+    "danger",
+  ],
+} as const;
 const buckets = new Map<string, { count: number; resetAt: number }>();
 
 function isRateLimited(key: string): { limited: boolean; retryAfterSeconds: number } {
@@ -86,7 +124,7 @@ function clientIp(req: VercelRequest): string {
   return header?.split(",")[0]?.trim() || "desconocida";
 }
 
-export const config = { maxDuration: 30 };
+export const config = { maxDuration: 60 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   res.setHeader("Cache-Control", "no-store");
@@ -133,7 +171,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20_000);
+  const timeout = setTimeout(() => controller.abort(), 45_000);
 
   try {
     const response = await fetch(
@@ -149,8 +187,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
           contents: [{ role: "user", parts: [{ text: parsed.data.prompt }] }],
           generationConfig: {
             temperature: 0.4,
-            maxOutputTokens: 700,
+            maxOutputTokens: 2000,
             responseMimeType: "application/json",
+            responseSchema: RESPONSE_SCHEMA,
           },
         }),
         signal: controller.signal,

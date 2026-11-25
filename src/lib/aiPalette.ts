@@ -5,7 +5,7 @@ import type { ThemeColors } from "@/types/theme";
 
 const responseSchema = z.object({ colors: themeColorsSchema }).strict();
 
-export const GENERATION_TIMEOUT_MS = 25_000;
+export const GENERATION_TIMEOUT_MS = 50_000;
 
 /**
  * Llama a la función serverless y valida la respuesta con Zod antes de

@@ -112,7 +112,7 @@ Tres barreras antes de tocar el tema:
 2. **Servidor**: la respuesta del modelo se recorta a su objeto JSON y se valida con Zod; un color mal formado produce 502, no una paleta a medias.
 3. **Cliente**: se valida de nuevo y se corrige el contraste con `ensureAccessibleColors` antes de mostrar «Aplicar».
 
-Límites: 8 peticiones por IP cada 10 minutos (mapa en memoria, best-effort en serverless), timeout de 20 s en servidor y 25 s en cliente. El modelo se toma de `GEMINI_MODEL` (alias por defecto `gemini-flash-latest`) para no fijar un nombre que caduque.
+Límites: 8 peticiones por IP cada 10 minutos (mapa en memoria, best-effort en serverless), timeout de 45 s en servidor y 50 s en cliente. El modelo se toma de `GEMINI_MODEL` (por defecto `gemini-3.5-flash-lite`) para poder cambiarlo sin tocar c?digo; la respuesta se fuerza con `responseSchema`.
 
 ## Variante automática de modo
 

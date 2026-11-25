@@ -168,7 +168,7 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - `npm test` — 23 archivos, 125 pruebas (contraste, paleta, panel, variante, cliente de IA y handler con `fetch` simulado).
 - `npm run lint`, `npm run typecheck`, `npm run build` — pasan.
 - `npm run test:e2e` — 4 pruebas.
-- Llamada real a Gemini: **pendiente de la clave gratuita**, no se ha ejecutado.
+- Llamada real a Gemini: **verificada** con `npm run smoke:ai` (HTTP 200 en ~1,5 s). `gemini-3.5-flash-lite` elegido tras descartar alias saturados y modelos retirados.
 
 **Problemas**
 

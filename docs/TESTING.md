@@ -84,7 +84,7 @@ Se comprobó dentro del contenedor que el bundle incluía la URL de Supabase en 
 
 - `src/lib/aiPalette.test.ts`: respuesta válida, rate limit, colores mal formados, JSON ilegible, 404, fallo de red y timeout, con `fetch` simulado.
 - `api/generate-palette.test.ts`: método, prompt fuera de rango, claves extra, falta de configuración, JSON con markdown, respuesta inválida, error del proveedor, fallo de red y límite por IP, con `fetch` simulado.
-- La llamada real al modelo no se ejecuta en las pruebas: requiere clave y consume cuota.
+- La llamada real al modelo no se ejecuta en las pruebas: requiere clave y consume cuota. Se comprueba a mano con `npm run smoke:ai` (HTTP 200 en ~1,5 s con `gemini-3.5-flash-lite`).
 
 ## Verificación de RLS
 
