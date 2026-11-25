@@ -1,16 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-async function register(page: Page, email: string) {
-  await page.goto("/entrar");
-  if (await page.getByText("Supabase no está configurado").isVisible()) {
-    test.skip(true, "Supabase no configurado en este entorno");
-  }
-  await page.getByRole("tab", { name: "Contraseña" }).click();
-  await page.locator("#password-email").fill(email);
-  await page.locator("#password").fill("theme-studio-e2e-Aa1");
-  await page.getByRole("button", { name: "Crear cuenta con estos datos" }).click();
-  await expect(page).toHaveURL(/\/temas$/, { timeout: 15_000 });
-}
+import { signInOrCreate } from "./helpers";
 
 test("el enlace compartido abre el tema en modo lectura y pide sesión para duplicar", async ({
   page,
@@ -19,7 +9,7 @@ test("el enlace compartido abre el tema en modo lectura y pide sesión para dupl
   const stamp = Date.now();
   const name = `Compartido ${stamp}`;
 
-  await register(page, `theme-studio-share-${stamp}@example.com`);
+  await signInOrCreate(page);
 
   await page.goto("/");
   const nameInput = page.getByLabel("Nombre del tema");

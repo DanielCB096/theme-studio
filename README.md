@@ -148,7 +148,7 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 - El nivel gratuito de Gemini devuelve 503 con frecuencia; la función prueba varios modelos y, si todos fallan, responde con la reserva local etiquetada como tal.
 - El rate limit de la IA vive en memoria: no es global entre instancias serverless ni sustituye a una cuota de producción.
 - «Confirm email» está desactivado en Supabase para permitir los E2E; es un tradeoff de demo, no una configuración recomendable en producción.
-- Los usuarios de prueba de los E2E se acumulan en `auth.users` (sus temas sí se limpian con el script de RLS).
+- Los E2E usan una cuenta fija (`theme-studio-e2e@example.com`) y crean temas de prueba; los temas se pueden borrar desde la cuenta y las cuentas antiguas desde el dashboard.
 - Tailwind 3: la migración a Tailwind 4 (`@theme`) queda como mejora futura.
 - El SDK de Supabase se carga en el bundle inicial; se podría diferir hasta la primera acción de cuenta.
 

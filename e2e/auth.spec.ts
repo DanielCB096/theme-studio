@@ -1,21 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-test("registro, guardado y persistencia tras recargar", async ({ page }) => {
-  const email = `theme-studio-e2e-${Date.now()}@example.com`;
-  const password = "theme-studio-e2e-Aa1";
+import { signInOrCreate } from "./helpers";
 
-  await page.goto("/entrar");
-  if (await page.getByText("Supabase no está configurado").isVisible()) {
-    test.skip(true, "Supabase no configurado en este entorno");
-  }
-
-  await page.getByRole("tab", { name: "Contraseña" }).click();
-  await page.locator("#password-email").fill(email);
-  await page.locator("#password").fill(password);
-  await page.getByRole("button", { name: "Crear cuenta con estos datos" }).click();
-
-  // Con «Confirm email» desactivado, signUp devuelve sesión y la app redirige.
-  await expect(page).toHaveURL(/\/temas$/, { timeout: 15_000 });
+test("acceso, guardado y persistencia tras recargar", async ({ page }) => {
+  await signInOrCreate(page);
   await expect(page.getByRole("button", { name: "Salir" })).toBeVisible();
 
   await page.goto("/");

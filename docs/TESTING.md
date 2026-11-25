@@ -101,4 +101,4 @@ Requiere «Confirm email» desactivado para que `signUp` devuelva sesión. Los u
 
 ## E2E con Supabase
 
-`e2e/mobile.spec.ts` comprueba en un Pixel 5 emulado que no hay scroll horizontal y que los controles funcionan. `e2e/auth.spec.ts` y `e2e/share.spec.ts` crean usuarios reales `@example.com` y guardan temas. Se ejecutan contra el proyecto de `.env`; en CI necesitarán secretos o quedarán fuera del job hasta configurarlos.
+`e2e/mobile.spec.ts` comprueba en un Pixel 5 emulado que no hay scroll horizontal y que los controles funcionan. `e2e/auth.spec.ts` y `e2e/share.spec.ts` reutilizan una cuenta fija (`theme-studio-e2e@example.com`) y la crean solo si no existe, para no chocar con el límite de correos de Supabase. Se ejecutan contra el proyecto de `.env`; en CI necesitan secretos o quedan fuera del job.
