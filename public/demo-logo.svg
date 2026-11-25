@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" width="220" height="48">
+  <rect width="48" height="48" rx="13" fill="#2563eb"/>
+  <circle cx="24" cy="24" r="11" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.9"/>
+  <ellipse cx="24" cy="24" rx="18" ry="7" fill="none" stroke="#ffffff" stroke-width="2" transform="rotate(-28 24 24)"/>
+  <circle cx="35" cy="15" r="3" fill="#ffffff"/>
+  <text x="62" y="32" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="21" font-weight="650" letter-spacing="-0.4" fill="#0f172a">Nébula</text>
+</svg>
