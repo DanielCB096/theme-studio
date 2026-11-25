@@ -24,6 +24,7 @@ function mockResponse(body: unknown, status = 200, jsonImpl?: () => Promise<unkn
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  localStorage.clear();
 });
 
 describe("generatePalette", () => {
@@ -34,6 +35,7 @@ describe("generatePalette", () => {
     await expect(generatePalette("atardecer minimalista")).resolves.toEqual({
       colors,
       source: "gemini",
+      cached: false,
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -48,7 +50,23 @@ describe("generatePalette", () => {
   it("propaga que la paleta vino del modo local", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(mockResponse({ colors, source: "local" })));
 
-    await expect(generatePalette("prueba")).resolves.toEqual({ colors, source: "local" });
+    await expect(generatePalette("prueba")).resolves.toEqual({
+      colors,
+      source: "local",
+      cached: false,
+    });
+  });
+
+  it("reutiliza la caché local para el mismo prompt", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockResponse({ colors }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const first = await generatePalette("atardecer minimalista");
+    const second = await generatePalette("  Atardecer   minimalista ");
+
+    expect(first.cached).toBe(false);
+    expect(second.cached).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("propaga el mensaje del servidor (rate limit)", async () => {

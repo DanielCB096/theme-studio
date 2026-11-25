@@ -96,23 +96,24 @@ sequenceDiagram
   participant F as Función /api/generate-palette
   participant A as API de Gemini
   U->>C: prompt (máx. 200)
+  C->>C: caché local (24 h)
   C->>F: POST { prompt }
-  F->>F: Zod + rate limit por IP
-  F->>A: messages.create (clave solo en servidor)
-  A-->>F: texto con JSON
-  F->>F: extrae JSON + Zod de colores
-  F-->>C: { colors }
+  F->>F: Zod + rate limit + caché (24 h)
+  F->>A: generateContent (clave solo en servidor)
+  A-->>F: JSON
+  F->>F: Zod de colores
+  F-->>C: { colors, source, cached }
   C->>C: Zod otra vez + corrección AA
   C->>U: propuesta con swatches
 ```
 
 Tres barreras antes de tocar el tema:
 
-1. **Servidor**: prompt validado; la clave vive en `GEMINI_API_KEY` y nunca se serializa al cliente.
-2. **Servidor**: la respuesta del modelo se recorta a su objeto JSON y se valida con Zod; un color mal formado produce 502, no una paleta a medias.
-3. **Cliente**: se valida de nuevo y se corrige el contraste con `ensureAccessibleColors` antes de mostrar «Aplicar».
+1. **Servidor**: prompt validado y rate limit; la clave vive en `GEMINI_API_KEY` y nunca se serializa al cliente.
+2. **Servidor**: la respuesta se valida con Zod. Si un modelo falla o devuelve algo inválido se prueban otros modelos lite; como último recurso se devuelve una paleta local determinista con `source: "local"`, que la UI etiqueta como «Modo local (sin IA)».
+3. **Cliente**: se valida de nuevo con Zod, se corrige el contraste (`ensureAccessibleColors`) y solo se aplica si el usuario pulsa «Aplicar».
 
-Límites: 8 peticiones por IP cada 10 minutos (mapa en memoria, best-effort en serverless), timeout de 45 s en servidor y 50 s en cliente. El modelo se toma de `GEMINI_MODEL` (por defecto `gemini-3.5-flash-lite`) para poder cambiarlo sin tocar c?digo; la respuesta se fuerza con `responseSchema`.
+Límites y caché: 8 peticiones por IP cada 10 minutos (memoria de la instancia), 10 s por intento de modelo y 50 s en cliente. Las paletas reales se cachean 24 h en la función (50 entradas) y en `localStorage` (20); la reserva local no se cachea para poder reintentar la IA. El modelo se toma de `GEMINI_MODEL` (por defecto `gemini-3.5-flash-lite`) y la respuesta se fuerza con `responseSchema`.
 
 ## Variante automática de modo
 

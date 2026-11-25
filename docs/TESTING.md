@@ -35,7 +35,7 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 | 2026-11-25 | 4    | `test:e2e`                           | Pasa: 4 pruebas (chromium)                        |
 | 2026-11-25 | 4    | `verify:rls`                         | Pasa: 9/9 comprobaciones                          |
 | 2026-11-25 | 5    | `test`                               | Pasa: 23 archivos / 128 pruebas                   |
-| 2026-11-25 | 6    | `test`                               | Pasa: 24 archivos / 133 pruebas                   |
+| 2026-11-25 | 6    | `test`                               | Pasa: 24 archivos / 135 pruebas                   |
 | 2026-11-25 | 6    | `test:coverage`                      | Pasa: 93,75 % líneas / 92,07 % ramas              |
 | 2026-11-25 | 6    | `test:e2e`                           | Pasa: 5 pruebas (incluye Pixel 5 emulado)         |
 | 2026-11-25 | 6    | Lighthouse (preview)                 | A11y 100 · Best Practices 100 · SEO 100           |
@@ -85,7 +85,7 @@ Se comprobó dentro del contenedor que el bundle incluía la URL de Supabase en 
 ## Pruebas de IA
 
 - `src/lib/aiPalette.test.ts`: respuesta válida, rate limit, colores mal formados, JSON ilegible, 404, fallo de red y timeout, con `fetch` simulado.
-- `api/generate-palette.test.ts`: método, prompt fuera de rango, claves extra, falta de configuración, JSON con markdown, respuesta inválida, error del proveedor, fallo de red y límite por IP, con `fetch` simulado.
+- `api/generate-palette.test.ts`: método, prompt fuera de rango, claves extra, falta de configuración, JSON con markdown, respuesta inválida, error del proveedor, fallo de red, límite por IP y caché en servidor, con `fetch` simulado.
 - La llamada real al modelo no se ejecuta en las pruebas: requiere clave y consume cuota. Se comprueba a mano con `npm run smoke:ai` (HTTP 200 en ~1,5 s con `gemini-3.5-flash-lite`).
 
 ## Verificación de RLS

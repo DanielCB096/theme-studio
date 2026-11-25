@@ -198,7 +198,8 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 **Pruebas**
 
-- `npm test` — 24 archivos, 133 pruebas.
+- Caché de paletas en dos capas (memoria de la función y `localStorage`, TTL 24 h) para no repetir llamadas ni consumir cuota; la reserva local no se cachea.
+- `npm test` — 24 archivos, 135 pruebas.
 - `npm run test:coverage` — pasa con 93,75 %.
 - `npm run test:e2e` — 5 pruebas, incluida una pasada en Pixel 5 emulado.
 - `docker build` + `docker run` — HTTP 200; con `--secret` el bundle incluye Supabase.

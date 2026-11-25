@@ -69,6 +69,8 @@ Una respuesta inválida no modifica el tema: se muestra el error y tu trabajo si
 
 **Reserva local.** Si el proveedor no responde (el nivel gratuito devuelve 503 con frecuencia), la función prueba otros modelos y, como último recurso, genera una paleta determinista a partir del prompt. La interfaz la marca como «Modo local (sin IA)»: nunca se presenta como generación del modelo. Esa paleta también pasa por la validación y la corrección de contraste.
 
+**Caché en dos capas.** Las paletas reales se guardan 24 h en memoria de la función (50 entradas por instancia) y en `localStorage` del navegador (20 entradas). Repetir el mismo prompt no consume cuota ni vuelve a llamar al modelo; la UI indica cuando la paleta viene de caché. La reserva local no se cachea, para que el siguiente intento pueda volver a usar la IA.
+
 ## Ejecutar en local
 
 Requisitos: Node 20.19+ y npm 10+.
@@ -122,7 +124,7 @@ docker run --rm -p 8080:80 theme-studio
 | Lighthouse · Buenas prácticas     | 100                                                         |
 | Lighthouse · SEO                  | 100                                                         |
 | Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                        |
-| Pruebas                           | 133 unitarias/componentes · 5 E2E (Pixel 5 emulado) · 9 RLS |
+| Pruebas                           | 135 unitarias/componentes · 5 E2E (Pixel 5 emulado) · 9 RLS |
 | Respuesta de la IA                | 2–22 s según el modelo disponible; reserva local si falla   |
 
 ## Pruebas

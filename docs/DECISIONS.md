@@ -284,3 +284,22 @@ Una entrada por decisión, en orden cronológico.
 - La demo es accesible y verificable sin cuenta.
 - Cualquiera puede registrarse (la confirmación de correo está desactivada) y crear sus propios temas; no puede leer los de otros.
 - Si el proyecto se reutiliza con datos reales, hay que reactivar la protección y la confirmación de correo.
+
+## ADR-016 · Caché de paletas en dos capas
+
+**Contexto.** El nivel gratuito de Gemini devuelve 503 con frecuencia y cada reintento consume cuota. Una demo suele repetir prompts parecidos, y no tiene sentido pagar latencia y cuota por el mismo resultado.
+
+**Opciones consideradas.**
+
+1. Sin caché: cada petición llama al proveedor.
+2. Caché distribuida (Upstash/Redis o tabla en Supabase).
+3. Caché en memoria de la función + caché en `localStorage` del navegador.
+
+**Decisión.** Opción 3: 24 h de TTL, 50 entradas por instancia en servidor y 20 por navegador. La clave es el prompt normalizado (minúsculas, espacios colapsados). Solo se cachean paletas reales (`source: "gemini"`); la reserva local no, para permitir reintentar la IA.
+
+**Consecuencias.**
+
+- Repetir un prompt es instantáneo y no consume cuota.
+- La caché de servidor no es global entre instancias serverless ni sobrevive a un arranque en frío; la del navegador sí persiste para ese usuario.
+- Los datos cacheados se validan con Zod al leerlos; una entrada corrupta se ignora.
+- Si se quiere una caché compartida y persistente, habría que añadir un almacén externo (ADR futuro).

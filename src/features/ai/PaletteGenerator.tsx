@@ -17,7 +17,7 @@ export function PaletteGenerator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<
-    (PaletteCorrection & { source: "gemini" | "local" }) | null
+    (PaletteCorrection & { source: "gemini" | "local"; cached?: boolean }) | null
   >(null);
   const [applied, setApplied] = useState(false);
 
@@ -37,7 +37,7 @@ export function PaletteGenerator() {
     try {
       const result = await generatePalette(trimmed);
       const correction = ensureAccessibleColors(result.colors);
-      setPreview({ ...correction, source: result.source });
+      setPreview({ ...correction, source: result.source, cached: result.cached });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "No se pudo generar la paleta.");
     } finally {
@@ -94,6 +94,12 @@ export function PaletteGenerator() {
             </AlertDescription>
           </div>
         </Alert>
+      ) : null}
+
+      {preview?.cached ? (
+        <p className="text-xs text-muted">
+          Paleta recuperada de la caché local. No se ha llamado al modelo.
+        </p>
       ) : null}
 
       {preview ? (

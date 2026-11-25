@@ -97,6 +97,40 @@ const RESPONSE_SCHEMA = {
 } as const;
 const buckets = new Map<string, { count: number; resetAt: number }>();
 
+const PALETTE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const PALETTE_CACHE_MAX = 50;
+type PaletteColors = z.infer<typeof colorsSchema>;
+const paletteCache = new Map<string, { colors: PaletteColors; expiresAt: number }>();
+
+function normalizePrompt(prompt: string): string {
+  return prompt.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function readCachedPalette(prompt: string): PaletteColors | null {
+  const key = normalizePrompt(prompt);
+  const entry = paletteCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    paletteCache.delete(key);
+    return null;
+  }
+  return entry.colors;
+}
+
+function writeCachedPalette(prompt: string, colors: PaletteColors): void {
+  const key = normalizePrompt(prompt);
+  if (paletteCache.size >= PALETTE_CACHE_MAX) {
+    const oldest = paletteCache.keys().next().value;
+    if (oldest !== undefined) paletteCache.delete(oldest);
+  }
+  paletteCache.set(key, { colors, expiresAt: Date.now() + PALETTE_CACHE_TTL_MS });
+}
+
+/** Solo para pruebas: la caché vive en memoria de la instancia. */
+export function clearPaletteCache(): void {
+  paletteCache.clear();
+}
+
 function isRateLimited(key: string): { limited: boolean; retryAfterSeconds: number } {
   const now = Date.now();
   const bucket = buckets.get(key);
@@ -212,6 +246,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const apiKey = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+
+  const cached = readCachedPalette(parsed.data.prompt);
+  if (cached) {
+    res.status(200).json({ colors: cached, source: "gemini", cached: true });
+    return;
+  }
+
   if (!apiKey) {
     res.status(500).json({
       error: "La IA no está configurada en el servidor (falta GEMINI_API_KEY).",
@@ -269,7 +310,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       }
 
       const colors = colorsSchema.parse(extractJson(text));
-      res.status(200).json({ colors, source: "gemini" });
+      writeCachedPalette(parsed.data.prompt, colors);
+      res.status(200).json({ colors, source: "gemini", cached: false });
       return;
     } catch (error) {
       console.error(
@@ -283,5 +325,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   // Ningún modelo respondió: paleta local determinista, claramente etiquetada.
-  res.status(200).json({ colors: localPalette(parsed.data.prompt), source: "local" });
+  res
+    .status(200)
+    .json({ colors: localPalette(parsed.data.prompt), source: "local", cached: false });
 }

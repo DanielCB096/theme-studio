@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import handler from "./generate-palette";
+import handler, { clearPaletteCache } from "./generate-palette";
 
 const colors = {
   primary: "#2563eb",
@@ -73,6 +73,7 @@ const originalKey = process.env.GEMINI_API_KEY;
 const originalModel = process.env.GEMINI_MODEL;
 
 beforeEach(() => {
+  clearPaletteCache();
   vi.spyOn(console, "error").mockImplementation(() => {});
   process.env.GEMINI_API_KEY = "gemini-test-key";
   delete process.env.GEMINI_MODEL;
@@ -123,7 +124,7 @@ describe("POST /api/generate-palette", () => {
     await handler(createRequest({ prompt: "bosque sereno" }, "10.0.0.14"), res);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual({ colors, source: "gemini" });
+    expect(res.body).toEqual({ colors, source: "gemini", cached: false });
 
     const [input, init] = fetchMock.mock.calls[0] ?? [];
     const calledUrl =
@@ -149,6 +150,20 @@ describe("POST /api/generate-palette", () => {
     expect(calledUrl).toContain("gemini-3.5-flash:generateContent");
   });
 
+  it("reutiliza la caché del servidor para el mismo prompt", async () => {
+    const fetchMock = vi.mocked(fetch).mockResolvedValue(geminiResponse(JSON.stringify(colors)));
+
+    const first = createResponse();
+    await handler(createRequest({ prompt: "costa azul" }, "10.0.0.30"), first);
+
+    const second = createResponse();
+    await handler(createRequest({ prompt: "  COSTA   azul " }, "10.0.0.31"), second);
+
+    expect(first.body).toEqual({ colors, source: "gemini", cached: false });
+    expect(second.body).toEqual({ colors, source: "gemini", cached: true });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("prueba el siguiente modelo si el primero está saturado", async () => {
     const fetchMock = vi
       .mocked(fetch)
@@ -159,7 +174,7 @@ describe("POST /api/generate-palette", () => {
     await handler(createRequest({ prompt: "bosque sereno" }, "10.0.0.20"), res);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual({ colors, source: "gemini" });
+    expect(res.body).toEqual({ colors, source: "gemini", cached: false });
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 

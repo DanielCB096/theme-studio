@@ -32,3 +32,4 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Docker verificado con secretos de BuildKit; `robots.txt` y Lighthouse 100/100/100.
 - Despliegue en producción en Vercel y script `check:deploy` de verificación.
 - Cadena de modelos de Gemini y reserva local etiquetada para mantener la demo operativa ante 503.
+- Caché de paletas en servidor y navegador (TTL 24 h) para evitar llamadas repetidas.
