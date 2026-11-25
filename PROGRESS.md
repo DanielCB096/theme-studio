@@ -237,9 +237,21 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Navbar configurable en los cuatro lados (arriba, abajo, izquierda, derecha); en móvil, las laterales se convierten en barra superior.
 - Corrección: la plantilla comparte defaults clonados; editar una página ya no muta los valores por defecto del registro.
 - Persistencia: migración `002_pages.sql`, repositorio, rutas `/pages`, `/builder` y `/p/:slug`, y publicación.
-- 30 pruebas nuevas (esquema, URLs, operaciones, renderer, repositorio y store); total 165 en verde.
+- Layout v1 por bloque: ancho, alineación, dirección, invertir orden, columnas y espaciado; logo por URL en la navbar. Defaults por bloque para no alterar páginas antiguas.
+- **179 pruebas** unitarias/componentes en verde, 6 E2E y RLS 14/14.
 - Migración `002_pages.sql` aplicada. RLS verificada con dos usuarios: **14/14** (9 de temas + 5 de páginas).
 - E2E de páginas: plantilla → editar hero → guardar → publicar → abrir `/p/:slug` anónimo en 375/768/1280. **6/6 E2E** en verde.
 - Preview desplegada de la rama: **https://theme-studio-git-feat-page-builder-queserabernal.vercel.app**
 - Revisión de la persona responsable: navbar con ubicación configurable (arriba, abajo, izquierda y derecha), a altura completa y sticky en laterales; en móvil se convierte en barra superior. Pendiente de definir el sistema de layout interno por bloque.
 - Criterio de parada: no empezar el Hito 2 hasta revisión humana del Hito 1.
+
+**Revisión — Layout v1 y logo por URL (2026-11-25)**
+
+- `PageBlock.layout` con `width`, `align`, `direction`, `reverse`, `columns` y `gap`; schema con defaults retrocompatibles para páginas guardadas sin layout.
+- `PageRenderer` aplica el ancho con clases estáticas y pasa `layout` a todos los renderers; hero, features, pricing, form, textImage, cta, footer y tabla usan los campos que tienen sentido.
+- Inspector común `LayoutInspector` encima del inspector de props, con capacidades declaradas por bloque en el registro (columnas 1–3 en rejillas y 1–2 en formulario; invertir orden solo en fila).
+- Navbar con logo por URL, texto alternativo y opción de mostrar el nombre; esquema rechaza `javascript:` y `data:`. **Sin subida de archivos ni Storage.**
+- Pruebas añadidas: defaults de layout y logo en páginas antiguas, layout inválido, logo peligroso, `updateLayout` + dirty, aislamiento entre páginas, ancho en `PageRenderer`, logo con `alt` y marca textual.
+- `npm run lint` — pasa. `npm run typecheck` — pasa. `npm test` — 31 archivos, 178 pruebas en verde.
+- No se ejecutaron Playwright ni despliegues; sin commit ni push.
+- Limitaciones: layout sin fondo/borde/padding por bloque; imágenes solo por URL (sin Storage); el ancho afecta al contenedor completo, incluido el fondo del bloque.

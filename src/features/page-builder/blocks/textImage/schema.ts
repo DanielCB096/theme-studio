@@ -15,6 +15,7 @@ export const textImageSchema = blockBase(
       imagePosition: z.enum(["left", "right"]),
     })
     .strict(),
+  { direction: "row" },
 );
 
 export const textImageDefaults: TextImageProps = {

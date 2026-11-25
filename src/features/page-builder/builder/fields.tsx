@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 export function TextField({
@@ -63,7 +64,7 @@ export function TextAreaField({
   );
 }
 
-export function SelectField<T extends string>({
+export function SelectField<T extends string | number>({
   label,
   value,
   options,
@@ -80,18 +81,41 @@ export function SelectField<T extends string>({
       <Label htmlFor={id}>{label}</Label>
       <Select
         id={id}
-        value={value}
+        value={String(value)}
         onChange={(event) => {
-          const next = options.find((option) => option.value === event.target.value);
+          const next = options.find((option) => String(option.value) === event.target.value);
           if (next) onChange(next.value);
         }}
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={String(option.value)} value={String(option.value)}>
             {option.label}
           </option>
         ))}
       </Select>
+    </div>
+  );
+}
+
+export function ToggleField({
+  label,
+  description,
+  value,
+  onChange,
+}: {
+  label: string;
+  description?: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  const id = `field-${label.toLowerCase().replace(/\W+/g, "-")}`;
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="space-y-0.5">
+        <Label htmlFor={id}>{label}</Label>
+        {description ? <p className="text-xs text-muted">{description}</p> : null}
+      </div>
+      <Switch id={id} checked={value} onCheckedChange={onChange} />
     </div>
   );
 }

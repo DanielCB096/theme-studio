@@ -22,6 +22,7 @@ import {
   createPageBlock,
   renderBlockInspector,
 } from "@/features/page-builder/blocks/registry";
+import { LayoutInspector } from "@/features/page-builder/builder/LayoutInspector";
 import { blocksInOrder } from "@/features/page-builder/pageOps";
 import { PageRenderer } from "@/features/page-builder/PageRenderer";
 import {
@@ -53,6 +54,7 @@ export default function PageBuilderPage() {
   const remove = usePageBuilderStore((state) => state.remove);
   const move = usePageBuilderStore((state) => state.move);
   const updateProps = usePageBuilderStore((state) => state.updateProps);
+  const updateLayout = usePageBuilderStore((state) => state.updateLayout);
   const rename = usePageBuilderStore((state) => state.rename);
   const markSaved = usePageBuilderStore((state) => state.markSaved);
   const clear = usePageBuilderStore((state) => state.clear);
@@ -326,7 +328,15 @@ export default function PageBuilderPage() {
               {selectedBlock ? <Badge variant="neutral">{selectedBlock.type}</Badge> : null}
             </div>
             {selectedBlock ? (
-              renderBlockInspector(selectedBlock, (props) => updateProps(selectedBlock.id, props))
+              <>
+                <LayoutInspector
+                  block={selectedBlock}
+                  onChange={(layout) => updateLayout(selectedBlock.id, layout)}
+                />
+                {renderBlockInspector(selectedBlock, (props) =>
+                  updateProps(selectedBlock.id, props),
+                )}
+              </>
             ) : (
               <p className="text-sm text-muted">
                 Selecciona un bloque en la estructura o con su botón «Seleccionar».

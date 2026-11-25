@@ -1,5 +1,6 @@
 import { TextAreaField, TextField } from "@/features/page-builder/builder/fields";
 import type { BlockDefinition } from "@/features/page-builder/blocks/definition";
+import { layoutGapClass } from "@/features/page-builder/blocks/layout";
 import { tableDefaults, tableSchema } from "@/features/page-builder/blocks/table/schema";
 import {
   Table,
@@ -9,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 export const tableBlock: BlockDefinition<"table"> = {
   type: "table",
@@ -16,9 +18,17 @@ export const tableBlock: BlockDefinition<"table"> = {
   description: "Comparativa estática de filas y columnas.",
   schema: tableSchema,
   defaultProps: tableDefaults,
-  Renderer: ({ props }) => (
+  layoutCapabilities: {
+    width: true,
+    align: false,
+    direction: false,
+    reverse: false,
+    columns: false,
+    gap: true,
+  },
+  Renderer: ({ props, layout }) => (
     <section className="border-b bg-surface px-density py-[calc(var(--space-unit)*10)]">
-      <div className="mx-auto max-w-4xl space-y-density">
+      <div className={cn("mx-auto flex max-w-4xl flex-col", layoutGapClass[layout.gap])}>
         <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
         <Table>
           <TableHeader>

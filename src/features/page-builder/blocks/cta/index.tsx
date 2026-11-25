@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { TextAreaField, TextField } from "@/features/page-builder/builder/fields";
 import type { BlockDefinition } from "@/features/page-builder/blocks/definition";
+import {
+  layoutGapClass,
+  layoutItemsAlignClass,
+  layoutTextAlignClass,
+} from "@/features/page-builder/blocks/layout";
 import { ctaDefaults, ctaSchema } from "@/features/page-builder/blocks/cta/schema";
+import { cn } from "@/lib/utils";
 
 export const ctaBlock: BlockDefinition<"cta"> = {
   type: "cta",
@@ -9,17 +15,42 @@ export const ctaBlock: BlockDefinition<"cta"> = {
   description: "Bloque de cierre con botón.",
   schema: ctaSchema,
   defaultProps: ctaDefaults,
-  Renderer: ({ props }) => (
-    <section className="border-b bg-surface px-density py-[calc(var(--space-unit)*10)]">
-      <div className="mx-auto flex max-w-2xl flex-col items-center gap-density text-center">
-        <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
-        {props.description ? <p className="text-sm text-muted">{props.description}</p> : null}
-        <Button asChild>
-          <a href={props.buttonHref}>{props.buttonLabel}</a>
-        </Button>
-      </div>
-    </section>
-  ),
+  layoutCapabilities: {
+    width: true,
+    align: true,
+    direction: true,
+    reverse: true,
+    columns: false,
+    gap: true,
+  },
+  Renderer: ({ props, layout }) => {
+    const row = layout.direction === "row";
+
+    return (
+      <section className="border-b bg-surface px-density py-[calc(var(--space-unit)*10)]">
+        <div
+          className={cn(
+            "mx-auto flex max-w-2xl flex-col",
+            layoutGapClass[layout.gap],
+            layoutTextAlignClass[layout.align],
+            row
+              ? "@md:flex-row @md:items-center @md:justify-between"
+              : layoutItemsAlignClass[layout.align],
+          )}
+        >
+          <div className={cn("space-y-1", row && layout.reverse && "@md:order-2")}>
+            <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
+            {props.description ? <p className="text-sm text-muted">{props.description}</p> : null}
+          </div>
+          <div className={cn(row ? "shrink-0" : "", row && layout.reverse && "@md:order-1")}>
+            <Button asChild>
+              <a href={props.buttonHref}>{props.buttonLabel}</a>
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  },
   Inspector: ({ props, onChange }) => (
     <div className="space-y-density">
       <TextField

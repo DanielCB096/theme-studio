@@ -5,9 +5,10 @@ import {
   moveBlock,
   removeBlock,
   renameDocument,
+  updateBlockLayout,
   updateBlockProps,
 } from "@/features/page-builder/pageOps";
-import type { PageBlock, PageDocument } from "@/types/page";
+import type { BlockLayout, PageBlock, PageDocument } from "@/types/page";
 
 interface BuilderState {
   page: PageDocument | null;
@@ -21,6 +22,7 @@ interface BuilderState {
   remove: (blockId: string) => void;
   move: (blockId: string, direction: -1 | 1) => void;
   updateProps: (blockId: string, props: PageBlock["props"]) => void;
+  updateLayout: (blockId: string, layout: BlockLayout) => void;
   rename: (name: string) => void;
   markSaved: (saved: { id: string; slug: string }) => void;
   clear: () => void;
@@ -70,6 +72,12 @@ export const usePageBuilderStore = create<BuilderState>((set, get) => ({
     const { page } = get();
     if (!page) return;
     set({ page: updateBlockProps(page, blockId, props), dirty: true });
+  },
+
+  updateLayout: (blockId, layout) => {
+    const { page } = get();
+    if (!page) return;
+    set({ page: updateBlockLayout(page, blockId, layout), dirty: true });
   },
 
   rename: (name) => {

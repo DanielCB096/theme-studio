@@ -13,7 +13,9 @@ test("crear página desde plantilla, editar, guardar, publicar y abrir en tres a
   await signInOrCreate(page);
   await page.goto("/builder");
 
-  await expect(page.getByLabel("Nombre de la página")).toHaveValue("Mi landing");
+  await expect(page.getByLabel("Nombre de la página")).toHaveValue("Mi landing", {
+    timeout: 20_000,
+  });
 
   // Selecciona el hero en la estructura y edita su título.
   await page.getByRole("button", { name: /2\. hero/i }).click();

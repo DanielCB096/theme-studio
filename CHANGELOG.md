@@ -15,6 +15,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Navbar configurable en cuatro ubicaciones (arriba, abajo, izquierda, derecha), adaptándose a barra superior en móvil y a altura completa/sticky en laterales.
 - Migración `002_pages.sql` con RLS, repositorio, rutas `/pages`, `/builder` y `/p/:slug`.
 - Corrección de defaults clonados por página.
+- Layout v1 por bloque (ancho, alineación, dirección, orden inverso, columnas y espaciado) con defaults retrocompatibles e inspector común.
+- Navbar con logo por URL, texto alternativo y opción de mostrar el nombre de marca. Sin subida de archivos ni Storage.
+- Pruebas de layout y logo: defaults en páginas antiguas, validación Zod, `updateLayout`, renderer y store.
 
 ### Añadido
 

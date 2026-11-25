@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { ListField, SelectField, TextField } from "@/features/page-builder/builder/fields";
+import {
+  ListField,
+  SelectField,
+  TextField,
+  ToggleField,
+} from "@/features/page-builder/builder/fields";
 import type { BlockDefinition } from "@/features/page-builder/blocks/definition";
+import { layoutGapClass } from "@/features/page-builder/blocks/layout";
 import { navbarDefaults, navbarSchema } from "@/features/page-builder/blocks/navbar/schema";
 import { cn } from "@/lib/utils";
 
@@ -17,17 +23,28 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
   description: "Barra horizontal o columna lateral, en cualquiera de los cuatro lados.",
   schema: navbarSchema,
   defaultProps: navbarDefaults,
-  Renderer: ({ props }) => {
+  layoutCapabilities: {
+    width: true,
+    align: false,
+    direction: false,
+    reverse: false,
+    columns: false,
+    gap: true,
+  },
+  Renderer: ({ props, layout }) => {
     const vertical = props.placement === "left" || props.placement === "right";
+    const showLogo = props.logoUrl.length > 0;
+    const showBrand = props.showBrandText || !showLogo;
 
     return (
       <header
         data-nav-placement={props.placement}
         className={cn(
           "bg-surface text-fg",
+          layoutGapClass[layout.gap],
           vertical
-            ? "flex flex-wrap items-center gap-density border-b p-density @2xl:sticky @2xl:top-0 @2xl:h-[var(--page-height,100dvh)] @2xl:w-56 @2xl:flex-col @2xl:items-stretch @2xl:border-b-0"
-            : "px-density py-3",
+            ? "flex flex-wrap items-center @2xl:sticky @2xl:top-0 @2xl:h-[var(--page-height,100dvh)] @2xl:w-56 @2xl:flex-col @2xl:items-stretch @2xl:border-b-0"
+            : "flex flex-wrap items-center px-density py-3",
           props.placement === "top" && "border-b",
           props.placement === "bottom" && "border-t",
           props.placement === "left" && "@2xl:border-r",
@@ -36,11 +53,18 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
       >
         <span
           className={cn(
-            "text-base font-semibold tracking-tight",
+            "flex items-center gap-2 text-base font-semibold tracking-tight",
             vertical ? "@2xl:mr-0" : "mr-auto",
           )}
         >
-          {props.brand}
+          {showLogo ? (
+            <img
+              src={props.logoUrl}
+              alt={props.logoAlt}
+              className="h-[calc(var(--space-unit)*7)] w-auto max-w-[140px] object-contain"
+            />
+          ) : null}
+          {showBrand ? <span>{props.brand}</span> : null}
         </span>
 
         <nav
@@ -90,6 +114,27 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
         ]}
         onChange={(placement) => onChange({ ...props, placement })}
       />
+      <TextField
+        label="URL del logo"
+        value={props.logoUrl}
+        placeholder="https://… o /ruta"
+        onChange={(logoUrl) => onChange({ ...props, logoUrl })}
+      />
+      <TextField
+        label="Texto alternativo del logo"
+        value={props.logoAlt}
+        maxLength={120}
+        onChange={(logoAlt) => onChange({ ...props, logoAlt })}
+      />
+      <ToggleField
+        label="Mostrar nombre de marca"
+        description="Si hay logo, acompaña a la imagen; sin logo, siempre se muestra el nombre."
+        value={props.showBrandText}
+        onChange={(showBrandText) => onChange({ ...props, showBrandText })}
+      />
+      <p className="text-xs text-muted">
+        El logo se carga desde una URL pública. Esta versión no sube archivos.
+      </p>
       <TextField
         label="Etiqueta CTA"
         value={props.ctaLabel}

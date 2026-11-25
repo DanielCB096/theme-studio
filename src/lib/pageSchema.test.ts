@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_THEME } from "@/lib/defaultThemes";
 import { parsePageDocument } from "@/lib/pageSchema";
 import { createLandingDocument } from "@/features/page-builder/templates/landing";
-import type { PageDocument } from "@/types/page";
+import { DEFAULT_BLOCK_LAYOUT, type PageDocument } from "@/types/page";
 
 function landing(): PageDocument {
   return createLandingDocument(DEFAULT_THEME, "Landing de prueba");
@@ -86,6 +86,65 @@ describe("pageDocumentSchema", () => {
     }
   });
 
+  it("aplica el layout por defecto en páginas antiguas sin layout", () => {
+    const page = landing();
+    for (const block of Object.values(page.blocks)) {
+      delete (block as unknown as { layout?: unknown }).layout;
+    }
+
+    const result = parsePageDocument(page);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const parsedHero = result.page.blocks[result.page.rootIds[1] ?? ""];
+      expect(parsedHero?.layout).toEqual(DEFAULT_BLOCK_LAYOUT);
+    }
+  });
+
+  it("rechaza un layout con valores inválidos", () => {
+    const page = landing();
+    const hero = page.blocks[page.rootIds[1] ?? ""];
+    if (!hero) throw new Error("Falta el hero");
+    (hero as unknown as { layout: { width: string } }).layout.width = "gigante";
+
+    expect(parsePageDocument(page).ok).toBe(false);
+  });
+
+  it("aplica defaults de logo en naves antiguas", () => {
+    const page = landing();
+    const navbar = page.blocks[page.rootIds[0] ?? ""];
+    if (navbar?.type !== "navbar") throw new Error("Falta la navbar");
+    const legacyProps = navbar.props as {
+      logoUrl?: string;
+      logoAlt?: string;
+      showBrandText?: boolean;
+    };
+    delete legacyProps.logoUrl;
+    delete legacyProps.logoAlt;
+    delete legacyProps.showBrandText;
+
+    const result = parsePageDocument(page);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const parsedNavbar = result.page.blocks[result.page.rootIds[0] ?? ""];
+      expect(parsedNavbar?.type === "navbar" ? parsedNavbar.props : null).toMatchObject({
+        logoUrl: "",
+        logoAlt: "",
+        showBrandText: true,
+      });
+    }
+  });
+
+  it("rechaza un logo con protocolo peligroso", () => {
+    const page = landing();
+    const navbar = page.blocks[page.rootIds[0] ?? ""];
+    if (navbar?.type !== "navbar") throw new Error("Falta la navbar");
+    navbar.props.logoUrl = "javascript:alert(1)";
+
+    const result = parsePageDocument(page);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.join(" ")).toMatch(/URL no permitida/i);
+  });
+
   it("rechaza más de una navbar", () => {
     const page = landing();
     const navbar = page.blocks[page.rootIds[0] ?? ""];
@@ -95,6 +154,23 @@ describe("pageDocumentSchema", () => {
     const result = parsePageDocument(page);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.errors.join(" ")).toMatch(/una navbar/i);
+  });
+
+  it("aplica defaults por bloque a páginas antiguas", () => {
+    const page = landing();
+    for (const block of Object.values(page.blocks)) {
+      delete (block as { layout?: unknown }).layout;
+    }
+
+    const result = parsePageDocument(page);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const parsed = Object.values(result.page.blocks);
+    const features = parsed.find((block) => block.type === "features");
+    const textImage = parsed.find((block) => block.type === "textImage");
+    expect(features?.layout).toMatchObject({ width: "full", columns: 3 });
+    expect(textImage?.layout).toMatchObject({ direction: "row" });
   });
 
   it("rechaza un tema inválido dentro de la página", () => {

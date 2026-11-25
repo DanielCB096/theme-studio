@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { layoutWidthClass } from "@/features/page-builder/blocks/layout";
 import { renderBlockContent } from "@/features/page-builder/blocks/registry";
 import { blocksInOrder } from "@/features/page-builder/pageOps";
 import { ThemeScope } from "@/features/preview/ThemeScope";
@@ -27,6 +28,7 @@ function BlockShell({ block, position, selected, onSelect, children, className }
       data-block-id={block.id}
       className={cn(
         "relative",
+        layoutWidthClass[block.layout.width],
         selected && "outline outline-2 -outline-offset-2 outline-primary",
         className,
       )}

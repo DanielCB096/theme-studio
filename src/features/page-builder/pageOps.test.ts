@@ -8,15 +8,17 @@ import {
   moveBlock,
   removeBlock,
   renameDocument,
+  updateBlockLayout,
   updateBlockProps,
 } from "@/features/page-builder/pageOps";
-import { MAX_BLOCKS_PER_PAGE, type PageBlock } from "@/types/page";
+import { DEFAULT_BLOCK_LAYOUT, MAX_BLOCKS_PER_PAGE, type PageBlock } from "@/types/page";
 
 function newHero(id = "hero-2"): PageBlock {
   return {
     id,
     type: "hero",
     childIds: [],
+    layout: { ...DEFAULT_BLOCK_LAYOUT },
     props: {
       eyebrow: "",
       title: "Nueva sección",
@@ -67,6 +69,25 @@ describe("pageOps", () => {
     });
     const hero = updated.blocks[heroId];
     expect(hero?.props).toMatchObject({ title: "Nuevo título", align: "center" });
+  });
+
+  it("actualiza el layout sin tocar el resto de bloques", () => {
+    const page = createLandingDocument(DEFAULT_THEME);
+    const heroId = page.rootIds[1] ?? "";
+    const hero = page.blocks[heroId];
+    if (hero?.type !== "hero") throw new Error("La plantilla debe tener un hero en la posición 2");
+
+    const updated = updateBlockLayout(page, heroId, {
+      ...hero.layout,
+      width: "compact",
+      columns: 2,
+    });
+
+    expect(updated.blocks[heroId]?.layout).toMatchObject({ width: "compact", columns: 2 });
+    expect(updated.blocks[page.rootIds[0] ?? ""]?.layout).toEqual(
+      page.blocks[page.rootIds[0] ?? ""]?.layout,
+    );
+    expect(updateBlockLayout(page, "no-existe", hero.layout)).toBe(page);
   });
 
   it("renombra con límite y sin aceptar vacío", () => {

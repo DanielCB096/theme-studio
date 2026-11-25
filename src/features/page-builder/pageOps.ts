@@ -1,4 +1,9 @@
-import { MAX_BLOCKS_PER_PAGE, type PageBlock, type PageDocument } from "@/types/page";
+import {
+  MAX_BLOCKS_PER_PAGE,
+  type BlockLayout,
+  type PageBlock,
+  type PageDocument,
+} from "@/types/page";
 
 export function blocksInOrder(page: PageDocument): PageBlock[] {
   return page.rootIds
@@ -49,6 +54,19 @@ export function updateBlockProps(
   return {
     ...page,
     blocks: { ...page.blocks, [blockId]: { ...block, props } as PageBlock },
+  };
+}
+
+export function updateBlockLayout(
+  page: PageDocument,
+  blockId: string,
+  layout: BlockLayout,
+): PageDocument {
+  const block = page.blocks[blockId];
+  if (!block) return page;
+  return {
+    ...page,
+    blocks: { ...page.blocks, [blockId]: { ...block, layout } },
   };
 }
 

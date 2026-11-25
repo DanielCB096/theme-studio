@@ -2,6 +2,7 @@ import { Image as ImageIcon } from "lucide-react";
 
 import { SelectField, TextAreaField, TextField } from "@/features/page-builder/builder/fields";
 import type { BlockDefinition } from "@/features/page-builder/blocks/definition";
+import { layoutGapClass, layoutTextAlignClass } from "@/features/page-builder/blocks/layout";
 import {
   textImageDefaults,
   textImageSchema,
@@ -14,31 +15,58 @@ export const textImageBlock: BlockDefinition<"textImage"> = {
   description: "Dos columnas con texto e imagen opcional.",
   schema: textImageSchema,
   defaultProps: textImageDefaults,
-  Renderer: ({ props }) => (
-    <section className="border-b bg-background px-density py-[calc(var(--space-unit)*10)]">
-      <div className="mx-auto grid max-w-4xl grid-cols-1 items-center gap-density @md:grid-cols-2">
-        <div className={cn("space-y-2", props.imagePosition === "left" ? "@md:order-2" : "")}>
-          <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
-          <p className="text-sm text-muted">{props.body}</p>
-        </div>
-        {props.imageUrl ? (
-          <img
-            src={props.imageUrl}
-            alt={props.imageAlt}
-            className="aspect-video w-full rounded-lg border object-cover"
-            loading="lazy"
-          />
-        ) : (
+  layoutCapabilities: {
+    width: true,
+    align: true,
+    direction: true,
+    reverse: true,
+    columns: false,
+    gap: true,
+  },
+  Renderer: ({ props, layout }) => {
+    const row = layout.direction === "row";
+    const imageFirst = row ? (props.imagePosition === "left") !== layout.reverse : layout.reverse;
+
+    return (
+      <section className="border-b bg-background px-density py-[calc(var(--space-unit)*10)]">
+        <div
+          className={cn(
+            "mx-auto grid max-w-4xl grid-cols-1",
+            layoutGapClass[layout.gap],
+            row && "@md:grid-cols-2 @md:items-center",
+          )}
+        >
           <div
-            aria-hidden="true"
-            className="grid aspect-video w-full place-items-center rounded-lg border bg-surface text-muted"
+            className={cn(
+              "space-y-2",
+              layoutTextAlignClass[layout.align],
+              imageFirst ? "order-2" : "order-1",
+            )}
           >
-            <ImageIcon aria-hidden="true" className="h-8 w-8" />
+            <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
+            <p className="text-sm text-muted">{props.body}</p>
           </div>
-        )}
-      </div>
-    </section>
-  ),
+          <div className={imageFirst ? "order-1" : "order-2"}>
+            {props.imageUrl ? (
+              <img
+                src={props.imageUrl}
+                alt={props.imageAlt}
+                className="aspect-video w-full rounded-lg border object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                aria-hidden="true"
+                className="grid aspect-video w-full place-items-center rounded-lg border bg-surface text-muted"
+              >
+                <ImageIcon aria-hidden="true" className="h-8 w-8" />
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  },
   Inspector: ({ props, onChange }) => (
     <div className="space-y-density">
       <TextField

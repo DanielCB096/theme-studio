@@ -60,6 +60,48 @@ describe("pageBuilderStore", () => {
     expect(usePageBuilderStore.getState().page?.name).toBe("Nueva landing");
   });
 
+  it("actualiza el layout y marca el documento sucio", () => {
+    const page = createLandingDocument(DEFAULT_THEME);
+    usePageBuilderStore.getState().load(page);
+    const heroId = page.rootIds[1] ?? "";
+    const hero = page.blocks[heroId];
+    if (hero?.type !== "hero") throw new Error("La plantilla debe tener un hero en la posición 2");
+
+    usePageBuilderStore.getState().updateLayout(heroId, {
+      ...hero.layout,
+      width: "compact",
+      columns: 2,
+    });
+
+    const state = usePageBuilderStore.getState();
+    expect(state.page?.blocks[heroId]?.layout).toMatchObject({
+      width: "compact",
+      columns: 2,
+    });
+    expect(state.dirty).toBe(true);
+  });
+
+  it("clona los defaults de layout entre páginas y bloques nuevos", () => {
+    const first = createPageBlock("cta");
+    const second = createPageBlock("cta");
+    first.layout.width = "compact";
+
+    expect(second.layout.width).toBe("full");
+
+    const pageA = createLandingDocument(DEFAULT_THEME);
+    const pageB = createLandingDocument(DEFAULT_THEME);
+    usePageBuilderStore.getState().load(pageA);
+    const heroA = pageA.rootIds[1] ?? "";
+    const heroB = pageB.rootIds[1] ?? "";
+    const heroBlock = pageA.blocks[heroA];
+    if (!heroBlock) throw new Error("Falta el hero");
+
+    usePageBuilderStore.getState().updateLayout(heroA, { ...heroBlock.layout, width: "compact" });
+
+    expect(pageB.blocks[heroB]?.layout.width).toBe("full");
+    expect(usePageBuilderStore.getState().page?.blocks[heroA]?.layout.width).toBe("compact");
+  });
+
   it("guarda metadatos sin marcar sucio", () => {
     usePageBuilderStore.getState().load(createLandingDocument(DEFAULT_THEME));
     usePageBuilderStore.getState().markSaved({ id: "p-1", slug: "mi-pagina" });

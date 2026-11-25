@@ -16,6 +16,7 @@ export const featuresSchema = blockBase(
         .max(6),
     })
     .strict(),
+  { columns: 3 },
 );
 
 export const featuresDefaults: FeaturesProps = {

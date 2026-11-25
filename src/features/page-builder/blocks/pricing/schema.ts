@@ -27,6 +27,7 @@ export const pricingSchema = blockBase(
         .max(3),
     })
     .strict(),
+  { columns: 3 },
 );
 
 export const pricingDefaults: PricingProps = {

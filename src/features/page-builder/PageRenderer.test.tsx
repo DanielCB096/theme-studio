@@ -48,6 +48,40 @@ describe("PageRenderer", () => {
     expect(screen.getByRole("heading", { level: 1, name: /tu producto/i })).toBeInTheDocument();
   });
 
+  it("aplica el ancho del layout al contenedor del bloque", () => {
+    const compactPage = structuredClone(page);
+    const heroId = compactPage.rootIds[1] ?? "";
+    const hero = compactPage.blocks[heroId];
+    if (!hero) throw new Error("Falta el hero");
+    hero.layout = { ...hero.layout, width: "compact" };
+
+    const { container } = render(<PageRenderer page={compactPage} />);
+    const shell = container.querySelector(`[data-block-id="${heroId}"]`);
+
+    expect(shell?.className).toContain("max-w-2xl");
+  });
+
+  it("muestra el logo por URL con su texto alternativo", () => {
+    const pageWithLogo = structuredClone(page);
+    const navbar = pageWithLogo.blocks[pageWithLogo.rootIds[0] ?? ""];
+    if (navbar?.type !== "navbar") throw new Error("Falta la navbar");
+    navbar.props.logoUrl = "https://example.com/logo.png";
+    navbar.props.logoAlt = "Logotipo de Nébula";
+
+    render(<PageRenderer page={pageWithLogo} />);
+
+    const logo = screen.getByRole("img", { name: "Logotipo de Nébula" });
+    expect(logo).toHaveAttribute("src", "https://example.com/logo.png");
+  });
+
+  it("muestra la marca textual cuando no hay logo", () => {
+    const { container } = render(<PageRenderer page={page} />);
+    const header = container.querySelector("header");
+
+    expect(header?.querySelector("img")).toBeNull();
+    expect(header).toHaveTextContent("Nébula");
+  });
+
   it("muestra un estado vacío sin bloques", () => {
     render(<PageRenderer page={{ ...page, rootIds: [], blocks: {} }} />);
     expect(screen.getByText(/no tiene bloques/i)).toBeInTheDocument();

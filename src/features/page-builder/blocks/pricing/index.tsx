@@ -3,7 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ListField, TextField } from "@/features/page-builder/builder/fields";
 import type { BlockDefinition } from "@/features/page-builder/blocks/definition";
+import {
+  layoutColumnsClass,
+  layoutGapClass,
+  layoutTextAlignClass,
+} from "@/features/page-builder/blocks/layout";
 import { pricingDefaults, pricingSchema } from "@/features/page-builder/blocks/pricing/schema";
+import { cn } from "@/lib/utils";
 
 export const pricingBlock: BlockDefinition<"pricing"> = {
   type: "pricing",
@@ -11,14 +17,23 @@ export const pricingBlock: BlockDefinition<"pricing"> = {
   description: "Hasta tres planes con ventajas y CTA.",
   schema: pricingSchema,
   defaultProps: pricingDefaults,
-  Renderer: ({ props }) => (
+  layoutCapabilities: {
+    width: true,
+    align: true,
+    direction: false,
+    reverse: false,
+    columns: true,
+    columnsMax: 3,
+    gap: true,
+  },
+  Renderer: ({ props, layout }) => (
     <section className="border-b bg-background px-density py-[calc(var(--space-unit)*10)]">
-      <div className="mx-auto max-w-4xl space-y-density">
-        <div className="space-y-1 text-center">
+      <div className={cn("mx-auto flex max-w-4xl flex-col", layoutGapClass[layout.gap])}>
+        <div className={cn("space-y-1", layoutTextAlignClass[layout.align])}>
           <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
           {props.subtitle ? <p className="text-sm text-muted">{props.subtitle}</p> : null}
         </div>
-        <div className="grid grid-cols-1 gap-density @md:grid-cols-3">
+        <div className={cn("grid", layoutColumnsClass[layout.columns], layoutGapClass[layout.gap])}>
           {props.plans.map((plan, index) => (
             <Card key={`${plan.name}-${index}`} className="flex flex-col">
               <CardHeader>

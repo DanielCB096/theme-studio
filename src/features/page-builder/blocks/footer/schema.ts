@@ -12,6 +12,7 @@ export const footerSchema = blockBase(
       links: z.array(linkSchema).max(4),
     })
     .strict(),
+  { direction: "row" },
 );
 
 export const footerDefaults: FooterProps = {

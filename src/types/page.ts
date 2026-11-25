@@ -29,7 +29,46 @@ export interface NavbarProps {
   ctaHref: string;
   /** Arriba/abajo = barra; izquierda/derecha = columna lateral en escritorio. */
   placement: NavbarPlacement;
+  /** Logo opcional por URL pública; cadena vacía = sin imagen. */
+  logoUrl: string;
+  logoAlt: string;
+  showBrandText: boolean;
 }
+
+/** Layout v1: presentación común a todos los bloques. */
+export const BLOCK_LAYOUT_WIDTHS = ["compact", "normal", "wide", "full"] as const;
+export type BlockLayoutWidth = (typeof BLOCK_LAYOUT_WIDTHS)[number];
+
+export const BLOCK_LAYOUT_ALIGNS = ["left", "center", "right"] as const;
+export type BlockLayoutAlign = (typeof BLOCK_LAYOUT_ALIGNS)[number];
+
+export const BLOCK_LAYOUT_DIRECTIONS = ["row", "column"] as const;
+export type BlockLayoutDirection = (typeof BLOCK_LAYOUT_DIRECTIONS)[number];
+
+export const BLOCK_LAYOUT_COLUMNS = [1, 2, 3] as const;
+export type BlockLayoutColumns = (typeof BLOCK_LAYOUT_COLUMNS)[number];
+
+export const BLOCK_LAYOUT_GAPS = ["compact", "normal", "spacious"] as const;
+export type BlockLayoutGap = (typeof BLOCK_LAYOUT_GAPS)[number];
+
+export interface BlockLayout {
+  width: BlockLayoutWidth;
+  align: BlockLayoutAlign;
+  direction: BlockLayoutDirection;
+  reverse: boolean;
+  columns: BlockLayoutColumns;
+  gap: BlockLayoutGap;
+}
+
+/** Defaults de retrocompatibilidad: páginas guardadas sin `layout` los reciben. */
+export const DEFAULT_BLOCK_LAYOUT: BlockLayout = {
+  width: "full",
+  align: "left",
+  direction: "column",
+  reverse: false,
+  columns: 1,
+  gap: "normal",
+};
 
 export interface HeroProps {
   eyebrow: string;
@@ -123,6 +162,7 @@ export type PageBlock = {
     id: string;
     type: K;
     childIds: string[];
+    layout: BlockLayout;
     props: PageBlockPropsMap[K];
   };
 }[PageBlockType];
