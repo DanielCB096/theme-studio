@@ -43,8 +43,8 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
           "bg-surface text-fg",
           layoutGapClass[layout.gap],
           vertical
-            ? "flex flex-wrap items-center @2xl:sticky @2xl:top-0 @2xl:h-[var(--page-height,100dvh)] @2xl:w-56 @2xl:flex-col @2xl:items-stretch @2xl:border-b-0"
-            : "flex flex-wrap items-center px-density py-3",
+            ? "flex flex-wrap items-center p-[calc(var(--space-unit)*5)] @2xl:sticky @2xl:top-0 @2xl:h-[var(--page-height,100dvh)] @2xl:w-56 @2xl:flex-col @2xl:items-stretch @2xl:border-b-0"
+            : "flex flex-wrap items-center px-[calc(var(--space-unit)*6)] py-[calc(var(--space-unit)*4)]",
           props.placement === "top" && "border-b",
           props.placement === "bottom" && "border-t",
           props.placement === "left" && "@2xl:border-r",
@@ -53,7 +53,7 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
       >
         <span
           className={cn(
-            "flex items-center gap-2 text-base font-semibold tracking-tight",
+            "flex items-center gap-3 text-base font-semibold tracking-tight",
             vertical ? "@2xl:mr-0" : "mr-auto",
           )}
         >
@@ -80,7 +80,13 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
             <a
               key={`${link.label}-${link.href}`}
               href={link.href}
-              className="rounded-sm text-muted underline-offset-4 hover:text-fg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className={cn(
+                "rounded-sm px-[calc(var(--space-unit)*1.5)] py-[calc(var(--space-unit)*1.5)] text-muted underline-offset-4",
+                "hover:bg-background hover:text-fg hover:underline",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                vertical &&
+                  "@2xl:px-[calc(var(--space-unit)*2)] @2xl:py-[calc(var(--space-unit)*2)]",
+              )}
             >
               {link.label}
             </a>
