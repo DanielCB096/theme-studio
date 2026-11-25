@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 import { GalleryApp } from "@/features/preview/GalleryApp";
 import { ThemeScope } from "@/features/preview/ThemeScope";
@@ -87,7 +87,11 @@ export function DeviceFrame({
             }}
             className="overflow-hidden rounded-lg border bg-surface"
           >
-            <div className="h-full overflow-y-auto overscroll-contain">
+            <div
+              className="flex h-full flex-col overflow-y-auto overscroll-contain"
+              style={{ "--page-height": `${height}px` } as CSSProperties}
+            >
+              {" "}
               {children ?? (
                 <ThemeScope theme={theme} className="min-h-full">
                   <GalleryApp />

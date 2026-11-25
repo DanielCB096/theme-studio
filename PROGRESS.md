@@ -241,5 +241,5 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Migración `002_pages.sql` aplicada. RLS verificada con dos usuarios: **14/14** (9 de temas + 5 de páginas).
 - E2E de páginas: plantilla → editar hero → guardar → publicar → abrir `/p/:slug` anónimo en 375/768/1280. **6/6 E2E** en verde.
 - Preview desplegada de la rama: **https://theme-studio-git-feat-page-builder-queserabernal.vercel.app**
-- Revisión de la persona responsable: navbar con ubicación configurable (arriba, abajo, izquierda y derecha); en móvil, las laterales se convierten en barra superior. Pendiente de definir el sistema de layout interno por bloque.
+- Revisión de la persona responsable: navbar con ubicación configurable (arriba, abajo, izquierda y derecha), a altura completa y sticky en laterales; en móvil se convierte en barra superior. Pendiente de definir el sistema de layout interno por bloque.
 - Criterio de parada: no empezar el Hito 2 hasta revisión humana del Hito 1.

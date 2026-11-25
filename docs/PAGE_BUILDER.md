@@ -38,17 +38,17 @@ type PageDocument = {
 
 ## Bloques (9 tipos)
 
-| Tipo        | Props principales                                                   |
-| ----------- | ------------------------------------------------------------------- |
-| `navbar`    | marca, enlaces, CTA y ubicación (arriba, abajo, izquierda, derecha) |
-| `hero`      | antetítulo, título, subtítulo, CTA, alineación                      |
-| `features`  | título y hasta 6 ventajas                                           |
-| `pricing`   | hasta 3 planes con ventajas y CTA                                   |
-| `form`      | campos, botón y mensaje de éxito (demostración)                     |
-| `table`     | columnas y filas estáticas                                          |
-| `cta`       | título, descripción y botón                                         |
-| `footer`    | texto y enlaces                                                     |
-| `textImage` | título, texto, imagen opcional y posición                           |
+| Tipo        | Props principales                                                                                         |
+| ----------- | --------------------------------------------------------------------------------------------------------- |
+| `navbar`    | marca, enlaces, CTA y ubicación (arriba, abajo, izquierda, derecha); laterales a altura completa y sticky |
+| `hero`      | antetítulo, título, subtítulo, CTA, alineación                                                            |
+| `features`  | título y hasta 6 ventajas                                                                                 |
+| `pricing`   | hasta 3 planes con ventajas y CTA                                                                         |
+| `form`      | campos, botón y mensaje de éxito (demostración)                                                           |
+| `table`     | columnas y filas estáticas                                                                                |
+| `cta`       | título, descripción y botón                                                                               |
+| `footer`    | texto y enlaces                                                                                           |
+| `textImage` | título, texto, imagen opcional y posición                                                                 |
 
 Cada bloque tiene una carpeta con `schema.ts` (Zod + defaults) e `index.tsx` (renderer + inspector). El **registro** (`blocks/registry.ts`) es la única fuente para la paleta, los tipos y el render.
 

@@ -26,7 +26,7 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
         className={cn(
           "bg-surface text-fg",
           vertical
-            ? "flex flex-wrap items-center gap-density border-b p-density @2xl:h-full @2xl:w-56 @2xl:flex-col @2xl:items-stretch @2xl:border-b-0"
+            ? "flex flex-wrap items-center gap-density border-b p-density @2xl:sticky @2xl:top-0 @2xl:h-[var(--page-height,100dvh)] @2xl:w-56 @2xl:flex-col @2xl:items-stretch @2xl:border-b-0"
             : "px-density py-3",
           props.placement === "top" && "border-b",
           props.placement === "bottom" && "border-t",

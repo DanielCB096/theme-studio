@@ -20,6 +20,10 @@ test("crear página desde plantilla, editar, guardar, publicar y abrir en tres a
   const inspector = page.getByRole("complementary", { name: "Propiedades del bloque" });
   await inspector.getByLabel("Título", { exact: true }).fill(title);
 
+  // Navbar vertical a la izquierda: debe ocupar toda la altura de la página.
+  await page.getByRole("button", { name: /1\. navbar/ }).click();
+  await inspector.getByLabel("Ubicación").selectOption("left");
+
   await page.getByLabel("Nombre de la página").fill(pageName);
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
 
@@ -39,6 +43,10 @@ test("crear página desde plantilla, editar, guardar, publicar y abrir en tres a
 
   await expect(visitor.getByRole("heading", { level: 1, name: title })).toBeVisible();
   await expect(visitor.getByRole("form", { name: /hablemos/i })).toBeVisible();
+
+  await visitor.setViewportSize({ width: 1280, height: 900 });
+  const navBox = await visitor.locator('[data-nav-placement="left"]').boundingBox();
+  expect(navBox?.height ?? 0).toBeGreaterThan(800);
 
   for (const width of [375, 768, 1280]) {
     await visitor.setViewportSize({ width, height: 900 });

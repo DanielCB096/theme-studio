@@ -77,8 +77,8 @@ export function PageRenderer({ page, selectedId = null, onSelect }: PageRenderer
     navbar && (navbar.props.placement === "left" || navbar.props.placement === "right");
 
   return (
-    <ThemeScope theme={page.theme} className="min-h-full">
-      <div className="flex min-h-full flex-col bg-background text-fg @container">
+    <ThemeScope theme={page.theme} className="flex min-h-full flex-1 flex-col">
+      <div className="flex min-h-full flex-1 flex-col bg-background text-fg @container">
         {blocks.length === 0 ? (
           <div className="grid min-h-64 place-items-center p-density text-sm text-muted">
             Esta página no tiene bloques todavía.
@@ -87,7 +87,7 @@ export function PageRenderer({ page, selectedId = null, onSelect }: PageRenderer
           <div className="flex min-h-full flex-1 flex-col @2xl:flex-row">
             <div
               className={cn(
-                "shrink-0",
+                "flex shrink-0 flex-col",
                 navbar.props.placement === "right" ? "order-first @2xl:order-last" : "order-first",
               )}
             >

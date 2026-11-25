@@ -79,7 +79,7 @@ export default function PublicPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="flex min-h-dvh flex-col bg-background">
       <PageRenderer page={state.page} />
     </div>
   );
