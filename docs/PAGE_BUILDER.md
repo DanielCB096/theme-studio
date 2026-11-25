@@ -77,6 +77,7 @@ Cada bloque tiene una carpeta con `schema.ts` (Zod + defaults) e `index.tsx` (re
 - Si hay logo, se renderiza con `object-contain` y altura basada en tokens (`--space-unit`); si además `showBrandText` está activo, el nombre acompaña a la imagen. Sin logo siempre se muestra la marca textual.
 - Funciona igual en barra horizontal y en columna lateral; respeta `placement`.
 - El inspector permite pegar la URL, el texto alternativo y activar o desactivar el nombre. **No hay subida de archivos ni Supabase Storage.**
+- Ejemplo publicado con logo: https://theme-studio-git-feat-page-builder-queserabernal.vercel.app/p/landing-nebula
 
 ## Render
 
