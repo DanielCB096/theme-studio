@@ -38,10 +38,9 @@ export const AlertTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLPa
 );
 AlertTitle.displayName = "AlertTitle";
 
-export const AlertDescription = forwardRef<
-  HTMLParagraphElement,
-  HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-sm text-muted", className)} {...props} />
-));
+export const AlertDescription = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("text-sm text-muted", className)} {...props} />
+  ),
+);
 AlertDescription.displayName = "AlertDescription";

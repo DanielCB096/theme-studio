@@ -1,17 +1,31 @@
-import { EditorHeader, EditorPanel } from "@/features/editor/EditorPanel";
-import { useThemeShortcuts } from "@/features/editor/useThemeShortcuts";
-import { PreviewPanel } from "@/features/preview/PreviewPanel";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import { AuthSync } from "@/features/auth/AuthSync";
+import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
+import EditorPage from "@/pages/EditorPage";
+import NotFoundPage from "@/pages/NotFoundPage";
+import SharedThemePage from "@/pages/SharedThemePage";
+import SignInPage from "@/pages/SignInPage";
+import ThemesPage from "@/pages/ThemesPage";
 
 export default function App() {
-  useThemeShortcuts();
-
   return (
-    <div className="flex h-dvh flex-col bg-background">
-      <EditorHeader />
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <EditorPanel />
-        <PreviewPanel />
-      </div>
-    </div>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthSync />
+      <Routes>
+        <Route path="/" element={<EditorPage />} />
+        <Route path="/entrar" element={<SignInPage />} />
+        <Route
+          path="/temas"
+          element={
+            <ProtectedRoute>
+              <ThemesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/t/:id" element={<SharedThemePage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

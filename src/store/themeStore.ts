@@ -42,6 +42,8 @@ export interface ThemeActions {
   setMode: (mode: ThemeMode) => void;
   applyColors: (colors: ThemeColors) => void;
   loadTheme: (theme: Theme) => void;
+  /** Adopta el id asignado por la base de datos tras guardar, sin tocar el historial. */
+  setThemeId: (id: string) => void;
   reset: () => void;
   undo: () => void;
   redo: () => void;
@@ -218,6 +220,12 @@ export function createThemeStore(
           lastMergeKey: null,
           lastCommitAt: 0,
         });
+      },
+
+      setThemeId: (id) => {
+        const { theme } = get();
+        if (theme.id === id) return;
+        set({ theme: { ...theme, id } });
       },
 
       reset: () => {

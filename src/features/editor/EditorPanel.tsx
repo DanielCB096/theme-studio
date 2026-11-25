@@ -9,6 +9,7 @@ import { ColorControl } from "@/features/editor/controls/ColorControl";
 import { SliderControl } from "@/features/editor/controls/SliderControl";
 import { ExportThemeDialog } from "@/features/themes/ExportThemeDialog";
 import { ImportThemeDialog } from "@/features/themes/ImportThemeDialog";
+import { SaveThemeDialog } from "@/features/themes/SaveThemeDialog";
 import { useThemeStore } from "@/store/themeStore";
 import {
   BUTTON_SIZE_LABELS,
@@ -254,24 +255,21 @@ function ComponentFields() {
   );
 }
 
-export function EditorHeader() {
+export function EditorToolbar() {
   return (
-    <header className="flex flex-wrap items-center gap-density border-b bg-surface px-density py-3">
-      <div className="mr-auto flex min-w-0 items-baseline gap-3">
-        <h1 className="text-lg font-semibold tracking-tight">Theme Studio</h1>
-        <span className="hidden text-xs text-muted sm:inline">editor de temas</span>
-        <span className="hidden items-center gap-1.5 text-xs text-muted md:inline-flex">
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-success" />
-          Borrador autoguardado
-        </span>
-      </div>
+    <div className="flex flex-wrap items-center gap-2 border-b bg-surface px-density py-2">
+      <span className="mr-auto hidden items-center gap-1.5 text-xs text-muted md:inline-flex">
+        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-success" />
+        Borrador autoguardado
+      </span>
 
       <ThemeNameField />
       <UndoRedoButtons />
-      <ResetButton />
+      <SaveThemeDialog />
       <ImportThemeDialog />
       <ExportThemeDialog />
-    </header>
+      <ResetButton />
+    </div>
   );
 }
 
