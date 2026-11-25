@@ -1,0 +1,8 @@
+# El test del handler no debe desplegarse como función serverless.
+api/**/*.test.ts
+
+# Artefactos locales que no forman parte del build de Vercel.
+coverage
+playwright-report
+test-results
+e2e
