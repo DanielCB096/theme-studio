@@ -30,7 +30,7 @@ Elegir una paleta, una escala tipográfica y un radio de borde "a ojo" y descubr
 | Estado      | Zustand                               | Store pequeño, selectores granulares            |
 | Validación  | Zod                                   | Una sola fuente de verdad para datos externos   |
 | Backend     | Supabase (Postgres + Auth + RLS)      | Persistencia y autorización sin servidor propio |
-| IA          | Función serverless + API de Anthropic | La clave nunca llega al navegador               |
+| IA          | Función serverless + API de Gemini    | Clave y cuota solo en servidor                  |
 | Pruebas     | Vitest + Testing Library + Playwright | Unidad, componentes y flujo E2E                 |
 
 Decisiones y alternativas descartadas: [`docs/DECISIONS.md`](docs/DECISIONS.md).
@@ -57,7 +57,7 @@ Detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 **El código** hace todo lo demás:
 
 - Valida el prompt con Zod (3–200 caracteres) y limita a 8 peticiones por IP cada 10 minutos.
-- Llama a Anthropic con timeout y sin exponer la clave (vive solo en la función serverless).
+- Llama a Gemini (nivel gratuito) con timeout y sin exponer la clave (vive solo en la función serverless).
 - Extrae el objeto JSON de la respuesta (aunque venga con markdown) y lo valida con Zod.
 - Vuelve a validar en el cliente antes de enseñar nada.
 - Corrige automáticamente el contraste AA de texto y primario, conservando el tono.
@@ -75,7 +75,7 @@ cp .env.example .env   # rellena Supabase; la clave de IA solo va en el servidor
 npm run dev
 ```
 
-La IA usa una función serverless: en local necesitas `vercel dev` (y `ANTHROPIC_API_KEY` + `ANTHROPIC_MODEL` en `.env`). Con `npm run dev`, el resto de la app funciona y el panel de IA explica que el endpoint no está disponible.
+La IA usa una función serverless: en local necesitas `vercel dev` (y `GEMINI_API_KEY` + `GEMINI_MODEL` en `.env`). Con `npm run dev`, el resto de la app funciona y el panel de IA explica que el endpoint no está disponible.
 
 Comandos:
 
@@ -108,7 +108,7 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 
 ## Seguridad
 
-- La clave de Anthropic vive solo en la función serverless (`api/`), nunca en el bundle.
+- La clave de Gemini vive solo en la función serverless (`api/`), nunca en el bundle.
 - El cliente usa únicamente la clave pública (`publishable`/`anon`) de Supabase; RLS restringe cada fila a su dueño. La matriz se verifica con dos usuarios reales (`npm run verify:rls`).
 - Las políticas de `update` incluyen `with check`, así que un dueño no puede transferir sus filas a otro usuario.
 - Todo dato externo (respuesta de IA, JSON importado, enlaces compartidos, `data` leído de la base de datos) se valida con Zod.

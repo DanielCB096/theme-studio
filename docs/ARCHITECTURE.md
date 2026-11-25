@@ -16,7 +16,7 @@ flowchart TB
   Store -->|persist| LS[(localStorage)]
   Editor -->|"CRUD temas"| SB[(Supabase Postgres + RLS)]
   Editor -->|"prompt"| FN[Función serverless]
-  FN -->|"API key solo en servidor"| ANT[API de Anthropic]
+  FN -->|"API key solo en servidor"| GEM[API de Gemini]
 ```
 
 ## Sistema de tokens
@@ -94,7 +94,7 @@ sequenceDiagram
   participant U as Panel
   participant C as Cliente
   participant F as Función /api/generate-palette
-  participant A as API de Anthropic
+  participant A as API de Gemini
   U->>C: prompt (máx. 200)
   C->>F: POST { prompt }
   F->>F: Zod + rate limit por IP
@@ -108,11 +108,11 @@ sequenceDiagram
 
 Tres barreras antes de tocar el tema:
 
-1. **Servidor**: prompt validado; la clave vive en `ANTHROPIC_API_KEY` y nunca se serializa al cliente.
+1. **Servidor**: prompt validado; la clave vive en `GEMINI_API_KEY` y nunca se serializa al cliente.
 2. **Servidor**: la respuesta del modelo se recorta a su objeto JSON y se valida con Zod; un color mal formado produce 502, no una paleta a medias.
 3. **Cliente**: se valida de nuevo y se corrige el contraste con `ensureAccessibleColors` antes de mostrar «Aplicar».
 
-Límites: 8 peticiones por IP cada 10 minutos (mapa en memoria, best-effort en serverless), timeout de 20 s en servidor y 25 s en cliente, y modelo obligatorio en `ANTHROPIC_MODEL` para no fijar un nombre que caduque.
+Límites: 8 peticiones por IP cada 10 minutos (mapa en memoria, best-effort en serverless), timeout de 20 s en servidor y 25 s en cliente. El modelo se toma de `GEMINI_MODEL` (alias por defecto `gemini-flash-latest`) para no fijar un nombre que caduque.
 
 ## Variante automática de modo
 

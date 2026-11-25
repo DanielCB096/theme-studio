@@ -24,5 +24,5 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Compartición pública con URL `/t/:id` de solo lectura y duplicado a la cuenta propia.
 - Verificador de contraste WCAG 2.x con corrección automática y panel de semáforos.
 - Variante clara/oscura derivada conservando el tono de las marcas.
-- Generador de paletas con IA en función serverless, con clave solo en servidor, validación doble y corrección de contraste.
+- Generador de paletas con IA en función serverless (Gemini free tier), con clave solo en servidor, validación doble y corrección de contraste.
 - Configuración de Vercel con rewrites de SPA y función de IA.

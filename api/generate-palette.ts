@@ -1,4 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { z } from "zod";
 
@@ -27,6 +26,18 @@ const requestSchema = z
   })
   .strict();
 
+const geminiResponseSchema = z.object({
+  candidates: z
+    .array(
+      z.object({
+        content: z.object({
+          parts: z.array(z.object({ text: z.string().optional() })),
+        }),
+      }),
+    )
+    .min(1),
+});
+
 const SYSTEM_PROMPT = `Eres un experto en sistemas de diseño y accesibilidad.
 Devuelve SOLO un objeto JSON, sin markdown ni explicaciones, con exactamente estas nueve claves y valores hexadecimales de 6 dígitos:
 {"primary":"#rrggbb","secondary":"#rrggbb","background":"#rrggbb","surface":"#rrggbb","text":"#rrggbb","muted":"#rrggbb","border":"#rrggbb","success":"#rrggbb","danger":"#rrggbb"}
@@ -37,6 +48,8 @@ Requisitos:
 - Elige claro u oscuro según lo que pida la persona, manteniendo coherencia entre superficie y fondo.
 - Nada de comentarios, nombres ni claves adicionales.`;
 
+const DEFAULT_MODEL = "gemini-flash-latest";
+const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 const RATE_LIMIT = { max: 8, windowMs: 10 * 60 * 1000 } as const;
 const buckets = new Map<string, { count: number; resetAt: number }>();
 
@@ -110,29 +123,55 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  const model = process.env.ANTHROPIC_MODEL;
-  if (!apiKey || !model) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  if (!apiKey) {
     res.status(500).json({
-      error: "La IA no está configurada en el servidor (ANTHROPIC_API_KEY / ANTHROPIC_MODEL).",
+      error: "La IA no está configurada en el servidor (falta GEMINI_API_KEY).",
     });
     return;
   }
 
-  const client = new Anthropic({ apiKey, timeout: 20_000, maxRetries: 1 });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20_000);
 
   try {
-    const message = await client.messages.create({
-      model,
-      max_tokens: 700,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: parsed.data.prompt }],
-    });
+    const response = await fetch(
+      `${GEMINI_ENDPOINT}/${encodeURIComponent(model)}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ role: "user", parts: [{ text: parsed.data.prompt }] }],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 700,
+            responseMimeType: "application/json",
+          },
+        }),
+        signal: controller.signal,
+      },
+    );
 
-    const text = message.content
-      .filter((block) => block.type === "text")
-      .map((block) => block.text)
-      .join("\n");
+    if (!response.ok) {
+      console.error("generate-palette: proveedor respondió", response.status);
+      res.status(502).json({
+        error: "El proveedor de IA rechazó la petición. Inténtalo de nuevo en unos segundos.",
+      });
+      return;
+    }
+
+    const payload: unknown = await response.json();
+    const gemini = geminiResponseSchema.parse(payload);
+    const text = gemini.candidates[0]?.content.parts.map((part) => part.text ?? "").join("\n");
+
+    if (!text) {
+      throw new Error("La respuesta del modelo está vacía.");
+    }
 
     const colors = colorsSchema.parse(extractJson(text));
     res.status(200).json({ colors });
@@ -144,5 +183,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     res.status(502).json({
       error: "No se pudo generar la paleta. Inténtalo de nuevo en unos segundos.",
     });
+  } finally {
+    clearTimeout(timeout);
   }
 }

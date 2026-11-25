@@ -158,25 +158,26 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - `contrast.ts`: razón WCAG 2.1, clasificación AAA/AA/texto grande/fallo y ajuste de luminosidad conservando tono; imposible → extremo de mayor contraste.
 - Panel de accesibilidad en vivo con cinco pares, semáforo, razón y botón «Corregir a AA». El texto del botón primario se marca como derivado.
 - Variante de modo automática (`deriveVariant`): neutros reconstruidos con el tono del fondo, marcas conservadas y contraste garantizado (7:1 texto, 4.5:1 marcas).
-- Función `api/generate-palette`: Zod, rate limit por IP, timeout, extracción de JSON, validación de colores y errores controlados. Clave solo en servidor.
+- Función `api/generate-palette`: Zod, rate limit por IP, timeout, extracción de JSON, validación de colores y errores controlados. Proveedor **Gemini free tier** con clave solo en servidor (decisión ADR-011).
 - Cliente `aiPalette.ts` con timeout, validación doble y mensajes de error específicos (404 en `vite dev`, 429, red, timeout).
 - Panel de IA con prompt, swatches, aviso de correcciones y «Aplicar»/«Descartar»; el cambio entra en el historial.
 - `vercel.json` con rewrites de SPA excluyendo `/api`.
 
 **Pruebas**
 
-- `npm test` — 23 archivos, 125 pruebas (contraste, paleta, panel, variante, cliente de IA e handler con SDK simulado).
+- `npm test` — 23 archivos, 125 pruebas (contraste, paleta, panel, variante, cliente de IA y handler con `fetch` simulado).
 - `npm run lint`, `npm run typecheck`, `npm run build` — pasan.
-- `npm run test:e2e` — 4 pruebas (sin cambios en Fase 5).
-- Llamada real a Anthropic: **pendiente de la clave**, no se ha ejecutado.
+- `npm run test:e2e` — 4 pruebas.
+- Llamada real a Gemini: **pendiente de la clave gratuita**, no se ha ejecutado.
 
 **Problemas**
 
-- El SDK instalado de Anthropic (1.14) ya no acepta `temperature` en `messages.create`; se eliminó en lugar de forzar un tipo.
+- Cambio de proveedor respecto a la spec: sin clave de Anthropic, se usa el nivel gratuito de Gemini y se documenta en ADR-011. Se eliminó `@anthropic-ai/sdk` y la llamada es `fetch` directo.
+- El SDK de Anthropic 1.14 ya no aceptaba `temperature`; el cambio a REST eliminó esa dependencia.
 - `DeviceFrame` se encogía en la vista de un solo dispositivo por ser un flex item sin `w-full`; detectado en la captura y corregido (de 48 % a 83 % de escala).
 - Los rewrites de Vercel deben excluir `/api/`; se añadió `vercel.json`.
-- Sin `ANTHROPIC_API_KEY` no se puede verificar la generación real; los tests cubren todos los fallos con la API simulada.
+- Sin `GEMINI_API_KEY` no se puede verificar la generación real; los tests cubren todos los fallos con el proveedor simulado.
 
 **Siguiente**
 
-- Fase 6: cobertura ≥ 70 %, Lighthouse, Error Boundary, Docker, despliegue en Vercel y README final. Requiere cuenta de Vercel y clave de Anthropic.
+- Fase 6: cobertura ≥ 70 %, Lighthouse, Error Boundary, Docker, despliegue en Vercel y README final. Para la IA real hace falta una clave gratuita de Google AI Studio.

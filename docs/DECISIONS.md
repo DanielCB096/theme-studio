@@ -192,26 +192,27 @@ Una entrada por decisión, en orden cronológico.
 - **Tradeoff de seguridad:** con la confirmación desactivada, cualquiera puede registrar un correo que no controla. Es aceptable en una demo con datos de prueba; antes de un uso real hay que reactivar «Confirm email» y el E2E deberá usar un proveedor de correo de pruebas o el admin API.
 - Los usuarios de prueba se acumulan en `auth.users`; se limpian desde el dashboard.
 
-## ADR-012 · La clave de Anthropic solo existe en el servidor
+## ADR-011 · Proveedor de IA: Gemini free tier y clave solo en servidor
 
-**Contexto.** El generador de paletas llama a un modelo de pago. Si la clave viaja al navegador, cualquiera puede extraerla y gastar la cuenta.
+**Contexto.** La especificación pedía la API de Anthropic, pero el proyecto no dispone de clave y es una demo de portafolio: no debe generar coste ni depender de una suscripción. En cualquier caso, la clave de cualquier proveedor jamás debe llegar al navegador.
 
 **Opciones consideradas.**
 
-1. Llamar a Anthropic desde el cliente con la clave en una variable `VITE_*`.
-2. Proxy propio con la clave en el servidor.
-3. Función serverless en Vercel con la clave en variables de entorno del proyecto.
+1. Anthropic sin clave: función lista y probada con mocks, sin demo real.
+2. Gemini con nivel gratuito y llamada REST desde la función serverless.
+3. Motor local determinista disfrazado de IA.
 
-**Decisión.** Función `api/generate-palette.ts` en Vercel. La clave se lee de `process.env.ANTHROPIC_API_KEY` sin prefijo `VITE_`, por lo que Vite nunca la incrusta en el bundle.
+**Decisión.** Gemini (`generativelanguage.googleapis.com`) con la clave en `GEMINI_API_KEY`, solo en el servidor. La llamada se hace con `fetch` desde `api/generate-palette.ts`; no se añade SDK. El cliente solo conoce `/api/generate-palette`. El modelo se toma de `GEMINI_MODEL` con alias por defecto `gemini-flash-latest`.
 
 **Consecuencias.**
 
-- El cliente solo conoce una ruta relativa (`/api/generate-palette`).
-- Hace falta `vercel dev` para probar la IA en local; `vite dev` devuelve 404 y la UI lo explica.
-- La función añade validación de prompt, rate limit por IP, timeout y errores controlados, que en el cliente no serían fiables.
-- El límite en memoria no es global entre instancias serverless: es una barrera razonable para una demo, no un cuota facturable. Para producción haría falta un almacén compartido (Upstash/Redis) o el rate limit del proveedor.
+- Se desvía de la tecnología fijada en la spec; queda documentado aquí y en el README. Cambiar de proveedor solo afecta a la función.
+- Sin SDK: menos dependencias y control total de timeout, cabeceras y forma de la respuesta.
+- El nivel gratuito de Gemini tiene cuota y puede variar; si se agota, la función devuelve 502 con un mensaje accionable.
+- El rate limit en memoria (8/10 min por IP) no es global entre instancias serverless: es una barrera de demo, no una cuota facturable. En producción haría falta un almacén compartido o el límite del proveedor.
+- La validación de la respuesta (ADR-012) no depende del proveedor: si mañana se vuelve a Anthropic, se mantiene.
 
-## ADR-013 · Validar la salida del modelo antes de aplicarla
+## ADR-012 · Validar la salida del modelo antes de aplicarla
 
 **Contexto.** Un LLM puede devolver markdown, claves de más, hex inválidos o texto antes del JSON. Aplicar eso directamente rompería el tema y los exportadores.
 
@@ -229,7 +230,7 @@ Una entrada por decisión, en orden cronológico.
 - La doble validación es barata frente a un estado corrupto y permite confiar en la respuesta como dato externo.
 - Los tests cubren respuesta válida, JSON ilegible, colores mal formados, error HTTP, 404, fallo de red y timeout.
 
-## ADR-014 · Variante de modo derivada, no una paleta fija
+## ADR-013 · Variante de modo derivada, no una paleta fija
 
 **Contexto.** Cambiar claro/oscuro debe conservar la identidad del tema, no sustituirlo por los colores por defecto.
 
@@ -247,7 +248,7 @@ Una entrada por decisión, en orden cronológico.
 - La variante puede no ser idéntica al tema de origen si se alterna varias veces (los ajustes de contraste son acumulativos en luminosidad, no reversibles byte a byte).
 - Es una transformación pura y probada; el historial permite deshacer el cambio.
 
-## ADR-014 ? Validar el entorno de Supabase sin romper la app
+## ADR-014 · Validar el entorno de Supabase sin romper la app
 
 **Contexto.** El editor debe funcionar como demo local aunque no haya credenciales, pero las zonas de cuenta necesitan una configuración válida.
 

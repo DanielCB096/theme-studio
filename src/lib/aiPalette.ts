@@ -9,7 +9,7 @@ export const GENERATION_TIMEOUT_MS = 25_000;
 
 /**
  * Llama a la función serverless y valida la respuesta con Zod antes de
- * devolverla. La clave de Anthropic nunca pasa por el navegador.
+ * devolverla. La clave del proveedor nunca pasa por el navegador.
  */
 export async function generatePalette(prompt: string): Promise<ThemeColors> {
   const controller = new AbortController();

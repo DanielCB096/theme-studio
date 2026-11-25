@@ -39,7 +39,7 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 ## Pruebas de IA
 
 - `src/lib/aiPalette.test.ts`: respuesta válida, rate limit, colores mal formados, JSON ilegible, 404, fallo de red y timeout, con `fetch` simulado.
-- `api/generate-palette.test.ts`: método, prompt fuera de rango, claves extra, falta de configuración, JSON con markdown, respuesta inválida y límite por IP, con el SDK de Anthropic simulado.
+- `api/generate-palette.test.ts`: método, prompt fuera de rango, claves extra, falta de configuración, JSON con markdown, respuesta inválida, error del proveedor, fallo de red y límite por IP, con `fetch` simulado.
 - La llamada real al modelo no se ejecuta en las pruebas: requiere clave y consume cuota.
 
 ## Verificación de RLS
