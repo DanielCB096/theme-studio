@@ -265,3 +265,40 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - `npm run lint` — pasa. `npm run typecheck` — pasa. `npm test` — 31 archivos, 178 pruebas en verde.
 - No se ejecutaron Playwright ni despliegues; sin commit ni push.
 - Limitaciones: layout sin fondo/borde/padding por bloque; imágenes solo por URL (sin Storage); el ancho afecta al contenedor completo, incluido el fondo del bloque.
+
+## Hito 2A — Formularios públicos, respuestas y CSV (2026-11-26)
+
+**Estado: implementado y verificado en local; pendiente de merge y despliegue.**
+
+- Rama de trabajo `feat/forms`; `main` y el Hito 2B no se han tocado.
+- Migración `004_submissions.sql`: tabla `page_submissions`, índices por `page_id` y `created_at desc`, grants y RLS (inserción anónima solo en páginas públicas; lectura/gestión solo del dueño).
+- Endpoint `api/submit-page-form.ts`: Zod estricto, honeypot `website`, rate limit de 5/10 min por IP, inserción con clave `anon`, `maxDuration = 30` y errores 400/405/429/500/502 sin registrar datos del formulario.
+- Cliente `submissions.ts` con timeout de 15 s, validación Zod de `{ ok: true }` y mensajes para 404, 429 y red.
+- `pageRuntime.tsx` + `PageRenderer` con `runtime`: el formulario sigue siendo demostración en builder y envía de verdad en `/p/:slug` con id real. Campos controlados, honeypot, estado **Enviando…**, éxito y error sin perder valores.
+- `submissionRepository.ts`: listar, marcar leída/no leída, eliminar y generar CSV (unión de campos, escape RFC 4180, sin BOM y neutralización de fórmulas tipo `=`, `+`, `-`, `@`).
+- Página protegida `/pages/:id/respuestas` con bandeja responsive, confirmación de borrado y descarga CSV; enlaces desde `/pages` y desde el builder cuando hay `savedId`.
+- Plugin de API en `vite.config.ts` para `npm run dev`: sirve `/api/*` con `ssrLoadModule`, adapta `req`/`res` y limita el cuerpo. Probado a mano: `POST /api/submit-page-form` inválido responde 400 y `GET /api/generate-palette` responde 405, sin llamar a la IA.
+- Documentación: ADR-020, sección de formularios en `PAGE_BUILDER.md`, este registro, `CHANGELOG.md` y README.
+
+**Pruebas ejecutadas**
+
+- `npm run lint` — pasa, 0 warnings.
+- `npm run typecheck` — pasa.
+- `npm test` — 36 archivos, **209 pruebas** en verde.
+- Playwright — **8/8** en verde, incluida la nueva `e2e/pages-form.spec.ts` (publicar → enviar anónimo → bandeja → marcar leída → CSV).
+- `npm run verify:rls` — **21/21**, con 7 comprobaciones nuevas de respuestas de formulario.
+- Migración `004_submissions.sql` aplicada en Supabase antes de ejecutar las pruebas.
+- Migración: **no aplicada** en Supabase; el flujo real requiere ejecutar `004_submissions.sql`.
+
+**Problemas encontrados**
+
+- `VercelRequest.headers` está tipado como `any`; el `user-agent` se trata como `unknown` antes de truncar para cumplir las reglas de TypeScript.
+- Vite no vuelca `.env` en `process.env`; el plugin de desarrollo lo hace solo al arrancar el servidor, no durante Vitest.
+- El primer intento de smoke test del middleware usó `Invoke-WebRequest` con parámetros no disponibles en Windows PowerShell 5.1; se repitió con `curl.exe`.
+- En la revisión se detectó inyección de fórmulas en el CSV: un visitante podía enviar `=HYPERLINK(...)` y ejecutarse al abrir el archivo en Excel. Se neutralizan las celdas que empiezan por `=`, `+`, `-`, `@`, tabulador o retorno.
+- El primer E2E del formulario agotó los 30 s por defecto durante el arranque en frío de Vite; se subió el timeout global de Playwright a 60 s.
+
+**Siguiente**
+
+- Fusionar en `main`, desplegar y repetir el E2E del formulario contra producción.
+- Revisión humana antes del Hito 2B.

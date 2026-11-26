@@ -74,6 +74,33 @@ export interface Database {
         };
         Relationships: [];
       };
+      page_submissions: {
+        Row: {
+          id: string;
+          page_id: string;
+          data: Json;
+          user_agent: string | null;
+          created_at: string;
+          read_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          page_id: string;
+          data: Json;
+          user_agent?: string | null;
+          created_at?: string;
+          read_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          page_id?: string;
+          data?: Json;
+          user_agent?: string | null;
+          created_at?: string;
+          read_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

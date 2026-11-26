@@ -226,6 +226,78 @@ try {
     `visibles: ${anonPageNames.join(", ") || "ninguno"}`,
   );
 
+  // --- Respuestas de formulario (Hito 2A) --------------------------------
+  const { error: anonSubmitError } = await anon
+    .from("page_submissions")
+    .insert({ page_id: publicPage.id, data: { Nombre: "Visitante" } });
+  check(
+    "Anon puede responder en una página pública",
+    !anonSubmitError,
+    anonSubmitError?.message ?? "",
+  );
+
+  const { error: privateSubmitError } = await anon
+    .from("page_submissions")
+    .insert({ page_id: privatePage.id, data: { Nombre: "Intruso" } });
+  check(
+    "Anon no puede responder en una página privada",
+    Boolean(privateSubmitError),
+    privateSubmitError?.message ?? "la inserción se permitió",
+  );
+
+  const { data: anonSubmissions } = await anon
+    .from("page_submissions")
+    .select("id")
+    .eq("page_id", publicPage.id);
+  const anonSubmissionRows = anonSubmissions ?? [];
+  check(
+    "Anon no puede leer las respuestas",
+    anonSubmissionRows.length === 0,
+    `filas: ${anonSubmissionRows.length}`,
+  );
+
+  const { data: ownerSubmissions } = await a.supabase
+    .from("page_submissions")
+    .select("id")
+    .eq("page_id", publicPage.id);
+  const ownerSubmissionRows = ownerSubmissions ?? [];
+  check(
+    "A lee las respuestas de su página",
+    ownerSubmissionRows.length === 1,
+    `filas: ${ownerSubmissionRows.length}`,
+  );
+
+  const { data: strangerSubmissions } = await b.supabase
+    .from("page_submissions")
+    .select("id")
+    .eq("page_id", publicPage.id);
+  const strangerSubmissionRows = strangerSubmissions ?? [];
+  check(
+    "B no ve las respuestas de A",
+    strangerSubmissionRows.length === 0,
+    `filas: ${strangerSubmissionRows.length}`,
+  );
+
+  const submissionId = ownerSubmissionRows[0]?.id;
+  if (submissionId) {
+    const { data: strangerUpdate } = await b.supabase
+      .from("page_submissions")
+      .update({ read_at: new Date().toISOString() })
+      .eq("id", submissionId)
+      .select("id");
+    check("B no puede modificar respuestas de A", (strangerUpdate ?? []).length === 0);
+
+    const { data: strangerDelete } = await b.supabase
+      .from("page_submissions")
+      .delete()
+      .eq("id", submissionId)
+      .select("id");
+    check("B no puede borrar respuestas de A", (strangerDelete ?? []).length === 0);
+  } else {
+    check("B no puede modificar respuestas de A", false, "falta la respuesta de prueba");
+    check("B no puede borrar respuestas de A", false, "falta la respuesta de prueba");
+  }
+
   // Limpieza: cada usuario borra lo suyo.
   await a.supabase.from("pages").delete().eq("user_id", a.userId);
   await b.supabase.from("pages").delete().eq("user_id", b.userId);

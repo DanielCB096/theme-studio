@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { layoutWidthClass } from "@/features/page-builder/blocks/layout";
 import { renderBlockContent } from "@/features/page-builder/blocks/registry";
 import { blocksInOrder } from "@/features/page-builder/pageOps";
+import { PageRuntimeProvider, type PageRuntime } from "@/features/page-builder/pageRuntime";
 import { ThemeScope } from "@/features/preview/ThemeScope";
 import { cn } from "@/lib/utils";
 import type { PageBlock, PageDocument } from "@/types/page";
@@ -13,7 +14,11 @@ interface PageRendererProps {
   onSelect?: (blockId: string) => void;
   /** Modo de inspección: tiñe cada bloque con un color distinto. */
   debug?: boolean;
+  /** Builder (por defecto) o página pública con id real para enviar formularios. */
+  runtime?: PageRuntime;
 }
+
+const DEFAULT_RUNTIME: PageRuntime = { mode: "builder", pageId: null };
 
 interface BlockShellProps {
   block: PageBlock;
@@ -84,6 +89,7 @@ export function PageRenderer({
   selectedId = null,
   onSelect,
   debug = false,
+  runtime = DEFAULT_RUNTIME,
 }: PageRendererProps) {
   const blocks = blocksInOrder(page);
   const navbar = blocks.find((block) => block.type === "navbar");
@@ -109,36 +115,40 @@ export function PageRenderer({
     navbar && (navbar.props.placement === "left" || navbar.props.placement === "right");
 
   return (
-    <ThemeScope theme={page.theme} className="min-h-full">
-      <div className="flex min-h-full flex-col bg-background text-fg @container">
-        {blocks.length === 0 ? (
-          <div className="grid min-h-64 place-items-center p-density text-sm text-muted">
-            Esta página no tiene bloques todavía.
-          </div>
-        ) : sidebar && navbar ? (
-          <div className="flex min-h-full flex-col @2xl:flex-row">
-            <div
-              className={cn(
-                "flex shrink-0 flex-col",
-                navbar.props.placement === "right" ? "order-first @2xl:order-last" : "order-first",
-              )}
-            >
-              {shell(navbar, "@2xl:sticky @2xl:top-0")}
+    <PageRuntimeProvider runtime={runtime}>
+      <ThemeScope theme={page.theme} className="min-h-full">
+        <div className="flex min-h-full flex-col bg-background text-fg @container">
+          {blocks.length === 0 ? (
+            <div className="grid min-h-64 place-items-center p-density text-sm text-muted">
+              Esta página no tiene bloques todavía.
             </div>
-            <div className="min-w-0 flex-1">
+          ) : sidebar && navbar ? (
+            <div className="flex min-h-full flex-col @2xl:flex-row">
+              <div
+                className={cn(
+                  "flex shrink-0 flex-col",
+                  navbar.props.placement === "right"
+                    ? "order-first @2xl:order-last"
+                    : "order-first",
+                )}
+              >
+                {shell(navbar, "@2xl:sticky @2xl:top-0")}
+              </div>
+              <div className="min-w-0 flex-1">
+                {middle.map((block) => shell(block))}
+                {footer ? shell(footer) : null}
+              </div>
+            </div>
+          ) : (
+            <>
+              {navbar && navbar.props.placement === "top" ? shell(navbar) : null}
               {middle.map((block) => shell(block))}
+              {navbar && navbar.props.placement === "bottom" ? shell(navbar) : null}
               {footer ? shell(footer) : null}
-            </div>
-          </div>
-        ) : (
-          <>
-            {navbar && navbar.props.placement === "top" ? shell(navbar) : null}
-            {middle.map((block) => shell(block))}
-            {navbar && navbar.props.placement === "bottom" ? shell(navbar) : null}
-            {footer ? shell(footer) : null}
-          </>
-        )}
-      </div>
-    </ThemeScope>
+            </>
+          )}
+        </div>
+      </ThemeScope>
+    </PageRuntimeProvider>
   );
 }

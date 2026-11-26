@@ -37,5 +37,5 @@ export const formDefaults: FormProps = {
     { label: "Mensaje", type: "textarea", required: false },
   ],
   submitLabel: "Enviar mensaje",
-  successMessage: "Gracias. Hemos recibido tu mensaje (demostración).",
+  successMessage: "Gracias. Hemos recibido tu mensaje.",
 };

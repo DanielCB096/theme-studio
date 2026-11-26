@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [No publicado]
 
+### Añadido — Hito 2A: formularios públicos y respuestas
+
+- Migración `004_submissions.sql` con `page_submissions`, índices y RLS: inserción anónima solo en páginas públicas; lectura y gestión solo del dueño.
+- Endpoint `POST /api/submit-page-form` con Zod estricto, honeypot, rate limit de 5/10 min por IP, clave `anon` y errores controlados.
+- Formulario público real: campos controlados, estado **Enviando…**, honeypot, éxito y error sin perder valores; en el builder sigue siendo demostración.
+- Cliente de envío con timeout, validación de la respuesta y mensajes claros para 404, 429 y red.
+- Bandeja `/pages/:id/respuestas`: listar, marcar leída/no leída, eliminar con confirmación y descargar CSV.
+- CSV generado en cliente con unión de campos, escape RFC 4180 y sin BOM.
+- Plugin de Vite que sirve `/api/*` en `npm run dev` para probar los endpoints sin `vercel dev`.
+- ADR-020 y documentación del flujo, RLS y límites del Hito 2A.
+
 ### Añadido — Anexo A · Page Builder (Hito 1)
 
 - Rama `feat/page-builder` y tag `v1.0-theme-editor` como punto de retorno.

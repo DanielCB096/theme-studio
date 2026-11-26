@@ -3,6 +3,7 @@ import {
   ChevronDown,
   ChevronUp,
   Frame,
+  Inbox,
   Loader2,
   Plus,
   Save,
@@ -182,6 +183,15 @@ export default function PageBuilderPage() {
           >
             /p/{slug}
           </a>
+        ) : null}
+
+        {savedId ? (
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/pages/${savedId}/respuestas`}>
+              <Inbox aria-hidden="true" className="h-4 w-4" />
+              Respuestas
+            </Link>
+          </Button>
         ) : null}
 
         <Button
