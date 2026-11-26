@@ -102,7 +102,7 @@ npm run dev
 
 La IA usa una función serverless. En local, `npm run dev` sirve también `/api/*` con un plugin de Vite que lee `.env` (incluidas `GEMINI_API_KEY` y `GEMINI_MODEL`); `vercel dev` sigue siendo la alternativa para reproducir el entorno de producción. Los formularios y los datos de página usan además `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
 
-Aplica las migraciones de `supabase/migrations/` en orden. La migración **`005_page_datasets.sql`** crea la tabla del dataset y su RLS; sin ella, el editor de datos y la tabla conectada no funcionan en un proyecto real. En este repositorio la migración está escrita pero **no se ha aplicado**.
+Aplica las migraciones de `supabase/migrations/` en orden. La migración **`005_page_datasets.sql`** crea la tabla del dataset y su RLS; sin ella, el editor de datos y la tabla conectada no funcionan en un proyecto real. La migración está aplicada en el proyecto de Supabase.
 
 Comandos:
 
@@ -145,7 +145,7 @@ docker run --rm -p 8080:80 theme-studio
 | Lighthouse · Buenas prácticas     | 100                                                       |
 | Lighthouse · SEO                  | 100                                                       |
 | Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                      |
-| Pruebas                           | 249 unitarias/componentes · 8 E2E ejecutadas · 21 RLS     |
+| Pruebas                           | 251 unitarias/componentes · 9 E2E ejecutadas · 29 RLS     |
 | Respuesta de la IA                | 2–22 s según el modelo disponible; reserva local si falla |
 
 ## Pruebas
@@ -167,7 +167,7 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 - **Enlace mágico en producción**: su destino depende de _Redirect URLs_ en Supabase. Si no añades `https://theme-studio-queserabernal.vercel.app/**`, el correo apuntará a `localhost`. El acceso con contraseña sí funciona en la demo.
 - El nivel gratuito de Gemini devuelve 503 con frecuencia; la función prueba varios modelos y, si todos fallan, responde con la reserva local etiquetada como tal.
 - Los formularios del Hito 2A no envían correo ni aceptan adjuntos; el rate limit es en memoria y no sustituye a un captcha. La bandeja no tiene paginación.
-- Los datos del Hito 2B son un único dataset por página, sin CSV, ordenación, filtros, paginación ni imágenes en celdas. La migración `005_page_datasets.sql` todavía no se ha aplicado, así que el E2E y la matriz RLS de datasets están escritos pero no ejecutados.
+- Los datos del Hito 2B son un único dataset por página, sin CSV, ordenación, filtros, paginación ni imágenes en celdas. El E2E y la matriz RLS de datasets se ejecutaron contra el proyecto real.
 - El rate limit de la IA vive en memoria: no es global entre instancias serverless ni sustituye a una cuota de producción.
 - «Confirm email» está desactivado en Supabase para permitir los E2E; es un tradeoff de demo, no una configuración recomendable en producción.
 - Los E2E usan una cuenta fija (`theme-studio-e2e@example.com`) y crean temas de prueba; los temas se pueden borrar desde la cuenta y las cuentas antiguas desde el dashboard.

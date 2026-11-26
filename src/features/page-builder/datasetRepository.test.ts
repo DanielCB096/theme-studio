@@ -1,16 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
+  const saveBuilder = {
+    select: vi.fn(),
+    single: vi.fn(),
+  };
+  saveBuilder.select.mockReturnValue(saveBuilder);
+
   const query = {
     select: vi.fn(),
     eq: vi.fn(),
     maybeSingle: vi.fn(),
-    upsert: vi.fn(),
+    upsert: vi.fn(() => saveBuilder),
   };
   query.select.mockReturnValue(query);
   query.eq.mockReturnValue(query);
 
-  return { query, from: vi.fn(() => query) };
+  return { query, saveBuilder, from: vi.fn(() => query) };
 });
 
 vi.mock("@/lib/supabase", () => ({
@@ -36,6 +42,12 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.query.select.mockReturnValue(mocks.query);
   mocks.query.eq.mockReturnValue(mocks.query);
+  mocks.query.upsert.mockReturnValue(mocks.saveBuilder);
+  mocks.saveBuilder.select.mockReturnValue(mocks.saveBuilder);
+  mocks.saveBuilder.single.mockReset();
+  mocks.saveBuilder.single.mockResolvedValue({ data: { page_id: "page-1" }, error: null });
+  mocks.query.maybeSingle.mockReset();
+  mocks.query.maybeSingle.mockResolvedValue({ data: { page_id: "page-1" }, error: null });
 });
 
 describe("datasetRepository", () => {
@@ -74,20 +86,21 @@ describe("datasetRepository", () => {
     await expect(getPageDataset("page-1")).rejects.toThrow("permiso denegado");
   });
 
-  it("hace upsert validado con onConflict por page_id", async () => {
-    mocks.query.upsert.mockResolvedValue({ error: null });
-
+  it("hace upsert validado, pide la fila y confirma la lectura", async () => {
     await savePageDataset("page-1", dataset);
 
     expect(mocks.query.upsert).toHaveBeenCalledWith(
       { page_id: "page-1", data: dataset },
       { onConflict: "page_id" },
     );
+    expect(mocks.saveBuilder.select).toHaveBeenCalledWith("page_id");
+    expect(mocks.saveBuilder.single).toHaveBeenCalled();
+    expect(mocks.query.select).toHaveBeenCalledWith("page_id");
+    expect(mocks.query.eq).toHaveBeenCalledWith("page_id", "page-1");
+    expect(mocks.from).toHaveBeenCalledTimes(2);
   });
 
   it("no escribe un dataset inválido", async () => {
-    mocks.query.upsert.mockResolvedValue({ error: null });
-
     await expect(savePageDataset("page-1", { columns: [], rows: [] })).rejects.toThrow(
       /al menos una columna/i,
     );
@@ -95,8 +108,34 @@ describe("datasetRepository", () => {
   });
 
   it("propaga el error de Supabase al guardar", async () => {
-    mocks.query.upsert.mockResolvedValue({ error: { message: "fallo de escritura" } });
+    mocks.saveBuilder.single.mockResolvedValue({
+      data: null,
+      error: { message: "fallo de escritura" },
+    });
 
     await expect(savePageDataset("page-1", dataset)).rejects.toThrow("fallo de escritura");
+  });
+
+  it("explica un upsert sin fila devuelta", async () => {
+    mocks.saveBuilder.single.mockResolvedValue({
+      data: null,
+      error: { code: "PGRST116", message: "sin filas" },
+    });
+
+    await expect(savePageDataset("page-1", dataset)).rejects.toThrow(/confirmar/i);
+  });
+
+  it("falla si la lectura de confirmación nunca ve la fila", async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.query.maybeSingle.mockResolvedValue({ data: null, error: null });
+
+      const promise = savePageDataset("page-1", dataset);
+      const assertion = expect(promise).rejects.toThrow(/confirmar/i);
+      await vi.advanceTimersByTimeAsync(1000);
+      await assertion;
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

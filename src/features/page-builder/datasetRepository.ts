@@ -30,9 +30,37 @@ export async function getPageDataset(pageId: string): Promise<PageDataset | null
 export async function savePageDataset(pageId: string, dataset: PageDataset): Promise<void> {
   const parsed = validatePageDataset(dataset);
   const client = requireSupabase();
-  const { error } = await client
+  const { data, error } = await client
     .from("page_datasets")
-    .upsert({ page_id: pageId, data: parsed as unknown as Json }, { onConflict: "page_id" });
+    .upsert({ page_id: pageId, data: parsed as unknown as Json }, { onConflict: "page_id" })
+    .select("page_id")
+    .single();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new Error(
+      error.code === "PGRST116"
+        ? "No se pudo confirmar el guardado de los datos. Inténtalo de nuevo."
+        : error.message,
+    );
+  }
+  if (!data) {
+    throw new Error("No se pudo confirmar el guardado de los datos. Inténtalo de nuevo.");
+  }
+
+  // PostgREST puede devolver la fila antes de que la transacción sea visible
+  // para otra conexión. Se confirma la lectura para no mostrar «guardado» y
+  // perder los datos si el usuario recarga de inmediato.
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const { data: confirmed, error: confirmError } = await client
+      .from("page_datasets")
+      .select("page_id")
+      .eq("page_id", pageId)
+      .maybeSingle();
+
+    if (confirmError) throw new Error(confirmError.message);
+    if (confirmed) return;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+
+  throw new Error("No se pudo confirmar el guardado de los datos. Inténtalo de nuevo.");
 }

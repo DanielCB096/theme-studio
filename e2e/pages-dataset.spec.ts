@@ -33,6 +33,13 @@ test("editar los datos de una página y conectarlos a una tabla publicada", asyn
   await page.getByRole("button", { name: "Guardar datos" }).click();
   await expect(page.getByText("Datos guardados.")).toBeVisible({ timeout: 20_000 });
 
+  // La recarga confirma que el dataset se persistió de verdad en Supabase.
+  await page.reload();
+  await expect(page.getByLabel("Etiqueta de la columna 1")).toHaveValue("Producto", {
+    timeout: 20_000,
+  });
+  await expect(page.getByLabel("Fila 1, columna 1 (Producto)")).toHaveValue("Café E2E");
+
   // Builder: añadir una tabla y conectarla al dataset de la página.
   await page.goto(`/builder/${pageId}`);
   await page.getByRole("button", { name: "Tabla", exact: true }).click();

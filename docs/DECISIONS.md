@@ -410,3 +410,4 @@ Una entrada por decisión, en orden cronológico.
 - `source` con default mantiene el aspecto de las páginas existentes y de las tablas ya creadas: solo las tablas que el autor cambie a «Datos de la página» consumen el dataset.
 - En público, una tabla sin dataset, sin columnas o sin filas no renderiza una sección vacía; en el builder se muestra una ayuda con enlace al editor de datos.
 - No hay filtros, ordenación, paginación, importación CSV ni imágenes en celdas en este hito.
+- El guardado pide la fila al upsert y confirma con una lectura posterior: si PostgREST devuelve la fila antes de que la transacción sea visible, la interfaz no muestra «guardado» hasta comprobarlo. Evita perder datos si se recarga de inmediato, a costa de una lectura extra por guardado.

@@ -10,14 +10,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Modelo `PageDataset` (columnas con id estable y filas de texto) y esquema Zod con límites de 8 columnas, 200 filas y 100 KB.
 - Operaciones puras del editor: añadir/quitar columna y fila, renombrar columna y actualizar celda, sin mutar el original.
 - Migración `005_page_datasets.sql`: tabla `page_datasets` con FK en cascada, trigger `updated_at` y RLS de lectura pública solo para páginas publicadas; escritura solo del dueño.
-- Repositorio del dataset con parseo Zod, carga por `page_id` y upsert con `onConflict`.
+- Repositorio del dataset con parseo Zod, carga por `page_id` y upsert con `onConflict`, confirmando la fila guardada con una lectura antes de dar éxito.
 - Editor protegido `/pages/:id/datos` con tabla editable, confirmación de borrado de columna, contador, indicador «Sin guardar», estados de guardado/error y enlace a la página publicada.
 - Enlaces **Datos** en las tarjetas de `/pages` y en la barra del builder.
 - Bloque `table` con `source` (`static` por defecto, `page` para leer el dataset), cabeceras y celdas conectadas, caption accesible y ayudas distintas en builder y público.
 - `PageRuntime.dataset` y carga tolerante a fallos en la página pública y en el builder.
 - ADR-021 con la decisión de tabla aparte, RLS y retrocompatibilidad de `source`.
 - Pruebas del esquema, operaciones, repositorio con Supabase simulado, render del bloque y editor de datos.
-- E2E `pages-dataset.spec.ts` y comprobaciones de RLS para datasets (pendientes de ejecutar con la migración aplicada).
+- E2E `pages-dataset.spec.ts` y comprobaciones de RLS para datasets: **9/9** E2E y **29/29** RLS ejecutados contra la migración aplicada.
 
 ### Añadido — Hito 2A: formularios públicos y respuestas
 

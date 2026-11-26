@@ -171,7 +171,7 @@ type PageDataset = { columns: DatasetColumn[]; rows: Record<string, string>[] };
 - Ruta protegida `/pages/:id/datos`, enlazada con el botón **Datos** de cada tarjeta en `/pages` y de la barra del builder cuando hay `savedId`.
 - Carga el nombre con `getPageRecord` y el dataset con `getPageDataset`; si no existe, empieza con `emptyDataset()` (dos columnas `col-1`/`col-2`, cero filas) y muestra una ayuda.
 - Tabla editable: etiquetas de columna, celdas, eliminar columna (con `Dialog` de confirmación porque borra datos), eliminar fila, añadir columna/fila hasta el límite y contador visible.
-- **Guardar datos** valida con Zod, hace upsert por `page_id` y muestra «Datos guardados.» o un error legible. El indicador «Sin guardar» compara con el último estado guardado.
+- **Guardar datos** valida con Zod, hace upsert por `page_id`, pide la fila devuelta y confirma la lectura antes de mostrar «Datos guardados.» o un error legible. El indicador «Sin guardar» compara con el último estado guardado.
 - Todos los controles tienen `aria-label` único, foco visible y navegación por teclado; la tabla usa scroll horizontal. No se usa `window.confirm`.
 - Si la página está publicada, se muestra su URL `/p/:slug` para probar.
 
@@ -191,7 +191,7 @@ type PageDataset = { columns: DatasetColumn[]; rows: Record<string, string>[] };
 - Sin CSV/importación, ordenación, filtros, paginación ni imágenes en celdas.
 - Un dataset dañado no rompe la página pública (se renderiza sin datos). En el builder se avisa sin impedir editar la página.
 - La tabla estática sigue disponible y es el valor por defecto de las páginas existentes.
-- La migración **no se ha aplicado** en este entorno; el flujo real y el E2E quedan pendientes de ejecutarla.
+- La migración está aplicada en Supabase; el flujo real se verificó con el E2E y la matriz RLS.
 
 ## Seguridad
 
@@ -223,8 +223,8 @@ type PageDataset = { columns: DatasetColumn[]; rows: Record<string, string>[] };
 - E2E (`e2e/pages.spec.ts`): plantilla → editar → guardar → publicar → abrir anónimo en 375/768/1280.
 - E2E (`e2e/pages-upload.spec.ts`): subir logo a Storage, guardar, publicar y verificar la imagen pública.
 - E2E (`e2e/pages-form.spec.ts`): publicar → enviar el formulario anónimo → ver la respuesta, marcarla leída y descargar el CSV.
-- E2E (`e2e/pages-dataset.spec.ts`): crear página → editar datos → conectar la tabla → publicar → ver los datos en anónimo. **No ejecutado todavía: requiere la migración `005_page_datasets.sql`.**
-- `npm run verify:rls` amplía la matriz con páginas, respuestas y datasets privados/públicos (las comprobaciones de datasets tampoco se han ejecutado todavía).
+- E2E (`e2e/pages-dataset.spec.ts`): crear página → editar datos → conectar la tabla → publicar → ver los datos en anónimo. **Ejecutado y en verde.**
+- `npm run verify:rls` amplía la matriz con páginas, respuestas y datasets privados/públicos. **Ejecutada: 29/29.**
 
 ## Limitaciones conocidas (Hitos 1, 2A y 2B)
 
