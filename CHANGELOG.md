@@ -18,6 +18,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Layout v1 por bloque (ancho, alineación, dirección, orden inverso, columnas y espaciado) con defaults retrocompatibles e inspector común.
 - Navbar con logo por URL, texto alternativo y opción de mostrar el nombre de marca. Sin subida de archivos ni Storage.
 - Pruebas de layout y logo: defaults en páginas antiguas, validación Zod, `updateLayout`, renderer y store.
+- Subida de logo a Supabase Storage: bucket `page-assets`, RLS por carpeta, 1 MB y PNG/JPEG/WebP; validación en cliente y E2E de subida.
 
 ### Añadido
 

@@ -7,6 +7,7 @@ import {
 } from "@/features/page-builder/builder/fields";
 import type { BlockDefinition } from "@/features/page-builder/blocks/definition";
 import { layoutGapClass } from "@/features/page-builder/blocks/layout";
+import { LogoUpload } from "@/features/page-builder/blocks/navbar/LogoUpload";
 import { navbarDefaults, navbarSchema } from "@/features/page-builder/blocks/navbar/schema";
 import { cn } from "@/lib/utils";
 
@@ -132,15 +133,17 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
         maxLength={120}
         onChange={(logoAlt) => onChange({ ...props, logoAlt })}
       />
+      <LogoUpload
+        currentAlt={props.logoAlt}
+        brand={props.brand}
+        onUploaded={(logoUrl, logoAlt) => onChange({ ...props, logoUrl, logoAlt })}
+      />
       <ToggleField
         label="Mostrar nombre de marca"
         description="Si hay logo, acompaña a la imagen; sin logo, siempre se muestra el nombre."
         value={props.showBrandText}
         onChange={(showBrandText) => onChange({ ...props, showBrandText })}
       />
-      <p className="text-xs text-muted">
-        El logo se carga desde una URL pública. Esta versión no sube archivos.
-      </p>
       <TextField
         label="Etiqueta CTA"
         value={props.ctaLabel}
