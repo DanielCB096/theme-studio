@@ -11,7 +11,7 @@ import type { PageDocument } from "@/types/page";
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; page: PageDocument };
+  | { status: "ready"; page: PageDocument; id: string };
 
 export default function PublicPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -27,10 +27,10 @@ export default function PublicPage() {
     setState({ status: "loading" });
 
     getPublicPage(slug)
-      .then(({ page }) => {
+      .then(({ page, id }) => {
         if (!active) return;
         document.title = `${page.name} · Theme Studio`;
-        setState({ status: "ready", page });
+        setState({ status: "ready", page, id });
       })
       .catch((cause: unknown) => {
         if (active) {
@@ -80,7 +80,7 @@ export default function PublicPage() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <PageRenderer page={state.page} />
+      <PageRenderer page={state.page} runtime={{ mode: "public", pageId: state.id }} />
     </div>
   );
 }

@@ -265,3 +265,38 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - `npm run lint` — pasa. `npm run typecheck` — pasa. `npm test` — 31 archivos, 178 pruebas en verde.
 - No se ejecutaron Playwright ni despliegues; sin commit ni push.
 - Limitaciones: layout sin fondo/borde/padding por bloque; imágenes solo por URL (sin Storage); el ancho afecta al contenedor completo, incluido el fondo del bloque.
+
+## Hito 2A — Formularios públicos, respuestas y CSV (2026-11-26)
+
+**Estado: implementado, pendiente de migración/E2E.**
+
+- Rama de trabajo `feat/forms`; `main` y el Hito 2B no se han tocado.
+- Migración `004_submissions.sql`: tabla `page_submissions`, índices por `page_id` y `created_at desc`, grants y RLS (inserción anónima solo en páginas públicas; lectura/gestión solo del dueño).
+- Endpoint `api/submit-page-form.ts`: Zod estricto, honeypot `website`, rate limit de 5/10 min por IP, inserción con clave `anon`, `maxDuration = 30` y errores 400/405/429/500/502 sin registrar datos del formulario.
+- Cliente `submissions.ts` con timeout de 15 s, validación Zod de `{ ok: true }` y mensajes para 404, 429 y red.
+- `pageRuntime.tsx` + `PageRenderer` con `runtime`: el formulario sigue siendo demostración en builder y envía de verdad en `/p/:slug` con id real. Campos controlados, honeypot, estado **Enviando…**, éxito y error sin perder valores.
+- `submissionRepository.ts`: listar, marcar leída/no leída, eliminar y generar CSV (unión de campos, escape RFC 4180, sin BOM y neutralización de fórmulas tipo `=`, `+`, `-`, `@`).
+- Página protegida `/pages/:id/respuestas` con bandeja responsive, confirmación de borrado y descarga CSV; enlaces desde `/pages` y desde el builder cuando hay `savedId`.
+- Plugin de API en `vite.config.ts` para `npm run dev`: sirve `/api/*` con `ssrLoadModule`, adapta `req`/`res` y limita el cuerpo. Probado a mano: `POST /api/submit-page-form` inválido responde 400 y `GET /api/generate-palette` responde 405, sin llamar a la IA.
+- Documentación: ADR-020, sección de formularios en `PAGE_BUILDER.md`, este registro, `CHANGELOG.md` y README.
+
+**Pruebas ejecutadas**
+
+- `npm run lint` — pasa, 0 warnings.
+- `npm run typecheck` — pasa.
+- `npm test` — 36 archivos, **209 pruebas** en verde.
+- Playwright: **no ejecutado**; añadido `e2e/pages-form.spec.ts` (publicar → enviar → bandeja → CSV), pendiente de la migración.
+- `verify:rls`: matriz ampliada con respuestas de formulario (inserción anónima solo en públicas, lectura/gestión solo del dueño), pendiente de ejecutar tras la migración.
+- Migración: **no aplicada** en Supabase; el flujo real requiere ejecutar `004_submissions.sql`.
+
+**Problemas encontrados**
+
+- `VercelRequest.headers` está tipado como `any`; el `user-agent` se trata como `unknown` antes de truncar para cumplir las reglas de TypeScript.
+- Vite no vuelca `.env` en `process.env`; el plugin de desarrollo lo hace solo al arrancar el servidor, no durante Vitest.
+- El primer intento de smoke test del middleware usó `Invoke-WebRequest` con parámetros no disponibles en Windows PowerShell 5.1; se repitió con `curl.exe`.
+
+**Siguiente**
+
+- Aplicar la migración y verificar RLS con dos usuarios (dueño y anónimo).
+- E2E del flujo público: publicar → enviar formulario → ver la respuesta en la bandeja → descargar CSV.
+- Revisión humana antes de fusionar o desplegar.

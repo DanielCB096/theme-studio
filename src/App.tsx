@@ -10,6 +10,7 @@ const ThemesPage = lazy(() => import("@/pages/ThemesPage"));
 const SharedThemePage = lazy(() => import("@/pages/SharedThemePage"));
 const PagesPage = lazy(() => import("@/pages/PagesPage"));
 const PageBuilderPage = lazy(() => import("@/pages/PageBuilderPage"));
+const SubmissionsPage = lazy(() => import("@/pages/SubmissionsPage"));
 const PublicPage = lazy(() => import("@/pages/PublicPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
@@ -62,6 +63,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <PageBuilderPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pages/:id/respuestas"
+            element={
+              <ProtectedRoute>
+                <SubmissionsPage />
               </ProtectedRoute>
             }
           />

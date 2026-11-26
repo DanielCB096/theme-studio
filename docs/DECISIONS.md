@@ -364,3 +364,25 @@ Una entrada por decisión, en orden cronológico.
 - La limpieza al reemplazar un logo o borrar una página queda pendiente: hoy no se eliminan binarios huérfanos.
 - No hay antivirus ni análisis de contenido; el límite de MIME y tamaño es la única barrera además de la validación del navegador.
 - Los assets subidos antes de guardar la página van a `pages/draft/`; siguen siendo válidos y públicos, pero no se reorganizan al guardar.
+
+## ADR-020 · Formularios públicos con endpoint, honeypot y RLS
+
+**Contexto.** El bloque `form` era una demostración: no enviaba nada ni guardaba respuestas. El Hito 2A necesita recibir datos reales en páginas públicas sin añadir un backend propio ni exponer claves privilegiadas. La clave `anon` de Supabase puede viajar al navegador, pero una inserción directa deja todo el control de abuso en el cliente.
+
+**Opciones consideradas.**
+
+1. Insertar desde el navegador directamente en `page_submissions` con una política de `insert` para `anon`.
+2. Endpoint serverless propio (`POST /api/submit-page-form`) que valida, aplica honeypot y rate limit, e inserta con la clave `anon`; RLS decide si la página es pública.
+3. Servicio externo de formularios (Formspree y similares).
+
+**Decisión.** Opción 2. El endpoint usa Zod estricto (`pageId` uuid, 1–12 campos, claves de 60 y valores de 2000 caracteres, 20 KB serializados), descarta envíos con el honeypot `website` relleno, limita a 5 peticiones por IP cada 10 minutos y escribe con la clave `anon`, nunca con `service_role`. La tabla `page_submissions` tiene RLS: `anon` y `authenticated` solo pueden insertar si la página referenciada es pública; el dueño puede leer, marcar como leída y eliminar las respuestas de sus páginas. La bandeja y el CSV viven en el cliente autenticado.
+
+**Consecuencias.**
+
+- La autorización real está en Postgres: aunque alguien llame al endpoint directamente, RLS rechaza inserciones en páginas privadas.
+- El honeypot y el límite reducen spam básico, pero no lo eliminan: un atacante con muchas IPs puede seguir enviando. El rate limit es en memoria y no es global entre instancias serverless. Además, como el cliente usa la clave `anon`, alguien podría llamar a PostgREST directamente y saltarse el endpoint: el honeypot y el límite son disuasorios, no una barrera criptográfica.
+- No hay captcha, verificación por correo ni adjuntos en este hito; los límites de tamaño y el saneamiento de datos son la única defensa adicional.
+- El endpoint no registra los valores del formulario en logs. Un fallo de inserción responde 502 genérico para no filtrar detalles de RLS.
+- Si una página deja de ser pública, las respuestas nuevas se rechazan de inmediato; las ya guardadas siguen visibles para el dueño.
+- El CSV se genera en el navegador a partir de datos ya autorizados, sin un endpoint de exportación adicional.
+- El CSV neutraliza fórmulas: las celdas que empiezan por `=`, `+`, `-`, `@`, tabulador o retorno se prefijan con `'`, porque un visitante puede enviar esos valores y el dueño abriría el archivo en Excel o Sheets. El texto original se conserva en la bandeja.
