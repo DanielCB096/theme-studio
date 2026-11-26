@@ -268,7 +268,7 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 ## Hito 2A — Formularios públicos, respuestas y CSV (2026-11-26)
 
-**Estado: implementado, pendiente de migración/E2E.**
+**Estado: implementado y verificado en local; pendiente de merge y despliegue.**
 
 - Rama de trabajo `feat/forms`; `main` y el Hito 2B no se han tocado.
 - Migración `004_submissions.sql`: tabla `page_submissions`, índices por `page_id` y `created_at desc`, grants y RLS (inserción anónima solo en páginas públicas; lectura/gestión solo del dueño).
@@ -285,8 +285,9 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - `npm run lint` — pasa, 0 warnings.
 - `npm run typecheck` — pasa.
 - `npm test` — 36 archivos, **209 pruebas** en verde.
-- Playwright: **no ejecutado**; añadido `e2e/pages-form.spec.ts` (publicar → enviar → bandeja → CSV), pendiente de la migración.
-- `verify:rls`: matriz ampliada con respuestas de formulario (inserción anónima solo en públicas, lectura/gestión solo del dueño), pendiente de ejecutar tras la migración.
+- Playwright — **8/8** en verde, incluida la nueva `e2e/pages-form.spec.ts` (publicar → enviar anónimo → bandeja → marcar leída → CSV).
+- `npm run verify:rls` — **21/21**, con 7 comprobaciones nuevas de respuestas de formulario.
+- Migración `004_submissions.sql` aplicada en Supabase antes de ejecutar las pruebas.
 - Migración: **no aplicada** en Supabase; el flujo real requiere ejecutar `004_submissions.sql`.
 
 **Problemas encontrados**
@@ -294,9 +295,10 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - `VercelRequest.headers` está tipado como `any`; el `user-agent` se trata como `unknown` antes de truncar para cumplir las reglas de TypeScript.
 - Vite no vuelca `.env` en `process.env`; el plugin de desarrollo lo hace solo al arrancar el servidor, no durante Vitest.
 - El primer intento de smoke test del middleware usó `Invoke-WebRequest` con parámetros no disponibles en Windows PowerShell 5.1; se repitió con `curl.exe`.
+- En la revisión se detectó inyección de fórmulas en el CSV: un visitante podía enviar `=HYPERLINK(...)` y ejecutarse al abrir el archivo en Excel. Se neutralizan las celdas que empiezan por `=`, `+`, `-`, `@`, tabulador o retorno.
+- El primer E2E del formulario agotó los 30 s por defecto durante el arranque en frío de Vite; se subió el timeout global de Playwright a 60 s.
 
 **Siguiente**
 
-- Aplicar la migración y verificar RLS con dos usuarios (dueño y anónimo).
-- E2E del flujo público: publicar → enviar formulario → ver la respuesta en la bandeja → descargar CSV.
-- Revisión humana antes de fusionar o desplegar.
+- Fusionar en `main`, desplegar y repetir el E2E del formulario contra producción.
+- Revisión humana antes del Hito 2B.

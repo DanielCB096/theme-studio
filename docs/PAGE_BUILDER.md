@@ -139,7 +139,6 @@ Migración `004_submissions.sql`:
 - El rate limit es por instancia y en memoria; no es una cuota distribuida.
 - Sin paginación ni filtros en la bandeja: se listan todas las respuestas de la página.
 - Los campos del formulario se editan desde la plantilla; el inspector de listas sigue pendiente.
-- La migración debe aplicarse a mano en Supabase antes de probar el flujo real.
 
 ## Seguridad
 
@@ -178,4 +177,3 @@ Migración `004_submissions.sql`:
 - Sin paginación ni filtros en la bandeja de respuestas.
 - Sin edición de listas complejas de planes/formularios desde el inspector (se completará).
 - El tema se captura al crear la página; cambiarlo después no afecta a páginas existentes salvo que se edite el snapshot.
-- La migración `004_submissions.sql` y el E2E del envío real quedan pendientes de aplicar/ejecutar.

@@ -140,7 +140,7 @@ docker run --rm -p 8080:80 theme-studio
 | Lighthouse · Buenas prácticas     | 100                                                       |
 | Lighthouse · SEO                  | 100                                                       |
 | Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                      |
-| Pruebas                           | 209 unitarias/componentes · 8 E2E (Page Builder) · 14 RLS |
+| Pruebas                           | 209 unitarias/componentes · 8 E2E (Page Builder) · 21 RLS |
 | Respuesta de la IA                | 2–22 s según el modelo disponible; reserva local si falla |
 
 ## Pruebas
