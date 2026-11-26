@@ -46,6 +46,7 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 | 2026-11-26 | 2A   | `test`                               | Pasa: 36 archivos / 209 pruebas                   |
 | 2026-11-26 | 2A   | `test:e2e`                           | Pasa: 8 pruebas (incluye formulario y CSV)        |
 | 2026-11-26 | 2A   | `verify:rls`                         | Pasa: 21/21 (temas, páginas y respuestas)         |
+| 2026-11-26 | 2A   | `test:e2e` (producción)              | Pasa: 8/8 contra la URL pública                   |
 
 ## Page Builder (Anexo A)
 

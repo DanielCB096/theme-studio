@@ -268,7 +268,7 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 ## Hito 2A — Formularios públicos, respuestas y CSV (2026-11-26)
 
-**Estado: implementado y verificado en local; pendiente de merge y despliegue.**
+**Estado: implementado, verificado y desplegado en producción.**
 
 - Rama de trabajo `feat/forms`; `main` y el Hito 2B no se han tocado.
 - Migración `004_submissions.sql`: tabla `page_submissions`, índices por `page_id` y `created_at desc`, grants y RLS (inserción anónima solo en páginas públicas; lectura/gestión solo del dueño).
@@ -288,6 +288,8 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Playwright — **8/8** en verde, incluida la nueva `e2e/pages-form.spec.ts` (publicar → enviar anónimo → bandeja → marcar leída → CSV).
 - `npm run verify:rls` — **21/21**, con 7 comprobaciones nuevas de respuestas de formulario.
 - Migración `004_submissions.sql` aplicada en Supabase antes de ejecutar las pruebas.
+- Fusionado a `main` (`62e731f`) y desplegado; etiqueta `v1.3-forms`.
+- E2E contra producción: **8/8**, incluida la subida real a Storage y el envío real del formulario con su respuesta en la bandeja.
 - Migración: **no aplicada** en Supabase; el flujo real requiere ejecutar `004_submissions.sql`.
 
 **Problemas encontrados**
@@ -300,5 +302,5 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 **Siguiente**
 
-- Fusionar en `main`, desplegar y repetir el E2E del formulario contra producción.
-- Revisión humana antes del Hito 2B.
+- Revisión humana del formulario, la bandeja y el CSV en producción.
+- Hito 2B solo con aprobación explícita.
