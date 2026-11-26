@@ -5,9 +5,7 @@
 
 Editor visual de temas que aplica tus decisiones de diseño **en tiempo real** sobre una galería de componentes, con vista previa simultánea en móvil, tableta y escritorio.
 
-> Demo del editor de temas: **https://theme-studio-queserabernal.vercel.app**
->
-> Demo del Page Builder (rama `feat/page-builder`): **https://theme-studio-git-feat-page-builder-queserabernal.vercel.app**
+> Demo: **https://theme-studio-queserabernal.vercel.app** — editor de temas y Page Builder (`/pages`).
 
 ![Editor de Theme Studio con vista previa de escritorio y panel de accesibilidad](docs/assets/editor.png)
 

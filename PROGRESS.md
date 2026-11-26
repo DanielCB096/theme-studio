@@ -229,7 +229,7 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Anexo A incorporado a `AGENTS.md` y `CLAUDE.md`, con A.1–A.6 y la propuesta RLS de A.5 aprobada.
 - Decisiones cerradas: páginas alojadas en `/p/:slug`, backend solo Supabase, JSON de página como único export, tema en snapshot y `theme_id` opcional.
 
-**Hito 1 (implementado, pendiente de revisión)**
+**Hito 1 (revisado, aprobado y en producción)**
 
 - Modelo `PageDocument` con árbol normalizado, esquema Zod y saneamiento de URLs.
 - Nueve bloques con schema, defaults, renderer e inspector; registro único y `PageRenderer` compartido por builder y página pública.
@@ -241,9 +241,9 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - **179 pruebas** unitarias/componentes en verde, 6 E2E y RLS 14/14.
 - Migración `002_pages.sql` aplicada. RLS verificada con dos usuarios: **14/14** (9 de temas + 5 de páginas).
 - E2E de páginas: plantilla → editar hero → guardar → publicar → abrir `/p/:slug` anónimo en 375/768/1280. **6/6 E2E** en verde.
-- Preview desplegada de la rama: **https://theme-studio-git-feat-page-builder-queserabernal.vercel.app**
-- Revisión de la persona responsable: navbar con ubicación configurable (arriba, abajo, izquierda y derecha), a altura completa y sticky en laterales; en móvil se convierte en barra superior. Pendiente de definir el sistema de layout interno por bloque.
-- Criterio de parada: no empezar el Hito 2 hasta revisión humana del Hito 1.
+- Producción: **https://theme-studio-queserabernal.vercel.app** (rama `main`, fusionada con `--no-ff`).
+- Revisión de la persona responsable completada: navbar en cuatro lados a altura completa, Layout v1 por bloque, logo por URL y página de demostración en `/p/landing-nebula`.
+- Hito 2 no iniciado: requiere una nueva aprobación.
 
 **Revisión — Layout v1 y logo por URL (2026-11-25)**
 

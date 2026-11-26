@@ -5,7 +5,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [No publicado]
 
-### En desarrollo — Anexo A · Page Builder
+### Añadido — Anexo A · Page Builder (Hito 1)
 
 - Rama `feat/page-builder` y tag `v1.0-theme-editor` como punto de retorno.
 - ADR-017: evolución de editor de temas a constructor de páginas alojadas.
