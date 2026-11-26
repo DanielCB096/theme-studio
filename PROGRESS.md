@@ -245,6 +245,15 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Revisión de la persona responsable completada: navbar en cuatro lados a altura completa, Layout v1 por bloque, logo por URL y página de demostración en `/p/landing-nebula`.
 - Hito 2 no iniciado: requiere una nueva aprobación.
 
+## Hito 1.2 — Subida de assets a Supabase Storage (2026-11-26)
+
+- Migración `003_storage.sql`: bucket público `page-assets`, límite 1 MB, MIME PNG/JPEG/WebP y políticas por carpeta de usuario.
+- Cliente `pageAssets.ts`: validación de tipo/tamaño, ruta `{user_id}/pages/{page_id|draft}/{uuid}` y URL pública.
+- Inspector de navbar con “Subir logo”, estado de subida y errores legibles; se mantiene la opción de URL externa.
+- Pruebas unitarias de validación y rutas; E2E de subida, publicación y carga en anónimo.
+- **Verificado**: migración aplicada, 184 pruebas unitarias y **7/7 E2E**, incluida la subida real a Storage y la carga de la imagen en una página anónima.
+- Fusionado a `main` y desplegado en producción; no se ha empezado el Hito 2.
+
 **Revisión — Layout v1 y logo por URL (2026-11-25)**
 
 - `PageBlock.layout` con `width`, `align`, `direction`, `reverse`, `columns` y `gap`; schema con defaults retrocompatibles para páginas guardadas sin layout.

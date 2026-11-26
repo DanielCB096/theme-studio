@@ -1,6 +1,6 @@
 # Page Builder (Anexo A)
 
-Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1 completado y en producción**: https://theme-studio-queserabernal.vercel.app
+Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1 y 1.2 (assets) completados y en producción**: https://theme-studio-queserabernal.vercel.app
 
 ## Alcance
 
@@ -70,14 +70,16 @@ Cada bloque guarda un `layout` con defaults retrocompatibles: las páginas anter
 
 Cada bloque tiene una carpeta con `schema.ts` (Zod + defaults) e `index.tsx` (renderer + inspector). El **registro** (`blocks/registry.ts`) es la única fuente para la paleta, los tipos y el render.
 
-## Logo en la navbar (URL, sin Storage)
+## Logo en la navbar (URL o subida a Storage)
 
 - `NavbarProps` añade `logoUrl` (vacío por defecto), `logoAlt` (máximo 120) y `showBrandText` (`true` por defecto).
 - `logoUrl` acepta cadena vacía o una URL de imagen segura (`https`, `http` o ruta interna); `javascript:` y `data:` se rechazan con Zod.
 - Si hay logo, se renderiza con `object-contain` y altura basada en tokens (`--space-unit`); si además `showBrandText` está activo, el nombre acompaña a la imagen. Sin logo siempre se muestra la marca textual.
 - Funciona igual en barra horizontal y en columna lateral; respeta `placement`.
-- El inspector permite pegar la URL, el texto alternativo y activar o desactivar el nombre. **No hay subida de archivos ni Supabase Storage.**
-- Ejemplo publicado con logo: https://theme-studio-git-feat-page-builder-queserabernal.vercel.app/p/landing-nebula
+- El inspector permite pegar una URL o **subir un archivo** con el campo “Subir logo”.
+- Subida: bucket público `page-assets`; ruta `{user_id}/pages/{page_id|draft}/{uuid}.{ext}`; 1 MB máximo; PNG, JPEG o WebP (sin SVG); validación en cliente y en el bucket.
+- Escritura solo dentro de la carpeta del usuario (RLS de Storage); lectura pública para que las páginas publicadas carguen la imagen.
+- Ejemplo publicado con logo: https://theme-studio-queserabernal.vercel.app/p/landing-nebula
 
 ## Render
 
@@ -89,6 +91,7 @@ Un único `PageRenderer` alimenta el lienzo, la vista previa multidispositivo y 
 - URLs: solo `https`, `http`, `mailto`, `tel`, anclas y rutas internas; `javascript:` y `data:` se rechazan.
 - Sin `dangerouslySetInnerHTML`.
 - RLS de `pages`: lectura del dueño, lectura pública solo con `is_public`, insert/update/delete solo del dueño, `with check` en update.
+- RLS de Storage: bucket público de lectura; escritura solo si la primera carpeta coincide con `auth.uid()`; límite de 1 MB y MIME permitidos en el bucket.
 - Los formularios no envían datos en el Hito 1: no hay endpoint ni tabla de respuestas.
 
 ## Pruebas
@@ -99,14 +102,16 @@ Un único `PageRenderer` alimenta el lienzo, la vista previa multidispositivo y 
 - Renderer: bloques de la plantilla, enlaces seguros, selección, ancho de layout, logo con texto alternativo, marca textual y estado vacío.
 - Repositorio: slug, fila válida/dañada y resumen.
 - Store: carga, selección, edición, guardado, estado sucio y actualización de layout sin mutar otras páginas.
+- Assets: validación de tipo/tamaño, ruta por usuario/página y rechazo de SVG, GIF y archivos vacíos.
 - E2E (`e2e/pages.spec.ts`): plantilla → editar → guardar → publicar → abrir anónimo en 375/768/1280.
+- E2E (`e2e/pages-upload.spec.ts`): subir logo a Storage, guardar, publicar y verificar la imagen pública.
 - `npm run verify:rls` amplía la matriz con páginas privadas y públicas.
 
 ## Limitaciones conocidas del Hito 1
 
 - Sin anidación, drag & drop ni historial propio del builder.
 - Layout v1 no incluye fondo, borde ni padding por bloque; el ancho se aplica al contenedor completo del bloque.
-- Sin subida de archivos ni Supabase Storage: el logo y las imágenes se referencian por URL.
+- Subida de imágenes disponible para el logo; falta limpieza automática de assets al reemplazar el logo o borrar la página.
 - Sin formulario conectado a Supabase (Hito 2).
 - Sin edición de listas complejas de planes/formularios desde el inspector (se completará).
 - El tema se captura al crear la página; cambiarlo después no afecta a páginas existentes salvo que se edite el snapshot.

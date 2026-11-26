@@ -343,3 +343,24 @@ Una entrada por decisión, en orden cronológico.
 - Cambiar el tema global no altera páginas ya creadas; para actualizarlas habría que editar el snapshot (Hito futuro).
 - La anidación queda preparada en el modelo, pero fuera de alcance hasta que el producto la necesite.
 - Un solo renderer evita divergencias entre builder y página publicada.
+
+## ADR-019 · Assets de página en Supabase Storage
+
+**Contexto.** El logo y las imágenes de `textImage` se referenciaban por URL externa. Eso provoca enlaces roídos, hotlinks y dependencia de terceros. El proyecto ya tiene Supabase, así que no hace falta un servicio de assets aparte.
+
+**Opciones consideradas.**
+
+1. Seguir solo con URL externa.
+2. Guardar el binario en base64 dentro del JSON de la página.
+3. Supabase Storage con bucket público y RLS por carpeta.
+
+**Decisión.** Opción 3. Bucket `page-assets`, lectura pública, escritura solo en `{auth.uid()}/pages/...`, 1 MB y PNG/JPEG/WebP. El JSON guarda únicamente la URL pública. La validación de tipo y tamaño se hace en cliente y el bucket repite las restricciones.
+
+**Consecuencias.**
+
+- Los assets publicados tienen URL estable y no dependen de webs externas.
+- La lectura es pública por diseño: cualquiera con la URL puede ver el archivo, aunque no conozca su ruta sin acceso a la página.
+- No se acepta SVG en el MVP porque puede contener scripts; sanearlo requeriría una librería y una política propia.
+- La limpieza al reemplazar un logo o borrar una página queda pendiente: hoy no se eliminan binarios huérfanos.
+- No hay antivirus ni análisis de contenido; el límite de MIME y tamaño es la única barrera además de la validación del navegador.
+- Los assets subidos antes de guardar la página van a `pages/draft/`; siguen siendo válidos y públicos, pero no se reorganizan al guardar.
