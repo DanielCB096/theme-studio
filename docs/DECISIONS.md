@@ -386,3 +386,27 @@ Una entrada por decisión, en orden cronológico.
 - Si una página deja de ser pública, las respuestas nuevas se rechazan de inmediato; las ya guardadas siguen visibles para el dueño.
 - El CSV se genera en el navegador a partir de datos ya autorizados, sin un endpoint de exportación adicional.
 - El CSV neutraliza fórmulas: las celdas que empiezan por `=`, `+`, `-`, `@`, tabulador o retorno se prefijan con `'`, porque un visitante puede enviar esos valores y el dueño abriría el archivo en Excel o Sheets. El texto original se conserva en la bandeja.
+
+## ADR-021 · Dataset por página en tabla aparte, con lectura pública
+
+**Contexto.** El Hito 2B necesita que el bloque `table` muestre datos editables por el dueño sin convertirlo en una hoja de cálculo. Hay que decidir dónde viven esos datos, cómo se autorizan y cómo se leen desde una página publicada sin romper las páginas creadas antes de esta versión.
+
+**Opciones consideradas.**
+
+1. Guardar el dataset dentro del JSON de la página (`pages.data`).
+2. Una tabla independiente `page_datasets` con una fila por página y RLS que delega en `pages`.
+3. Un dataset por bloque `table` (cada tabla con sus propios datos).
+4. Una tabla externa por dataset o un servicio de hojas de cálculo.
+
+**Decisión.** Opción 2. `page_datasets` tiene `page_id` como clave primaria y `on delete cascade`; guarda `data jsonb` con `columns` y `rows`. La lectura se permite a `anon` y `authenticated` si la página es pública o si el usuario es su dueño; la escritura solo al dueño. El bloque `table` gana `source`, con `default("static")` para que un JSON antiguo siga leyéndose como tabla estática. Límites: 8 columnas, 200 filas, 200 caracteres por celda y 100 KB serializados; se validan con Zod en cliente y se repiten en la base de datos (`pg_column_size < 100000`).
+
+**Consecuencias.**
+
+- Editar datos no reescribe el JSON completo de la página ni cambia `updated_at` de `pages`; el dataset tiene su propio `updated_at`.
+- Al publicar una página, sus datos son legibles sin sesión. Es intencional: la tabla forma parte del contenido público. Un cambio de datos se refleja al recargar, sin volver a publicar.
+- La RLS se expresa cruzando `page_datasets.page_id` con `pages.is_public`/`pages.user_id`; no se duplica el dueño en la nueva tabla.
+- Un dataset por página evita duplicar datos entre varias tablas conectadas. La alternativa por bloque permitiría tablas distintas, pero multiplica el editor y las escrituras; queda para un hito posterior.
+- Guardar el dataset dentro de `pages.data` habría reducido una tabla, pero mezclaba contenido editorial con datos operativos, invalidaba el snapshot completo en cada cambio y hacía más difícil aplicar límites y RLS específicos.
+- `source` con default mantiene el aspecto de las páginas existentes y de las tablas ya creadas: solo las tablas que el autor cambie a «Datos de la página» consumen el dataset.
+- En público, una tabla sin dataset, sin columnas o sin filas no renderiza una sección vacía; en el builder se muestra una ayuda con enlace al editor de datos.
+- No hay filtros, ordenación, paginación, importación CSV ni imágenes en celdas en este hito.

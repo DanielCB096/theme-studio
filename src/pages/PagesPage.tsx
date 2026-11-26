@@ -1,4 +1,14 @@
-import { Copy, Eye, EyeOff, FilePlus2, Inbox, Loader2, Pencil, Trash2 } from "lucide-react";
+import {
+  Copy,
+  Database,
+  Eye,
+  EyeOff,
+  FilePlus2,
+  Inbox,
+  Loader2,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -160,6 +170,12 @@ export default function PagesPage() {
                       <Link to={`/builder/${item.id}`}>
                         <Pencil aria-hidden="true" className="h-4 w-4" />
                         Editar
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/pages/${item.id}/datos`}>
+                        <Database aria-hidden="true" className="h-4 w-4" />
+                        Datos
                       </Link>
                     </Button>
                     <Button variant="outline" size="sm" asChild>

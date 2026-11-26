@@ -121,6 +121,8 @@ export interface FormProps {
 
 export interface TableProps {
   title: string;
+  /** `static` usa columnas y filas propias; `page` lee el dataset de la página. */
+  source: "static" | "page";
   columns: string[];
   rows: string[][];
 }

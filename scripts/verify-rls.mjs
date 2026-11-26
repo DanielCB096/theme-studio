@@ -298,7 +298,91 @@ try {
     check("B no puede borrar respuestas de A", false, "falta la respuesta de prueba");
   }
 
-  // Limpieza: cada usuario borra lo suyo.
+  // --- Datos de página (Hito 2B) ----------------------------------------
+  const datasetData = (value) => ({
+    columns: [{ id: "col-1", label: "Nombre" }],
+    rows: [{ "col-1": value }],
+  });
+
+  const { error: privateDatasetError } = await a.supabase
+    .from("page_datasets")
+    .insert({ page_id: privatePage.id, data: datasetData("Privado A") });
+  if (privateDatasetError)
+    throw new Error(`insert dataset privado: ${privateDatasetError.message}`);
+
+  const { error: publicDatasetError } = await a.supabase
+    .from("page_datasets")
+    .insert({ page_id: publicPage.id, data: datasetData("Público A") });
+  if (publicDatasetError) throw new Error(`insert dataset público: ${publicDatasetError.message}`);
+
+  const { data: anonPublicDataset } = await anon
+    .from("page_datasets")
+    .select("page_id, data")
+    .eq("page_id", publicPage.id)
+    .maybeSingle();
+  check(
+    "Anon lee el dataset de una página pública",
+    anonPublicDataset?.data?.rows?.[0]?.["col-1"] === "Público A",
+    anonPublicDataset ? "fila visible" : "sin fila",
+  );
+
+  const { data: anonPrivateDataset } = await anon
+    .from("page_datasets")
+    .select("page_id")
+    .eq("page_id", privatePage.id)
+    .maybeSingle();
+  check("Anon no lee el dataset de una página privada", anonPrivateDataset === null);
+
+  const { data: bPublicDataset } = await b.supabase
+    .from("page_datasets")
+    .select("page_id, data")
+    .eq("page_id", publicPage.id)
+    .maybeSingle();
+  check(
+    "B lee el dataset de la página pública de A",
+    bPublicDataset?.data?.rows?.[0]?.["col-1"] === "Público A",
+    bPublicDataset ? "fila visible" : "sin fila",
+  );
+
+  const { data: bPrivateDataset } = await b.supabase
+    .from("page_datasets")
+    .select("page_id")
+    .eq("page_id", privatePage.id)
+    .maybeSingle();
+  check("B no lee el dataset de la página privada de A", bPrivateDataset === null);
+
+  const { data: bDatasetInsert } = await b.supabase
+    .from("page_datasets")
+    .insert({ page_id: publicPage.id, data: datasetData("Intento de B") })
+    .select("page_id");
+  check("B no puede insertar un dataset en una página de A", (bDatasetInsert ?? []).length === 0);
+
+  const { data: bDatasetUpdate } = await b.supabase
+    .from("page_datasets")
+    .update({ data: datasetData("Secuestrado por B") })
+    .eq("page_id", publicPage.id)
+    .select("page_id");
+  check("B no puede actualizar el dataset de A", (bDatasetUpdate ?? []).length === 0);
+
+  const { data: bDatasetDelete } = await b.supabase
+    .from("page_datasets")
+    .delete()
+    .eq("page_id", publicPage.id)
+    .select("page_id");
+  check("B no puede borrar el dataset de A", (bDatasetDelete ?? []).length === 0);
+
+  const { data: aOwnDataset } = await a.supabase
+    .from("page_datasets")
+    .select("page_id, data")
+    .eq("page_id", privatePage.id)
+    .maybeSingle();
+  check(
+    "A lee su propio dataset",
+    aOwnDataset?.data?.rows?.[0]?.["col-1"] === "Privado A",
+    aOwnDataset ? "fila visible" : "sin fila",
+  );
+
+  // Limpieza: cada usuario borra lo suyo (el dataset cae por cascade).
   await a.supabase.from("pages").delete().eq("user_id", a.userId);
   await b.supabase.from("pages").delete().eq("user_id", b.userId);
   await a.supabase.from("themes").delete().eq("user_id", a.userId);

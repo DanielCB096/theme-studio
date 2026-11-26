@@ -18,7 +18,7 @@ interface PageRendererProps {
   runtime?: PageRuntime;
 }
 
-const DEFAULT_RUNTIME: PageRuntime = { mode: "builder", pageId: null };
+const DEFAULT_RUNTIME: PageRuntime = { mode: "builder", pageId: null, dataset: null };
 
 interface BlockShellProps {
   block: PageBlock;

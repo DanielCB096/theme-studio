@@ -1,6 +1,6 @@
 # Page Builder (Anexo A)
 
-Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1 y 1.2 (assets) completados y en producción**: https://theme-studio-queserabernal.vercel.app · **Hito 2A implementado, pendiente de migración/E2E**.
+Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1, 1.2 (assets) y 2A (formularios) completados y en producción**: https://theme-studio-queserabernal.vercel.app · **Hito 2B implementado, pendiente de migración/E2E**.
 
 ## Alcance
 
@@ -17,6 +17,7 @@ Constructor de páginas alojadas que reutiliza el editor de temas como sistema d
 | `/pages`                | autenticado            | Lista, publicar, copiar enlace y eliminar páginas |
 | `/builder`              | autenticado            | Nueva página desde la plantilla de landing        |
 | `/builder/:id`          | autenticado (dueño)    | Editar una página existente                       |
+| `/pages/:id/datos`      | autenticado (dueño)    | Editor del dataset que consume la tabla conectada |
 | `/pages/:id/respuestas` | autenticado (dueño)    | Bandeja de respuestas del formulario y CSV        |
 | `/p/:slug`              | público si `is_public` | Página publicada, solo lectura                    |
 
@@ -64,7 +65,7 @@ Cada bloque guarda un `layout` con defaults retrocompatibles: las páginas anter
 | `features`  | título y hasta 6 ventajas                                                                  |
 | `pricing`   | hasta 3 planes con ventajas y CTA                                                          |
 | `form`      | campos, botón y mensaje de éxito; en páginas públicas guarda respuestas                    |
-| `table`     | columnas y filas estáticas                                                                 |
+| `table`     | origen estático o datos de la página (`source`), columnas y filas                          |
 | `cta`       | título, descripción y botón                                                                |
 | `footer`    | texto y enlaces                                                                            |
 | `textImage` | título, texto, imagen opcional y posición                                                  |
@@ -140,6 +141,58 @@ Migración `004_submissions.sql`:
 - Sin paginación ni filtros en la bandeja: se listan todas las respuestas de la página.
 - Los campos del formulario se editan desde la plantilla; el inspector de listas sigue pendiente.
 
+## Datos de página y tabla conectada (Hito 2B)
+
+Permite mantener **un dataset editable por página** y conectar el bloque `table` a esos datos. La página publicada solo los muestra; la edición vive en la zona autenticada.
+
+### Modelo y límites
+
+```ts
+type DatasetColumn = { id: string; label: string };
+type PageDataset = { columns: DatasetColumn[]; rows: Record<string, string>[] };
+```
+
+- Columnas: **1–8**. El `id` cumple `/^[a-z0-9][a-z0-9-]{0,23}$/` y es estable al renombrar; la etiqueta se recorta y admite 1–40 caracteres.
+- Filas: **0–200**. Cada celda es texto de hasta **200 caracteres**.
+- Todas las claves de una fila deben existir en `columns`; una clave extra se rechaza.
+- Tamaño serializado máximo: **100 000 bytes** (Zod en cliente; `pg_column_size < 100000` en Postgres).
+- Operaciones puras en `datasetOps.ts`: añadir/quitar columna, renombrar, añadir/quitar fila y actualizar celda, sin mutar el original.
+
+### Migración y RLS
+
+`005_page_datasets.sql` crea `public.page_datasets` (`page_id` PK, FK a `pages` con `on delete cascade`), `data jsonb`, `updated_at` y el trigger `touch_updated_at()`.
+
+- `select` para `anon` y `authenticated` si la página es pública (`p.is_public = true`) **o** el usuario es su dueño (`p.user_id = auth.uid()`).
+- `insert`, `update` y `delete` solo para el dueño de la página; `update` incluye `using` y `with check`.
+- Al borrar la página, el dataset cae por la FK con `on delete cascade`.
+
+### Editor de datos
+
+- Ruta protegida `/pages/:id/datos`, enlazada con el botón **Datos** de cada tarjeta en `/pages` y de la barra del builder cuando hay `savedId`.
+- Carga el nombre con `getPageRecord` y el dataset con `getPageDataset`; si no existe, empieza con `emptyDataset()` (dos columnas `col-1`/`col-2`, cero filas) y muestra una ayuda.
+- Tabla editable: etiquetas de columna, celdas, eliminar columna (con `Dialog` de confirmación porque borra datos), eliminar fila, añadir columna/fila hasta el límite y contador visible.
+- **Guardar datos** valida con Zod, hace upsert por `page_id` y muestra «Datos guardados.» o un error legible. El indicador «Sin guardar» compara con el último estado guardado.
+- Todos los controles tienen `aria-label` único, foco visible y navegación por teclado; la tabla usa scroll horizontal. No se usa `window.confirm`.
+- Si la página está publicada, se muestra su URL `/p/:slug` para probar.
+
+### Bloque `table`
+
+- `TableProps.source` es `static` (por defecto) o `page`; el esquema aplica `default("static")` para que un JSON anterior siga leyéndose sin cambios.
+- Origen **estático**: conserva columnas y filas del bloque, como antes.
+- Origen **datos de la página**: usa las columnas del dataset y una fila por registro (`row[column.id] ?? ""`). Añade `<caption class="sr-only">` con el título.
+- Sin dataset o sin columnas: en el builder muestra una ayuda con enlace a `/pages/{pageId}/datos` o «Guarda la página para conectar datos»; en público devuelve `null`.
+- Con cero filas: en el builder muestra cabeceras y «Sin filas todavía» con enlace; en público devuelve `null` para no dejar una sección vacía.
+- El inspector mantiene el título, añade **Origen de datos** y, en modo página, una nota y el enlace al editor. En modo estático conserva los campos de columnas y filas.
+- `PageRuntime` incorpora `dataset?: PageDataset | null` (por defecto `null`); `PublicPage` y el lienzo del builder lo cargan y lo pasan al `PageRenderer`.
+
+### Límites del Hito 2B
+
+- Un único dataset por página; no hay varios datasets ni dataset por bloque.
+- Sin CSV/importación, ordenación, filtros, paginación ni imágenes en celdas.
+- Un dataset dañado no rompe la página pública (se renderiza sin datos). En el builder se avisa sin impedir editar la página.
+- La tabla estática sigue disponible y es el valor por defecto de las páginas existentes.
+- La migración **no se ha aplicado** en este entorno; el flujo real y el E2E quedan pendientes de ejecutarla.
+
 ## Seguridad
 
 - Todo JSON externo se valida con Zod (`pageDocumentSchema`) antes de renderizar o guardar.
@@ -148,6 +201,7 @@ Migración `004_submissions.sql`:
 - RLS de `pages`: lectura del dueño, lectura pública solo con `is_public`, insert/update/delete solo del dueño, `with check` en update.
 - RLS de Storage: bucket público de lectura; escritura solo si la primera carpeta coincide con `auth.uid()`; límite de 1 MB y MIME permitidos en el bucket.
 - RLS de `page_submissions`: inserción anónima solo en páginas públicas; lectura y gestión solo del dueño.
+- RLS de `page_datasets`: lectura pública si la página es pública o si el usuario es el dueño; escritura solo del dueño.
 - Los formularios envían datos a un endpoint que valida, aplica honeypot y rate limit, e inserta con la clave `anon`; nunca con `service_role`.
 
 ## Pruebas
@@ -163,12 +217,16 @@ Migración `004_submissions.sql`:
 - Cliente de envío: éxito, 429, respuesta inválida, red y 404 del entorno local.
 - Formulario: envío público con campos controlados, éxito, error sin perder valores y ausencia de `pageId`.
 - Respuestas: parseo de fila, fila dañada y CSV exacto con acentos, comillas, comas, saltos de línea y neutralización de fórmulas.
+- Datos: esquema Zod (válido, sin columnas, más de 8, ids duplicados, etiqueta vacía, clave desconocida, valor de más de 200, más de 200 filas y tamaño excesivo), operaciones puras e inmutabilidad, y repositorio (parseo válido/dañado y upsert con Supabase simulado).
+- Tabla: render estático, datos del dataset en builder y público, ayuda sin dataset, «Sin filas todavía» y ausencia de sección vacía en público.
+- Editor de datos: carga, edición de celda, añadir fila, guardado con el dataset esperado, confirmación de borrado de columna y error de guardado.
 - E2E (`e2e/pages.spec.ts`): plantilla → editar → guardar → publicar → abrir anónimo en 375/768/1280.
 - E2E (`e2e/pages-upload.spec.ts`): subir logo a Storage, guardar, publicar y verificar la imagen pública.
 - E2E (`e2e/pages-form.spec.ts`): publicar → enviar el formulario anónimo → ver la respuesta, marcarla leída y descargar el CSV.
-- `npm run verify:rls` amplía la matriz con páginas y respuestas privadas/públicas.
+- E2E (`e2e/pages-dataset.spec.ts`): crear página → editar datos → conectar la tabla → publicar → ver los datos en anónimo. **No ejecutado todavía: requiere la migración `005_page_datasets.sql`.**
+- `npm run verify:rls` amplía la matriz con páginas, respuestas y datasets privados/públicos (las comprobaciones de datasets tampoco se han ejecutado todavía).
 
-## Limitaciones conocidas (Hito 1 y 2A)
+## Limitaciones conocidas (Hitos 1, 2A y 2B)
 
 - Sin anidación, drag & drop ni historial propio del builder.
 - Layout v1 no incluye fondo, borde ni padding por bloque; el ancho se aplica al contenedor completo del bloque.
@@ -176,4 +234,5 @@ Migración `004_submissions.sql`:
 - Formularios sin correo de notificación, adjuntos ni captcha; el rate limit es en memoria por instancia.
 - Sin paginación ni filtros en la bandeja de respuestas.
 - Sin edición de listas complejas de planes/formularios desde el inspector (se completará).
+- Datos de página: un dataset por página y sin CSV, ordenación, filtros, paginación ni imágenes en celdas.
 - El tema se captura al crear la página; cambiarlo después no afecta a páginas existentes salvo que se edite el snapshot.

@@ -304,3 +304,43 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 - Revisión humana del formulario, la bandeja y el CSV en producción.
 - Hito 2B solo con aprobación explícita.
+
+## Hito 2B — Datos de página y tabla conectada (2026-11-26)
+
+**Estado: implementado, pendiente de migración/E2E.**
+
+- Rama `feat/page-datasets`; no se han tocado `main` ni el Hito 2A (formularios).
+- Modelo `PageDataset` en `src/types/dataset.ts` y esquema Zod (`src/lib/datasetSchema.ts`): 1–8 columnas con id estable, etiquetas de 1–40, 0–200 filas, celdas de 200 caracteres, claves de fila existentes en `columns` y límite de 100 000 bytes serializados.
+- Operaciones puras en `datasetOps.ts`: dataset vacío, id libre, añadir/quitar columna, renombrar, añadir/quitar fila y actualizar celda; ninguna muta el original.
+- Migración `005_page_datasets.sql`: tabla `page_datasets` con `page_id` como PK y FK en cascada, `data jsonb` con límite `pg_column_size < 100000`, trigger `touch_updated_at`, grants y RLS (lectura pública solo si la página es pública; lectura del dueño; escritura solo del dueño). **No aplicada en Supabase.**
+- `datasetRepository.ts`: carga con `maybeSingle`, parseo Zod con error legible y upsert `onConflict: "page_id"`. Tipos `page_datasets` añadidos a `src/types/database.ts`.
+- `PageRuntime.dataset` (default `null`). `PublicPage` carga el dataset y sigue mostrando la página si falla. `PageBuilderPage` carga el dataset sin bloquear la edición, avisa si falla y pasa `runtime={{ mode: "builder", pageId: savedId, dataset }}` al lienzo.
+- Editor protegido `/pages/:id/datos`: nombre de página, dataset editable, confirmación con `Dialog` al borrar columna, límites y contador, «Sin guardar», «Datos guardados.», errores legibles, enlace a la página publicada y controles etiquetados.
+- Enlaces **Datos** en las tarjetas de `/pages` y en la barra del builder junto a **Respuestas**.
+- Bloque `table` con `source` (`static` por defecto para no alterar páginas antiguas; `page` para leer el dataset), caption accesible, celdas `row[id] ?? ""`, ayudas en builder y `null` en público cuando no hay datos o filas.
+- Documentación: ADR-021, sección del Hito 2B en `PAGE_BUILDER.md`, `CHANGELOG.md`, README y este registro.
+- E2E `e2e/pages-dataset.spec.ts` y comprobaciones de `page_datasets` en `scripts/verify-rls.mjs` escritos, **sin ejecutar** porque requieren la migración.
+
+**Pruebas ejecutadas**
+
+- `npm run format` — ejecutado.
+- `npm run lint` — pasa, 0 warnings.
+- `npm run typecheck` — pasa.
+- `npm test` — **41 archivos, 249 pruebas en verde**.
+- `npm run build` — pasa (chunk mayor 235,60 kB; vendor Supabase 230,92 kB).
+- Playwright — **no ejecutado** (requiere la migración `005_page_datasets.sql`).
+- `npm run verify:rls` — **no ejecutado** (las comprobaciones nuevas necesitan la migración).
+
+**Problemas encontrados**
+
+- `screen.getByRole` de Testing Library no admite `exact`; se corrigió el selector del diálogo de borrado de columna.
+- La regla `react-refresh/only-export-components` marcaba el enlace auxiliar del bloque; se convirtió en una función que devuelve el nodo, sin exportar un componente adicional.
+- La comprobación de tamaño usa Zod en cliente (`<= 100 000`) y `pg_column_size < 100000` en Postgres; son límites casi equivalentes, no idénticos byte a byte.
+- Un dataset dañado no debe romper la página pública: se degrada a `dataset: null` y la tabla se omite. En el builder se muestra un aviso sin impedir seguir editando.
+- El E2E y la matriz RLS de datasets quedan pendientes de una ejecución real con la migración aplicada.
+
+**Siguiente**
+
+- Revisión humana del Hito 2B.
+- Aplicar `005_page_datasets.sql` en Supabase y ejecutar `npm run test:e2e` y `npm run verify:rls`.
+- No iniciar un hito posterior sin revisión y aprobación explícitas.

@@ -101,6 +101,24 @@ export interface Database {
         };
         Relationships: [];
       };
+      page_datasets: {
+        Row: {
+          page_id: string;
+          data: Json;
+          updated_at: string;
+        };
+        Insert: {
+          page_id: string;
+          data: Json;
+          updated_at?: string;
+        };
+        Update: {
+          page_id?: string;
+          data?: Json;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
