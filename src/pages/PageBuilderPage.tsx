@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
+  Database,
   Frame,
   Inbox,
   Loader2,
@@ -25,8 +26,10 @@ import {
   renderBlockInspector,
 } from "@/features/page-builder/blocks/registry";
 import { LayoutInspector } from "@/features/page-builder/builder/LayoutInspector";
+import { getPageDataset } from "@/features/page-builder/datasetRepository";
 import { blocksInOrder } from "@/features/page-builder/pageOps";
 import { PageRenderer } from "@/features/page-builder/PageRenderer";
+import { PageRuntimeProvider } from "@/features/page-builder/pageRuntime";
 import {
   getPageRecord,
   publicPageUrl,
@@ -38,6 +41,7 @@ import { createLandingDocument } from "@/features/page-builder/templates/landing
 import { DevicePreview } from "@/features/preview/DevicePreview";
 import { cn } from "@/lib/utils";
 import { useThemeStore } from "@/store/themeStore";
+import type { PageDataset } from "@/types/dataset";
 
 export default function PageBuilderPage() {
   const { id } = useParams<{ id: string }>();
@@ -68,11 +72,15 @@ export default function PageBuilderPage() {
   const [published, setPublished] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
   const [showBounds, setShowBounds] = useState(false);
+  const [dataset, setDataset] = useState<PageDataset | null>(null);
+  const [datasetError, setDatasetError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     setError(null);
     setStatus(null);
+    setDataset(null);
+    setDatasetError(null);
 
     if (!id) {
       clear();
@@ -86,20 +94,40 @@ export default function PageBuilderPage() {
     }
 
     setLoading(true);
-    getPageRecord(id)
-      .then((record) => {
+
+    const loadPage = async () => {
+      try {
+        const record = await getPageRecord(id);
         if (!active) return;
+
         load(record.page, { id: record.id, slug: record.slug });
         setPublished(record.isPublic);
         setSlug(record.slug);
-      })
-      .catch((cause: unknown) => {
-        if (active)
+        setLoading(false);
+
+        // Los datos son independientes de la página: si fallan, se puede seguir editando.
+        try {
+          const savedDataset = await getPageDataset(record.id);
+          if (active) setDataset(savedDataset);
+        } catch (cause) {
+          if (active) {
+            setDataset(null);
+            setDatasetError(
+              cause instanceof Error
+                ? cause.message
+                : "No se pudieron cargar los datos de la página.",
+            );
+          }
+        }
+      } catch (cause) {
+        if (active) {
           setError(cause instanceof Error ? cause.message : "No se pudo cargar la página.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadPage();
 
     return () => {
       active = false;
@@ -186,12 +214,20 @@ export default function PageBuilderPage() {
         ) : null}
 
         {savedId ? (
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/pages/${savedId}/respuestas`}>
-              <Inbox aria-hidden="true" className="h-4 w-4" />
-              Respuestas
-            </Link>
-          </Button>
+          <>
+            <Button variant="outline" size="sm" asChild>
+              <Link to={`/pages/${savedId}/datos`}>
+                <Database aria-hidden="true" className="h-4 w-4" />
+                Datos
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to={`/pages/${savedId}/respuestas`}>
+                <Inbox aria-hidden="true" className="h-4 w-4" />
+                Respuestas
+              </Link>
+            </Button>
+          </>
         ) : null}
 
         <Button
@@ -230,6 +266,17 @@ export default function PageBuilderPage() {
             <div className="space-y-1">
               <AlertTitle>No se pudo completar</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
+            </div>
+          </Alert>
+        </div>
+      ) : null}
+
+      {datasetError ? (
+        <div className="p-density">
+          <Alert variant="info">
+            <div className="space-y-1">
+              <AlertTitle>Datos de la página</AlertTitle>
+              <AlertDescription>{datasetError}</AlertDescription>
             </div>
           </Alert>
         </div>
@@ -341,36 +388,39 @@ export default function PageBuilderPage() {
                 selectedId={selectedId}
                 onSelect={select}
                 debug={showBounds}
+                runtime={{ mode: "builder", pageId: savedId, dataset }}
               />
             </DevicePreview>
           </main>
 
-          <aside
-            aria-label="Propiedades del bloque"
-            className="w-full shrink-0 space-y-2 overflow-y-auto border-t bg-surface p-density lg:h-full lg:w-80 lg:border-l lg:border-t-0"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
-                Propiedades
-              </h2>
-              {selectedBlock ? <Badge variant="neutral">{selectedBlock.type}</Badge> : null}
-            </div>
-            {selectedBlock ? (
-              <>
-                <LayoutInspector
-                  block={selectedBlock}
-                  onChange={(layout) => updateLayout(selectedBlock.id, layout)}
-                />
-                {renderBlockInspector(selectedBlock, (props) =>
-                  updateProps(selectedBlock.id, props),
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-muted">
-                Selecciona un bloque en la estructura o con su botón «Seleccionar».
-              </p>
-            )}
-          </aside>
+          <PageRuntimeProvider runtime={{ mode: "builder", pageId: savedId, dataset }}>
+            <aside
+              aria-label="Propiedades del bloque"
+              className="w-full shrink-0 space-y-2 overflow-y-auto border-t bg-surface p-density lg:h-full lg:w-80 lg:border-l lg:border-t-0"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
+                  Propiedades
+                </h2>
+                {selectedBlock ? <Badge variant="neutral">{selectedBlock.type}</Badge> : null}
+              </div>
+              {selectedBlock ? (
+                <>
+                  <LayoutInspector
+                    block={selectedBlock}
+                    onChange={(layout) => updateLayout(selectedBlock.id, layout)}
+                  />
+                  {renderBlockInspector(selectedBlock, (props) =>
+                    updateProps(selectedBlock.id, props),
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted">
+                  Selecciona un bloque en la estructura o con su botón «Seleccionar».
+                </p>
+              )}
+            </aside>
+          </PageRuntimeProvider>
         </div>
       ) : null}
     </div>

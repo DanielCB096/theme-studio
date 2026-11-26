@@ -4,14 +4,21 @@ import { Link, useParams } from "react-router-dom";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { getPageDataset } from "@/features/page-builder/datasetRepository";
 import { PageRenderer } from "@/features/page-builder/PageRenderer";
 import { getPublicPage } from "@/features/page-builder/pageRepository";
+import type { PageDataset } from "@/types/dataset";
 import type { PageDocument } from "@/types/page";
 
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; page: PageDocument; id: string };
+  | {
+      status: "ready";
+      page: PageDocument;
+      id: string;
+      dataset: PageDataset | null;
+    };
 
 export default function PublicPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -27,10 +34,17 @@ export default function PublicPage() {
     setState({ status: "loading" });
 
     getPublicPage(slug)
-      .then(({ page, id }) => {
+      .then(async ({ page, id }) => {
+        let dataset: PageDataset | null = null;
+        try {
+          dataset = await getPageDataset(id);
+        } catch {
+          // Un dataset dañado no debe ocultar la página publicada.
+          dataset = null;
+        }
         if (!active) return;
         document.title = `${page.name} · Theme Studio`;
-        setState({ status: "ready", page, id });
+        setState({ status: "ready", page, id, dataset });
       })
       .catch((cause: unknown) => {
         if (active) {
@@ -80,7 +94,10 @@ export default function PublicPage() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <PageRenderer page={state.page} runtime={{ mode: "public", pageId: state.id }} />
+      <PageRenderer
+        page={state.page}
+        runtime={{ mode: "public", pageId: state.id, dataset: state.dataset }}
+      />
     </div>
   );
 }
