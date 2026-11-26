@@ -91,7 +91,7 @@ export function PageRenderer({
   const footer = withoutNavbar.find((block) => block.type === "footer");
   const middle = withoutNavbar.filter((block) => block !== footer);
 
-  const shell = (block: PageBlock) => (
+  const shell = (block: PageBlock, className?: string) => (
     <BlockShell
       key={block.id}
       block={block}
@@ -99,6 +99,7 @@ export function PageRenderer({
       selected={selectedId === block.id}
       onSelect={onSelect}
       debug={debug}
+      className={className}
     >
       {renderBlockContent(block)}
     </BlockShell>
@@ -108,31 +109,31 @@ export function PageRenderer({
     navbar && (navbar.props.placement === "left" || navbar.props.placement === "right");
 
   return (
-    <ThemeScope theme={page.theme} className="flex min-h-full flex-1 flex-col">
-      <div className="flex min-h-full flex-1 flex-col bg-background text-fg @container">
+    <ThemeScope theme={page.theme} className="min-h-full">
+      <div className="flex min-h-full flex-col bg-background text-fg @container">
         {blocks.length === 0 ? (
           <div className="grid min-h-64 place-items-center p-density text-sm text-muted">
             Esta página no tiene bloques todavía.
           </div>
         ) : sidebar && navbar ? (
-          <div className="flex min-h-full flex-1 flex-col @2xl:flex-row">
+          <div className="flex min-h-full flex-col @2xl:flex-row">
             <div
               className={cn(
-                "flex shrink-0 flex-col @2xl:sticky @2xl:top-0 @2xl:self-start",
+                "flex shrink-0 flex-col",
                 navbar.props.placement === "right" ? "order-first @2xl:order-last" : "order-first",
               )}
             >
-              {shell(navbar)}
+              {shell(navbar, "@2xl:sticky @2xl:top-0")}
             </div>
             <div className="min-w-0 flex-1">
-              {middle.map(shell)}
+              {middle.map((block) => shell(block))}
               {footer ? shell(footer) : null}
             </div>
           </div>
         ) : (
           <>
             {navbar && navbar.props.placement === "top" ? shell(navbar) : null}
-            {middle.map(shell)}
+            {middle.map((block) => shell(block))}
             {navbar && navbar.props.placement === "bottom" ? shell(navbar) : null}
             {footer ? shell(footer) : null}
           </>

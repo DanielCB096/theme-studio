@@ -26,6 +26,21 @@ test("crear página desde plantilla, editar, guardar, publicar y abrir en tres a
   await page.getByRole("button", { name: /1\. navbar/ }).click();
   await inspector.getByLabel("Ubicación").selectOption("left");
 
+  // La capa de selección debe seguir cubriendo la navbar al hacer scroll.
+  const sticky = await page.evaluate(() => {
+    const overlay = [...document.querySelectorAll("button")].find((button) =>
+      button.getAttribute("aria-label")?.startsWith("Seleccionar bloque 1: navbar"),
+    );
+    if (!overlay) return null;
+    const scroller = overlay.closest(".overflow-y-auto");
+    const before = overlay.getBoundingClientRect().top;
+    if (scroller) scroller.scrollTop = 600;
+    const after = overlay.getBoundingClientRect().top;
+    return { before, after };
+  });
+  expect(sticky).not.toBeNull();
+  expect(Math.abs((sticky?.after ?? 0) - (sticky?.before ?? 0))).toBeLessThan(5);
+
   await page.getByLabel("Nombre de la página").fill(pageName);
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
 
