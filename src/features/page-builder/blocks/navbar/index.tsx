@@ -44,7 +44,7 @@ export const navbarBlock: BlockDefinition<"navbar"> = {
           "bg-surface text-fg",
           layoutGapClass[layout.gap],
           vertical
-            ? "flex flex-wrap items-center p-[calc(var(--space-unit)*5)] @2xl:sticky @2xl:top-0 @2xl:h-[var(--page-height,100dvh)] @2xl:w-56 @2xl:flex-col @2xl:items-stretch @2xl:border-b-0"
+            ? "flex flex-wrap items-center p-[calc(var(--space-unit)*5)] @2xl:h-[var(--page-height,100dvh)] @2xl:w-56 @2xl:flex-col @2xl:items-stretch @2xl:border-b-0"
             : "flex flex-wrap items-center px-[calc(var(--space-unit)*6)] py-[calc(var(--space-unit)*4)]",
           props.placement === "top" && "border-b",
           props.placement === "bottom" && "border-t",

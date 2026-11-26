@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
+  Frame,
   Loader2,
   Plus,
   Save,
@@ -65,6 +66,7 @@ export default function PageBuilderPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [published, setPublished] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
+  const [showBounds, setShowBounds] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -181,6 +183,17 @@ export default function PageBuilderPage() {
             /p/{slug}
           </a>
         ) : null}
+
+        <Button
+          variant={showBounds ? "secondary" : "outline"}
+          size="sm"
+          onClick={() => setShowBounds((value) => !value)}
+          aria-pressed={showBounds}
+          title="Colorea cada bloque para ver sus límites"
+        >
+          <Frame aria-hidden="true" className="h-4 w-4" />
+          Límites
+        </Button>
 
         <Button
           variant="outline"
@@ -313,7 +326,12 @@ export default function PageBuilderPage() {
             className="min-h-0 flex-1 overflow-auto bg-background p-2 md:p-4"
           >
             <DevicePreview>
-              <PageRenderer page={page} selectedId={selectedId} onSelect={select} />
+              <PageRenderer
+                page={page}
+                selectedId={selectedId}
+                onSelect={select}
+                debug={showBounds}
+              />
             </DevicePreview>
           </main>
 

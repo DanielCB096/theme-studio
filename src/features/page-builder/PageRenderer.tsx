@@ -11,6 +11,8 @@ interface PageRendererProps {
   page: PageDocument;
   selectedId?: string | null;
   onSelect?: (blockId: string) => void;
+  /** Modo de inspección: tiñe cada bloque con un color distinto. */
+  debug?: boolean;
 }
 
 interface BlockShellProps {
@@ -18,11 +20,22 @@ interface BlockShellProps {
   position: number;
   selected: boolean;
   onSelect?: (blockId: string) => void;
+  debug?: boolean;
   children: ReactNode;
   className?: string;
 }
 
-function BlockShell({ block, position, selected, onSelect, children, className }: BlockShellProps) {
+function BlockShell({
+  block,
+  position,
+  selected,
+  onSelect,
+  debug,
+  children,
+  className,
+}: BlockShellProps) {
+  const hue = (position * 47) % 360;
+
   return (
     <div
       data-block-id={block.id}
@@ -46,6 +59,16 @@ function BlockShell({ block, position, selected, onSelect, children, className }
           aria-pressed={selected}
         />
       ) : null}
+      {debug ? (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-20"
+          style={{
+            backgroundColor: `hsla(${hue}, 90%, 50%, 0.10)`,
+            boxShadow: `inset 0 0 0 3px hsl(${hue}, 90%, 45%)`,
+          }}
+        />
+      ) : null}
       {children}
     </div>
   );
@@ -56,7 +79,12 @@ function BlockShell({ block, position, selected, onSelect, children, className }
  * columna lateral; en ese caso el resto del contenido ocupa la columna
  * principal. En móvil, la lateral se comporta como barra superior.
  */
-export function PageRenderer({ page, selectedId = null, onSelect }: PageRendererProps) {
+export function PageRenderer({
+  page,
+  selectedId = null,
+  onSelect,
+  debug = false,
+}: PageRendererProps) {
   const blocks = blocksInOrder(page);
   const navbar = blocks.find((block) => block.type === "navbar");
   const withoutNavbar = blocks.filter((block) => block !== navbar);
@@ -70,6 +98,7 @@ export function PageRenderer({ page, selectedId = null, onSelect }: PageRenderer
       position={page.rootIds.indexOf(block.id) + 1}
       selected={selectedId === block.id}
       onSelect={onSelect}
+      debug={debug}
     >
       {renderBlockContent(block)}
     </BlockShell>
@@ -89,7 +118,7 @@ export function PageRenderer({ page, selectedId = null, onSelect }: PageRenderer
           <div className="flex min-h-full flex-1 flex-col @2xl:flex-row">
             <div
               className={cn(
-                "flex shrink-0 flex-col",
+                "flex shrink-0 flex-col @2xl:sticky @2xl:top-0 @2xl:self-start",
                 navbar.props.placement === "right" ? "order-first @2xl:order-last" : "order-first",
               )}
             >

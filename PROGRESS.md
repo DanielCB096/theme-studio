@@ -253,6 +253,7 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Pruebas unitarias de validación y rutas; E2E de subida, publicación y carga en anónimo.
 - **Verificado**: migración aplicada, 184 pruebas unitarias y **7/7 E2E**, incluida la subida real a Storage y la carga de la imagen en una página anónima.
 - Fusionado a `main` y desplegado en producción; no se ha empezado el Hito 2.
+- Revisión de la navbar lateral: la capa de selección ahora acompaña al bloque sticky durante el scroll; añadido el modo **Límites** con un color por bloque.
 
 **Revisión — Layout v1 y logo por URL (2026-11-25)**
 

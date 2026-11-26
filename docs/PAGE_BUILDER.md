@@ -83,7 +83,7 @@ Cada bloque tiene una carpeta con `schema.ts` (Zod + defaults) e `index.tsx` (re
 
 ## Render
 
-Un único `PageRenderer` alimenta el lienzo, la vista previa multidispositivo y la página pública. Aplica `ThemeScope` (tokens del snapshot) y container queries. El ancho del layout se aplica al contenedor de cada bloque con clases estáticas y `layout` viaja al renderer de cada tipo. En el builder añade un botón de selección por bloque; la página publicada se renderiza sin controles.
+Un único `PageRenderer` alimenta el lienzo, la vista previa multidispositivo y la página pública. Aplica `ThemeScope` (tokens del snapshot) y container queries. El ancho del layout se aplica al contenedor de cada bloque con clases estáticas y `layout` viaja al renderer de cada tipo. En el builder añade un botón de selección por bloque; la página publicada se renderiza sin controles. El botón **Límites** colorea cada bloque con un tono distinto para inspeccionar sus bordes.
 
 ## Seguridad
 
