@@ -1,6 +1,6 @@
 # Page Builder (Anexo A)
 
-Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1, 1.2 (assets) y 2A (formularios) completados y en producción**: https://theme-studio-queserabernal.vercel.app · **Hito 2B implementado, pendiente de migración/E2E**.
+Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1, 1.2 (assets), 2A (formularios) y 2B (datasets) completados y en producción**: https://theme-studio-queserabernal.vercel.app.
 
 ## Alcance
 

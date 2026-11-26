@@ -307,7 +307,7 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 ## Hito 2B — Datos de página y tabla conectada (2026-11-26)
 
-**Estado: implementado, verificado y pendiente de merge.**
+**Estado: implementado, verificado y desplegado en producción.**
 
 - Rama `feat/page-datasets`; no se han tocado `main` ni el Hito 2A (formularios).
 - Modelo `PageDataset` en `src/types/dataset.ts` y esquema Zod (`src/lib/datasetSchema.ts`): 1–8 columnas con id estable, etiquetas de 1–40, 0–200 filas, celdas de 200 caracteres, claves de fila existentes en `columns` y límite de 100 000 bytes serializados.
@@ -330,6 +330,8 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - `npm run build` — pasa (chunk mayor 235,60 kB; vendor Supabase 230,92 kB).
 - Playwright — **9/9 en verde**, incluida `e2e/pages-dataset.spec.ts`.
 - `npm run verify:rls` — **29/29** comprobaciones (temas, páginas, respuestas y datasets).
+- Fusionado a `main` (`bfd5441`) y desplegado; etiqueta `v1.4-datasets`.
+- E2E contra producción: **9/9**, incluido el flujo de datos → tabla conectada → publicación anónima.
 
 **Problemas encontrados**
 
@@ -341,6 +343,5 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 **Siguiente**
 
-- Revisión humana del Hito 2B.
-- Fusionar en `main`, desplegar y repetir el E2E del dataset contra producción.
+- Revisión humana del Hito 2B en producción.
 - No iniciar un hito posterior sin revisión y aprobación explícitas.
