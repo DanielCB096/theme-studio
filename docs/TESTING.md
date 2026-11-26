@@ -40,8 +40,8 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 | 2026-11-25 | 6    | `test:e2e`                           | Pasa: 5 pruebas (incluye Pixel 5 emulado)         |
 | 2026-11-25 | 6    | Lighthouse (preview)                 | A11y 100 · Best Practices 100 · SEO 100           |
 | 2026-11-25 | 6    | `check:deploy` (Vercel)              | Pasa: Supabase, login, IA y aplicación en preview |
-| 2026-11-25 | A.1  | `test`                               | Pasa: 31 archivos / 179 pruebas                   |
-| 2026-11-25 | A.1  | `test:e2e`                           | Pasa: 6 pruebas (incluye Page Builder)            |
+| 2026-11-25 | A.1  | `test`                               | Pasa: 31 archivos / 184 pruebas                   |
+| 2026-11-25 | A.1  | `test:e2e`                           | Pasa: 7 pruebas (incluye subida a Storage)        |
 | 2026-11-25 | A.1  | `verify:rls`                         | Pasa: 14/14 (temas + paginas)                     |
 
 ## Page Builder (Anexo A)

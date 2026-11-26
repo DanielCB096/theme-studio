@@ -251,8 +251,8 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Cliente `pageAssets.ts`: validación de tipo/tamaño, ruta `{user_id}/pages/{page_id|draft}/{uuid}` y URL pública.
 - Inspector de navbar con “Subir logo”, estado de subida y errores legibles; se mantiene la opción de URL externa.
 - Pruebas unitarias de validación y rutas; E2E de subida, publicación y carga en anónimo.
-- **Pendiente de integración**: ejecutar `003_storage.sql` en Supabase antes de correr el E2E de subida y verificar en la preview.
-- No se ha empezado el Hito 2.
+- **Verificado**: migración aplicada, 184 pruebas unitarias y **7/7 E2E**, incluida la subida real a Storage y la carga de la imagen en una página anónima.
+- Fusionado a `main` y desplegado en producción; no se ha empezado el Hito 2.
 
 **Revisión — Layout v1 y logo por URL (2026-11-25)**
 
