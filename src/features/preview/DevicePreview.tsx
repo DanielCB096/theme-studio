@@ -1,5 +1,5 @@
 import { Columns3, Monitor, MoveHorizontal, RotateCw, Smartphone, Tablet } from "lucide-react";
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -29,7 +29,7 @@ const MODES = [
  * el ancho libre son locales: no forman parte del tema y no deberían ensuciar
  * el historial ni el autoguardado.
  */
-export function DevicePreview() {
+export function DevicePreview({ children }: { children?: ReactNode }) {
   const theme = useThemeStore((state) => state.theme);
   const [mode, setMode] = useState<PreviewMode>("desktop");
   const [rotated, setRotated] = useState<Record<DeviceId, boolean>>({
@@ -127,7 +127,9 @@ export function DevicePreview() {
                 label={DEVICE_PRESETS[id].label}
                 width={size.width}
                 height={size.height}
-              />
+              >
+                {children}
+              </DeviceFrame>
             );
           })}
         </div>
@@ -141,7 +143,9 @@ export function DevicePreview() {
             label={activeDevice ? DEVICE_PRESETS[activeDevice].label : "Ancho libre"}
             width={activeSize.width}
             height={activeSize.height}
-          />
+          >
+            {children}
+          </DeviceFrame>
         </div>
       ) : null}
 

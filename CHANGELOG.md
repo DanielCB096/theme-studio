@@ -5,6 +5,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [No publicado]
 
+### En desarrollo — Anexo A · Page Builder
+
+- Rama `feat/page-builder` y tag `v1.0-theme-editor` como punto de retorno.
+- ADR-017: evolución de editor de temas a constructor de páginas alojadas.
+- Modelo de página con árbol normalizado, registro de bloques y `PageRenderer` único.
+- Nueve bloques: navbar, hero, features, pricing, form, table, cta, footer y textImage.
+- Builder con paleta, estructura, inspector y vista previa multidispositivo.
+- Navbar configurable en cuatro ubicaciones (arriba, abajo, izquierda, derecha), adaptándose a barra superior en móvil y a altura completa/sticky en laterales.
+- Migración `002_pages.sql` con RLS, repositorio, rutas `/pages`, `/builder` y `/p/:slug`.
+- Corrección de defaults clonados por página.
+- Layout v1 por bloque (ancho, alineación, dirección, orden inverso, columnas y espaciado) con defaults retrocompatibles e inspector común.
+- Navbar con logo por URL, texto alternativo y opción de mostrar el nombre de marca. Sin subida de archivos ni Storage.
+- Pruebas de layout y logo: defaults en páginas antiguas, validación Zod, `updateLayout`, renderer y store.
+
 ### Añadido
 
 - Inicialización del proyecto: Vite + React 18 + TypeScript estricto.

@@ -157,7 +157,78 @@ try {
     `visibles: ${anonNames.join(", ") || "ninguno"}`,
   );
 
+  // --- Páginas (Anexo A) -------------------------------------------------
+  const pageDoc = (name) => ({ version: 1, name, theme: themeData(name), rootIds: [], blocks: {} });
+
+  const { data: privatePage, error: privatePageError } = await a.supabase
+    .from("pages")
+    .insert({
+      user_id: a.userId,
+      name: `Página privada A ${stamp}`,
+      slug: `rls-privada-${stamp}`,
+      data: pageDoc(`Página privada A ${stamp}`),
+      theme: themeData(`Página privada A ${stamp}`),
+      is_public: false,
+    })
+    .select("id, name, slug")
+    .single();
+  if (privatePageError) throw new Error(`insert página privada: ${privatePageError.message}`);
+
+  const { data: publicPage, error: publicPageError } = await a.supabase
+    .from("pages")
+    .insert({
+      user_id: a.userId,
+      name: `Página pública A ${stamp}`,
+      slug: `rls-publica-${stamp}`,
+      data: pageDoc(`Página pública A ${stamp}`),
+      theme: themeData(`Página pública A ${stamp}`),
+      is_public: true,
+    })
+    .select("id, name, slug")
+    .single();
+  if (publicPageError) throw new Error(`insert página pública: ${publicPageError.message}`);
+
+  const { data: bPages } = await b.supabase
+    .from("pages")
+    .select("id, name, is_public")
+    .eq("user_id", a.userId);
+  const bPageNames = (bPages ?? []).map((row) => row.name);
+  check(
+    "B no ve la página privada de A",
+    !bPageNames.includes(privatePage.name),
+    `visibles: ${bPageNames.join(", ") || "ninguno"}`,
+  );
+  check(
+    "B sí ve la página pública de A",
+    bPageNames.includes(publicPage.name),
+    `visibles: ${bPageNames.join(", ") || "ninguno"}`,
+  );
+
+  const { data: pageUpdate } = await b.supabase
+    .from("pages")
+    .update({ name: "secuestrada por B" })
+    .eq("id", privatePage.id)
+    .select("id");
+  check("B no puede actualizar la página privada de A", (pageUpdate ?? []).length === 0);
+
+  const { data: pageDelete } = await b.supabase
+    .from("pages")
+    .delete()
+    .eq("id", privatePage.id)
+    .select("id");
+  check("B no puede borrar la página privada de A", (pageDelete ?? []).length === 0);
+
+  const { data: anonPages } = await anon.from("pages").select("id, name").eq("user_id", a.userId);
+  const anonPageNames = (anonPages ?? []).map((row) => row.name);
+  check(
+    "Anon solo ve la página pública",
+    anonPageNames.length === 1 && anonPageNames[0] === publicPage.name,
+    `visibles: ${anonPageNames.join(", ") || "ninguno"}`,
+  );
+
   // Limpieza: cada usuario borra lo suyo.
+  await a.supabase.from("pages").delete().eq("user_id", a.userId);
+  await b.supabase.from("pages").delete().eq("user_id", b.userId);
   await a.supabase.from("themes").delete().eq("user_id", a.userId);
   await b.supabase.from("themes").delete().eq("user_id", b.userId);
 

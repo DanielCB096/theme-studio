@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 import { GalleryApp } from "@/features/preview/GalleryApp";
 import { ThemeScope } from "@/features/preview/ThemeScope";
@@ -13,6 +13,8 @@ interface DeviceFrameProps {
   /** Identificador estable para pruebas y estilos (mobile, tablet, desktop, free). */
   device: string;
   className?: string;
+  /** Contenido alternativo; si falta, se muestra la galería del editor. */
+  children?: ReactNode;
 }
 
 /** Ancho disponible del contenedor, medido con ResizeObserver. */
@@ -42,7 +44,15 @@ function useAvailableWidth() {
  * visualmente cuando no cabe, para que el layout interno se calcule con el
  * ancho del dispositivo y no con el del viewport.
  */
-export function DeviceFrame({ theme, label, width, height, device, className }: DeviceFrameProps) {
+export function DeviceFrame({
+  theme,
+  label,
+  width,
+  height,
+  device,
+  className,
+  children,
+}: DeviceFrameProps) {
   const { ref, width: available } = useAvailableWidth();
   const scale = available > 0 ? Math.min(1, Math.max(0.15, (available - 20) / width)) : 1;
   const outerWidth = width * scale + 16;
@@ -77,10 +87,16 @@ export function DeviceFrame({ theme, label, width, height, device, className }: 
             }}
             className="overflow-hidden rounded-lg border bg-surface"
           >
-            <div className="h-full overflow-y-auto overscroll-contain">
-              <ThemeScope theme={theme} className="min-h-full">
-                <GalleryApp />
-              </ThemeScope>
+            <div
+              className="flex h-full flex-col overflow-y-auto overscroll-contain"
+              style={{ "--page-height": `${height}px` } as CSSProperties}
+            >
+              {" "}
+              {children ?? (
+                <ThemeScope theme={theme} className="min-h-full">
+                  <GalleryApp />
+                </ThemeScope>
+              )}
             </div>
           </div>
         </div>

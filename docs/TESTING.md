@@ -40,6 +40,23 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 | 2026-11-25 | 6    | `test:e2e`                           | Pasa: 5 pruebas (incluye Pixel 5 emulado)         |
 | 2026-11-25 | 6    | Lighthouse (preview)                 | A11y 100 · Best Practices 100 · SEO 100           |
 | 2026-11-25 | 6    | `check:deploy` (Vercel)              | Pasa: Supabase, login, IA y aplicación en preview |
+| 2026-11-25 | A.1  | `test`                               | Pasa: 31 archivos / 179 pruebas                   |
+| 2026-11-25 | A.1  | `test:e2e`                           | Pasa: 6 pruebas (incluye Page Builder)            |
+| 2026-11-25 | A.1  | `verify:rls`                         | Pasa: 14/14 (temas + paginas)                     |
+
+## Page Builder (Anexo A)
+
+Pruebas añadidas en el Hito 1:
+
+- `src/lib/pageSchema.test.ts`: plantilla válida, tipo desconocido, URL peligrosa, ids repetidos, huérfanos, anidación y tema inválido.
+- `src/lib/url.test.ts`: protocolos permitidos y bloqueo de `javascript:`, `data:` y `//host`.
+- `pageOps.test.ts`: añadir, quitar, mover, actualizar props, renombrar y límite de bloques.
+- `PageRenderer.test.tsx`: bloques de la plantilla, enlaces seguros, selección accesible y estado vacío.
+- `pageRepository.test.ts`: slug, fila válida/dañada y resumen.
+- `pageBuilderStore.test.ts`: carga, selección, edición, guardado y estado sucio.
+- `e2e/pages.spec.ts`: plantilla → editar hero → guardar → publicar → abrir `/p/:slug` en 375/768/1280.
+
+Se ejecutaron tras aplicar `002_pages.sql`: 6/6 E2E y 14/14 comprobaciones RLS.
 
 ## Cobertura
 
