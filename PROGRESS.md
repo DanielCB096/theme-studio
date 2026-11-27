@@ -384,3 +384,46 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 - Revisión humana en producción.
 - Después, la fase de varios datasets por página (migración `006`).
+
+## Hito 2C — Fase 3: varios datasets por página (2026-11-27)
+
+**Estado: implementado, pendiente de migración y de E2E/RLS.** Rama `feat/multiple-datasets`; sin tocar `main`, formularios ni `AGENTS.md`/`CLAUDE.md`. No se ha hecho commit, push ni despliegue.
+
+**Hecho**
+
+- Migración `006_multiple_datasets.sql`, idempotente: añade `id uuid` (PK) y `name text` (1–60, default `'Datos'`), rellena la fila de 005 antes de los `not null`, mueve la PK de `page_id` a `id`, añade índice por `page_id`, único por `(page_id, lower(name))`, check de longitud, y conserva `data`, `updated_at`, trigger, grants y políticas RLS. **Sin aplicar en Supabase.**
+- `PageDatasetRecord` (`id`, `pageId`, `name`, `dataset`, `updatedAt`), tipos de `page_datasets` actualizados y límites de nombre/máximo en `datasetSchema.ts`.
+- `datasetRepository.ts`: `listPageDatasets` (orden por nombre, Zod y error que identifica el dataset dañado), `getPageDatasetRecord`, `createPageDataset` (límite de 10 con consulta previa y reintento `nombre 2`, `nombre 3`… ante `23505`), `savePageDataset(id, dataset, name)` con confirmación de lectura por id, `renamePageDataset` y `deletePageDataset`. Se mantiene `parseDatasetData` y el patrón de errores legibles.
+- `PageRuntime.datasets` (default `[]`). `PublicPage` carga la lista y degrada a `[]` si falla; `PageBuilderPage` la carga junto a la página, avisa sin bloquear la edición y la pasa al lienzo y al inspector.
+- `TableProps.datasetId` (`uuid | null`, default `null`). La tabla usa el dataset indicado; con `null` usa el primero (compatibilidad 2B); con un id inexistente no cae al primero y muestra «Dataset no encontrado» en el builder (en público no renderiza). Se conservan buscador, paginación, CSV, caption y todos los estados.
+- Inspector de tabla: **Dataset** con «Primero disponible», selección automática del primero al pasar de estático a página, enlaces a la lista y al editor del dataset y aviso si no hay datasets.
+- Rutas protegidas y lazy: `/pages/:id/datos` → lista (`DatasetsPage`) y `/pages/:id/datos/:datasetId` → editor (`DatasetPage`). La lista muestra tarjetas con nombre, columnas, filas, actualización, **Editar**, **Eliminar** con confirmación y aviso de tablas afectadas, **Nuevo dataset** con máximo 10, estados vacío/carga/error y enlaces a página/builder/URL pública.
+- El editor añade **Nombre del dataset**, guarda datos y nombre juntos, detecta datasets de otra página, conserva columnas, filas, CSV, límites, «Sin guardar», «Datos guardados.» y el diálogo de borrado de columna. No permite borrar el dataset desde el editor.
+- Los enlaces **Datos** de `/pages` y del builder siguen apuntando a la lista.
+- E2E `e2e/pages-multiple-datasets.spec.ts` escrito (dos datasets, dos tablas, publicación anónima, lista y recarga por id) y `pages-dataset.spec.ts`/`pages-csv.spec.ts` adaptados al nuevo flujo lista → editor.
+- `scripts/verify-rls.mjs` ampliado con dos datasets en la misma página, unicidad de nombre sin mayúsculas, lectura anónima de ambos y borrado selectivo del dueño.
+- Documentación: ADR-024, actualización de `PAGE_BUILDER.md`, README y CHANGELOG.
+
+**Pruebas ejecutadas**
+
+- `npm run format` — ejecutado.
+- `npm run lint` — pasa, 0 warnings.
+- `npm run typecheck` — pasa.
+- `npm test` — **43 archivos, 297 pruebas en verde**.
+- `npm run build` — pasa (chunk mayor 235,84 kB; vendor Supabase 230,92 kB; CSS 30,37 kB).
+- Playwright — **no ejecutado** en esta fase, por indicación del encargo.
+- `npm run verify:rls` — **no ejecutado**; la matriz nueva requiere aplicar `006`.
+
+**Problemas encontrados**
+
+- `maybeSingle()` deja de ser válido para leer «el» dataset de una página: la lectura pública y del builder pasan a `listPageDatasets` y la tabla selecciona por id.
+- La tabla debe distinguir «datasetId ausente por compatibilidad» de «id que ya no existe». Solo el primero cae al primer dataset; el segundo muestra la ayuda para no ocultar un enlace roto.
+- El límite de 10 se aplica en cliente; dos pestañas podrían superarlo porque Postgres no lo impone. Se documenta como carrera aceptada en ADR-024.
+- Al cambiar el modelo, los E2E de dataset y CSV ya no podían entrar directos al editor: ahora crean un dataset en la lista y esperan un `PATCH` (update por id) antes de recargar.
+- La lista no puede distinguir un dataset borrado de un id mal escrito; ambos se explican como «Dataset no encontrado» y enlazan a la lista.
+
+**Siguiente**
+
+- Aplicar `006_multiple_datasets.sql` en Supabase.
+- Ejecutar la suite E2E (incluida `pages-multiple-datasets.spec.ts`) y `npm run verify:rls`; actualizar los resultados reales.
+- Revisión humana antes de fusionar o desplegar.

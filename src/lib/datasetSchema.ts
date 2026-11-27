@@ -2,11 +2,26 @@ import { z } from "zod";
 
 import type { PageDataset } from "@/types/dataset";
 
-/** Límites del dataset por página (Hito 2B). */
+/** Límites del dataset por página (Hito 2B/2C). */
 export const MAX_DATASET_COLUMNS = 8;
 export const MAX_DATASET_ROWS = 200;
 export const MAX_DATASET_CELL_LENGTH = 200;
 export const MAX_DATASET_BYTES = 100_000;
+
+/** Varios datasets por página (Hito 2C). */
+export const MAX_DATASETS_PER_PAGE = 10;
+export const MAX_DATASET_NAME_LENGTH = 60;
+export const DEFAULT_DATASET_NAME = "Datos";
+
+/** Nombre editable y único por página; la base de datos compara sin mayúsculas. */
+export const datasetNameSchema = z
+  .string()
+  .trim()
+  .min(1, "El nombre del dataset no puede estar vacío.")
+  .max(
+    MAX_DATASET_NAME_LENGTH,
+    `El nombre del dataset no puede superar ${MAX_DATASET_NAME_LENGTH} caracteres.`,
+  );
 
 export const DATASET_COLUMN_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,23}$/;
 
@@ -93,6 +108,15 @@ export const pageDatasetSchema = z
 /** Garantía de compilación: lo validado es exactamente un `PageDataset`. */
 export const datasetSchemaMatchesType = (dataset: z.infer<typeof pageDatasetSchema>): PageDataset =>
   dataset;
+
+/** Valida el nombre de un dataset y devuelve la versión recortada. */
+export function validateDatasetName(input: unknown): string {
+  const parsed = datasetNameSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "El nombre del dataset no es válido.");
+  }
+  return parsed.data;
+}
 
 /** Valida datos externos y lanza un error legible con la primera incidencia. */
 export function validatePageDataset(input: unknown): PageDataset {

@@ -19,22 +19,28 @@ test("importar un CSV, guardarlo y verlo en una tabla publicada", async ({ page,
   await expect(page).toHaveURL(/\/builder\/[0-9a-f-]{36}$/, { timeout: 20_000 });
   const pageId = page.url().split("/builder/")[1];
 
-  // Editor de datos: importar el fixture y guardar.
+  // Lista de datasets: crear el primero y abrir su editor.
   await page.getByRole("link", { name: "Datos" }).click();
   await expect(page).toHaveURL(new RegExp(`/pages/${pageId}/datos$`), { timeout: 20_000 });
+  await expect(page.getByRole("heading", { name: /Datasets de/ })).toBeVisible();
+
+  await page.getByRole("button", { name: "Nuevo dataset" }).click();
+  await expect(page).toHaveURL(new RegExp(`/pages/${pageId}/datos/[0-9a-f-]{36}$`), {
+    timeout: 20_000,
+  });
   await expect(page.getByRole("heading", { name: /Datos de/ })).toBeVisible();
 
   await page.getByLabel("Importar CSV").setInputFiles(fixture);
   await expect(page.getByText(/CSV importado: 3 filas/)).toBeVisible({ timeout: 20_000 });
   await expect(page.getByLabel("Fila 1, columna 3 (Notas)")).toHaveValue("Con leche, sin azúcar");
 
-  // El E2E espera la respuesta del upsert antes de recargar: la interfaz puede
-  // mostrar el estado antes de que el navegador reciba el 201.
+  // El E2E espera la respuesta del update antes de recargar: la interfaz puede
+  // mostrar el estado antes de que el navegador reciba el 200.
   const saved = page.waitForResponse(
     (response) =>
       response.url().includes("page_datasets") &&
-      response.request().method() === "POST" &&
-      response.status() === 201,
+      response.request().method() === "PATCH" &&
+      response.status() === 200,
   );
 
   await page.getByRole("button", { name: "Guardar datos" }).click();
