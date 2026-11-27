@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [No publicado]
 
+### Añadido — Hito 2C: buscador, paginación e importación CSV
+
+- Bloque `table` con `searchable` y `pageSize` (`0`, `5`, `10` o `20`) y defaults retrocompatibles para las tablas guardadas.
+- Buscador en cliente por cualquier celda, sin distinguir mayúsculas ni acentos, con «N resultados» (`aria-live`), estado «No hay resultados.» y controles accesibles.
+- Paginación en cliente con `Página X de Y`, Anterior/Siguiente deshabilitados en los extremos, reinicio al buscar y recorte al rango válido.
+- Inspector con `CheckboxField` reutilizable, **Buscador** y **Filas por página** para tablas estáticas y conectadas al dataset.
+- Parser CSV RFC 4180 en `src/lib/csv.ts` (comillas, comas y saltos dentro de comillas, `""`, CRLF/LF, BOM y comilla sin cerrar) y conversión validada a `PageDataset`.
+- **Importar CSV** en el editor de datos: límite de 100 KB, mensajes de éxito y error, reemplazo en edición sin guardar hasta «Guardar datos» y posibilidad de reimportar el mismo archivo.
+- Fixture `e2e/fixtures/dataset.csv` y E2E `pages-table.spec.ts` y `pages-csv.spec.ts`; **11/11** E2E en la suite completa.
+- ADR-022 (buscador y paginación en cliente) y ADR-023 (importación CSV en cliente).
+- Pruebas: 273 unitarias/componentes en verde (42 archivos).
+
 ### Añadido — Hito 2B: datos de página y tabla conectada
 
 - Modelo `PageDataset` (columnas con id estable y filas de texto) y esquema Zod con límites de 8 columnas, 200 filas y 100 KB.

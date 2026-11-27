@@ -345,3 +345,40 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 - Revisión humana del Hito 2B en producción.
 - No iniciar un hito posterior sin revisión y aprobación explícitas.
+
+## Hito 2C — Fase 1 y 2: buscador, paginación y CSV (2026-11-27)
+
+**Estado: implementado y verificado en local; pendiente de merge.** Rama `feat/table-enhancements`; sin tocar `main` y sin migraciones.
+
+**Hecho**
+
+- `TableProps` añade `searchable` y `pageSize` (`0`, `5`, `10` o `20`). El esquema usa defaults retrocompatibles `false`/`0`; los bloques nuevos usan `true`/`10`.
+- Renderer de la tabla (`TableView`): normaliza filas a `string[][]`, filtra por cualquier celda sin distinguir mayúsculas ni acentos (`normalize("NFD")`, diacríticos fuera y `toLocaleLowerCase("es")`), anuncia «N resultados» con `aria-live`, muestra «No hay resultados.» sin ocultar la tabla y pagina en cliente con Anterior/Siguiente deshabilitados en los extremos.
+- La página vuelve a 1 al buscar o cambiar el tamaño y se recorta al rango válido si cambian las filas. Los controles están cubiertos por la capa de selección en el lienzo del builder; se usan en la página publicada.
+- Inspector: `CheckboxField` reutilizable, **Buscador** y **Filas por página** para origen estático y dataset, con nota sobre la página publicada.
+- `src/lib/csv.ts`: parser RFC 4180 propio (comillas, comas y saltos dentro de comillas, `""`, CRLF/LF, BOM y salto final) y `datasetFromCsv` con cabeceras recortadas/renombradas, ids `col-1…col-N`, límites de 8 columnas, 200 filas y 200 caracteres, relleno de filas cortas, rechazo de filas largas y validación final con Zod.
+- Editor de datos: **Importar CSV** con input de archivo oculto accesible, límite de 100 KB, lectura en el navegador, reemplazo del dataset en edición y mensaje «CSV importado: N filas. Pulsa “Guardar datos”.»; los errores usan la alerta «No se pudo importar el CSV». No guarda hasta pulsar «Guardar datos» y permite reimportar el mismo archivo.
+- Fixture `e2e/fixtures/dataset.csv` y E2E `e2e/pages-table.spec.ts` y `e2e/pages-csv.spec.ts`: **ejecutados**, con la suite completa en **11/11** y tres repeticiones de dataset/CSV.
+- Documentación: ADR-022, ADR-023, secciones del bloque `table` y del editor de datos en `PAGE_BUILDER.md`, README y CHANGELOG.
+
+**Pruebas ejecutadas**
+
+- `npm run format` — ejecutado; después se restauraron los archivos ajenos que solo habían cambiado de fin de línea.
+- `npm run lint` — pasa, 0 warnings.
+- `npm run typecheck` — pasa.
+- `npm test` — **42 archivos, 273 pruebas en verde**.
+- `npm run build` — pasa (chunk mayor 235,62 kB; vendor Supabase 230,92 kB; CSS 30,19 kB).
+- Playwright — **11/11 en verde**, incluidos `pages-table.spec.ts` y `pages-csv.spec.ts`.
+
+**Problemas encontrados**
+
+- `react-refresh/only-export-components` marcó `TableView` al vivir en el mismo archivo que el registro del bloque; se extrajo a `blocks/table/TableView.tsx`.
+- `File.text()` funciona en el jsdom actual, pero se dejó un respaldo con `FileReader` para navegadores antiguos.
+- Las cabeceras CSV vacías se convierten en `Columna N` y las duplicadas se conservan: los ids son los que identifican la columna. Las etiquetas de más de 40 caracteres se recortan.
+- La paginación y el buscador no se pueden probar en el lienzo del builder porque la capa de selección cubre los controles; es el comportamiento acordado y queda documentado.
+- El E2E de CSV recargaba justo después de «Datos guardados.» y podía hacerlo antes de recibir el 201 del upsert; ahora espera la respuesta del POST antes de recargar. Tres repeticiones y la suite completa pasan.
+
+**Siguiente**
+
+- Revisión humana, merge y despliegue.
+- Después, la fase de varios datasets por página (migración `006`).

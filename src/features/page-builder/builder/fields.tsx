@@ -2,6 +2,7 @@ import { Plus, X } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -93,6 +94,37 @@ export function SelectField<T extends string | number>({
           </option>
         ))}
       </Select>
+    </div>
+  );
+}
+
+export function CheckboxField({
+  label,
+  checked,
+  onChange,
+  description,
+  id,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  description?: string;
+  /** Id estable para asociar etiqueta y control (por defecto se deriva de la etiqueta). */
+  id?: string;
+}) {
+  const fieldId = id ?? `field-${label.toLowerCase().replace(/\W+/g, "-")}`;
+  return (
+    <div className="flex items-start gap-2">
+      <Checkbox
+        id={fieldId}
+        checked={checked}
+        onCheckedChange={(value) => onChange(value === true)}
+        className="mt-0.5"
+      />
+      <div className="space-y-0.5">
+        <Label htmlFor={fieldId}>{label}</Label>
+        {description ? <p className="text-xs text-muted">{description}</p> : null}
+      </div>
     </div>
   );
 }

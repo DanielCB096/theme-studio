@@ -119,12 +119,19 @@ export interface FormProps {
   successMessage: string;
 }
 
+export const TABLE_PAGE_SIZES = [0, 5, 10, 20] as const;
+export type TablePageSize = (typeof TABLE_PAGE_SIZES)[number];
+
 export interface TableProps {
   title: string;
   /** `static` usa columnas y filas propias; `page` lee el dataset de la página. */
   source: "static" | "page";
   columns: string[];
   rows: string[][];
+  /** Muestra el buscador en la tabla (solo lectura en la página publicada). */
+  searchable: boolean;
+  /** Filas por página; `0` muestra todas. */
+  pageSize: TablePageSize;
 }
 
 export interface CtaProps {

@@ -9,10 +9,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { SelectField, TextAreaField, TextField } from "@/features/page-builder/builder/fields";
+import {
+  CheckboxField,
+  SelectField,
+  TextAreaField,
+  TextField,
+} from "@/features/page-builder/builder/fields";
 import type { BlockDefinition } from "@/features/page-builder/blocks/definition";
 import { layoutGapClass } from "@/features/page-builder/blocks/layout";
 import { tableDefaults, tableSchema } from "@/features/page-builder/blocks/table/schema";
+import { TableView } from "@/features/page-builder/blocks/table/TableView";
 import { usePageRuntime } from "@/features/page-builder/pageRuntime";
 import { cn } from "@/lib/utils";
 
@@ -46,64 +52,41 @@ export const tableBlock: BlockDefinition<"table"> = {
   Renderer: ({ props, layout }) => {
     const runtime = usePageRuntime();
     const isPublic = runtime.mode === "public";
-    const dataset = props.source === "page" ? (runtime.dataset ?? null) : null;
+    const usesDataset = props.source === "page";
+    const dataset = usesDataset ? (runtime.dataset ?? null) : null;
 
-    if (props.source === "page") {
-      const columns = dataset?.columns ?? [];
-      const rows = dataset?.rows ?? [];
+    const columns = usesDataset
+      ? (dataset?.columns ?? []).map((column) => column.label)
+      : [...props.columns];
+    const rows = usesDataset
+      ? (dataset?.rows ?? []).map((row) =>
+          (dataset?.columns ?? []).map((column) => row[column.id] ?? ""),
+        )
+      : props.rows.map((row) => props.columns.map((_, cellIndex) => row[cellIndex] ?? ""));
 
-      if (columns.length === 0) {
-        if (isPublic) return null;
-        return (
-          <section className="border-b bg-surface px-density py-[calc(var(--space-unit)*10)]">
-            <div className={cn("mx-auto flex max-w-4xl flex-col", layoutGapClass[layout.gap])}>
-              <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
-              <Alert variant="info">
-                <AlertDescription>
-                  Esta tabla se alimenta de los datos de la página.{" "}
-                  {runtime.pageId ? (
-                    <>{dataLink(runtime.pageId)} para añadir columnas y filas.</>
-                  ) : (
-                    "Guarda la página para conectar datos."
-                  )}
-                </AlertDescription>
-              </Alert>
-            </div>
-          </section>
-        );
-      }
+    if (usesDataset && columns.length === 0) {
+      if (isPublic) return null;
+      return (
+        <section className="border-b bg-surface px-density py-[calc(var(--space-unit)*10)]">
+          <div className={cn("mx-auto flex max-w-4xl flex-col", layoutGapClass[layout.gap])}>
+            <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
+            <Alert variant="info">
+              <AlertDescription>
+                Esta tabla se alimenta de los datos de la página.{" "}
+                {runtime.pageId ? (
+                  <>{dataLink(runtime.pageId)} para añadir columnas y filas.</>
+                ) : (
+                  "Guarda la página para conectar datos."
+                )}
+              </AlertDescription>
+            </Alert>
+          </div>
+        </section>
+      );
+    }
 
-      if (rows.length === 0) {
-        if (isPublic) return null;
-        return (
-          <section className="border-b bg-surface px-density py-[calc(var(--space-unit)*10)]">
-            <div className={cn("mx-auto flex max-w-4xl flex-col", layoutGapClass[layout.gap])}>
-              <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
-              <Table>
-                <caption className="sr-only">{props.title}</caption>
-                <TableHeader>
-                  <TableRow>
-                    {columns.map((column) => (
-                      <TableHead key={column.id}>{column.label}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="text-sm text-muted">
-                      Sin filas todavía.{" "}
-                      {runtime.pageId
-                        ? dataLink(runtime.pageId)
-                        : "Guarda la página para conectar datos."}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </section>
-        );
-      }
-
+    if (usesDataset && rows.length === 0) {
+      if (isPublic) return null;
       return (
         <section className="border-b bg-surface px-density py-[calc(var(--space-unit)*10)]">
           <div className={cn("mx-auto flex max-w-4xl flex-col", layoutGapClass[layout.gap])}>
@@ -112,19 +95,20 @@ export const tableBlock: BlockDefinition<"table"> = {
               <caption className="sr-only">{props.title}</caption>
               <TableHeader>
                 <TableRow>
-                  {columns.map((column) => (
-                    <TableHead key={column.id}>{column.label}</TableHead>
+                  {columns.map((column, index) => (
+                    <TableHead key={`head-${index}`}>{column}</TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((row, index) => (
-                  <TableRow key={`row-${index}`}>
-                    {columns.map((column) => (
-                      <TableCell key={column.id}>{row[column.id] ?? ""}</TableCell>
-                    ))}
-                  </TableRow>
-                ))}
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="text-sm text-muted">
+                    Sin filas todavía.{" "}
+                    {runtime.pageId
+                      ? dataLink(runtime.pageId)
+                      : "Guarda la página para conectar datos."}
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </div>
@@ -133,30 +117,14 @@ export const tableBlock: BlockDefinition<"table"> = {
     }
 
     return (
-      <section className="border-b bg-surface px-density py-[calc(var(--space-unit)*10)]">
-        <div className={cn("mx-auto flex max-w-4xl flex-col", layoutGapClass[layout.gap])}>
-          <h2 className="text-xl font-semibold leading-tight">{props.title}</h2>
-          <Table>
-            <caption className="sr-only">{props.title}</caption>
-            <TableHeader>
-              <TableRow>
-                {props.columns.map((column) => (
-                  <TableHead key={column}>{column}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {props.rows.map((row, index) => (
-                <TableRow key={`row-${index}`}>
-                  {row.map((cell, cellIndex) => (
-                    <TableCell key={`cell-${cellIndex}`}>{cell}</TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
+      <TableView
+        title={props.title}
+        columns={columns}
+        rows={rows}
+        searchable={props.searchable}
+        pageSize={props.pageSize}
+        gap={layout.gap}
+      />
     );
   },
   Inspector: ({ props, onChange }) => {
@@ -230,6 +198,28 @@ export const tableBlock: BlockDefinition<"table"> = {
             />
           </>
         )}
+
+        <CheckboxField
+          label="Buscador"
+          checked={props.searchable}
+          description="Filtra por cualquier celda, sin distinguir mayúsculas ni acentos."
+          onChange={(searchable) => onChange({ ...props, searchable })}
+        />
+        <SelectField
+          label="Filas por página"
+          value={props.pageSize}
+          options={[
+            { value: 0, label: "Todas" },
+            { value: 5, label: "5" },
+            { value: 10, label: "10" },
+            { value: 20, label: "20" },
+          ]}
+          onChange={(pageSize) => onChange({ ...props, pageSize })}
+        />
+        <p className="text-xs text-muted">
+          El buscador y la paginación se usan en la página publicada. En el lienzo del builder la
+          capa de selección cubre estos controles.
+        </p>
       </div>
     );
   },
