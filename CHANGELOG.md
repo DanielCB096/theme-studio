@@ -23,6 +23,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - Aviso de máximo 50 filas y 6 columnas en la tabla estática, con indicación de usar un dataset para más datos.
 - E2E `pages-publish-saves.spec.ts` y clic real en los controles dentro de `pages-table.spec.ts`.
 - La página publicada usa un landmark `main` único (Lighthouse: accesibilidad 98 → 100); el builder conserva su `main` de lienzo sin anidarlo.
+- CI E2E: sesión única reutilizada con `storageState`, diagnóstico de los secretos de Supabase y omisión limpia de las pruebas autenticadas cuando faltan. Con secretos, la suite local completa es 14/14.
 
 ### Añadido — Hito 2C: buscador, paginación e importación CSV
 

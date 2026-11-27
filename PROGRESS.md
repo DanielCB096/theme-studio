@@ -436,5 +436,7 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - El buscador y la paginación de la tabla se veían en el lienzo, pero la capa de selección del bloque los bloqueaba. Los controles se elevan (`relative z-20`) por encima de la capa; el resto del bloque sigue seleccionándose. El E2E de tabla hace un clic real en el buscador y en Anterior/Siguiente dentro del builder.
 - Se añade un aviso de **máximo 50 filas y 6 columnas** en la tabla estática (antes 20); para más datos hay que usar un dataset. La página reportada tenía filas con celdas de más y texto concatenado de una edición manual; no se modificó su contenido.
 - Durante la revisión se creó y eliminó un dataset de prueba en esa página; el resto de datos quedó intacto.
-- Pruebas: **299 unitarias**, **13/13 E2E**.
+- Pruebas: **299 unitarias**, **14 E2E** (13 escenarios + setup).
+- Cobertura: **94,51 % de líneas / 90,88 % de ramas**. Lighthouse en producción: **100 accesibilidad · 100 buenas prácticas · 100 SEO**.
+- CI: el job E2E estaba en rojo porque **faltaban los secretos `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` en GitHub**, no por la app. Se añadió un diagnóstico, la reutilización de la sesión con `storageState` y la omisión limpia sin secretos. El CI queda **verde** con calidad + 4 E2E y 10 omitidas; para la suite completa hay que añadir los secretos en el repositorio.
 - Fusionado a `main` (`5123b2c`), desplegado y etiquetado `v1.6.1-builder-fixes`; E2E contra producción: **13/13**. Se eleva además el límite de la tabla estática a 50 filas (`v1.6.2`).

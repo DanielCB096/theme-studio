@@ -141,17 +141,19 @@ docker run --rm -p 8080:80 theme-studio
 
 | Métrica                           | Valor                                                     |
 | --------------------------------- | --------------------------------------------------------- |
-| Cobertura `src/lib` + `src/store` | 93,75 % de líneas · 92,07 % de ramas                      |
+| Cobertura `src/lib` + `src/store` | 94,51 % de líneas · 90,88 % de ramas                      |
 | Lighthouse · Accesibilidad        | 100                                                       |
 | Lighthouse · Buenas prácticas     | 100                                                       |
 | Lighthouse · SEO                  | 100                                                       |
-| Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                      |
-| Pruebas                           | 299 unitarias/componentes · 13 E2E ejecutadas · 33 RLS    |
+| Chunk mayor                       | 235,8 kB (70,9 kB gzip, vendor Supabase)                  |
+| Pruebas                           | 299 unitarias/componentes · 14 E2E (13 + setup) · 33 RLS  |
 | Respuesta de la IA                | 2–22 s según el modelo disponible; reserva local si falla |
 
 ## Pruebas
 
 Ver [`docs/TESTING.md`](docs/TESTING.md).
+
+El job **E2E de GitHub Actions** usa los secretos `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. Sin ellos, las pruebas que necesitan login se omiten y se ejecutan las de vista previa y móvil; para la suite completa (14 pruebas: 13 escenarios + setup de sesión), añádelos en _Settings → Secrets and variables → Actions_.
 
 ## Seguridad
 
@@ -168,7 +170,7 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 - **Enlace mágico en producción**: su destino depende de _Redirect URLs_ en Supabase. Si no añades `https://theme-studio-queserabernal.vercel.app/**`, el correo apuntará a `localhost`. El acceso con contraseña sí funciona en la demo.
 - El nivel gratuito de Gemini devuelve 503 con frecuencia; la función prueba varios modelos y, si todos fallan, responde con la reserva local etiquetada como tal.
 - Los formularios del Hito 2A no envían correo ni aceptan adjuntos; el rate limit es en memoria y no sustituye a un captcha. La bandeja no tiene paginación.
-- Los datos de página admiten hasta 10 datasets por página, uno por bloque, sin mover datasets entre páginas ni ordenación o filtros por columna. La búsqueda y la paginación de la tabla son en cliente; la importación CSV reemplaza el dataset completo. La migración `006` está aplicada, los E2E de 2C se ejecutaron contra el proyecto real (12/12) y la matriz RLS registrada es 33/33.
+- Los datos de página admiten hasta 10 datasets por página, uno por bloque, sin mover datasets entre páginas ni ordenación o filtros por columna. La búsqueda y la paginación de la tabla son en cliente; la importación CSV reemplaza el dataset completo. La migración `006` está aplicada, los E2E de 2C se ejecutaron contra el proyecto real (13/13 escenarios) y la matriz RLS registrada es 33/33.
 - El rate limit de la IA vive en memoria: no es global entre instancias serverless ni sustituye a una cuota de producción.
 - «Confirm email» está desactivado en Supabase para permitir los E2E; es un tradeoff de demo, no una configuración recomendable en producción.
 - Los E2E usan una cuenta fija (`theme-studio-e2e@example.com`) y crean temas de prueba; los temas se pueden borrar desde la cuenta y las cuentas antiguas desde el dashboard.
