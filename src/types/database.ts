@@ -103,17 +103,23 @@ export interface Database {
       };
       page_datasets: {
         Row: {
+          id: string;
           page_id: string;
+          name: string;
           data: Json;
           updated_at: string;
         };
         Insert: {
+          id?: string;
           page_id: string;
+          name?: string;
           data: Json;
           updated_at?: string;
         };
         Update: {
+          id?: string;
           page_id?: string;
+          name?: string;
           data?: Json;
           updated_at?: string;
         };

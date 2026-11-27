@@ -124,8 +124,10 @@ export type TablePageSize = (typeof TABLE_PAGE_SIZES)[number];
 
 export interface TableProps {
   title: string;
-  /** `static` usa columnas y filas propias; `page` lee el dataset de la página. */
+  /** `static` usa columnas y filas propias; `page` lee un dataset de la página. */
   source: "static" | "page";
+  /** Dataset concreto; `null` usa el primero de la página (compatibilidad 2B). */
+  datasetId: string | null;
   columns: string[];
   rows: string[][];
   /** Muestra el buscador en la tabla (solo lectura en la página publicada). */

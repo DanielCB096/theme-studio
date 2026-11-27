@@ -26,7 +26,7 @@ import {
   renderBlockInspector,
 } from "@/features/page-builder/blocks/registry";
 import { LayoutInspector } from "@/features/page-builder/builder/LayoutInspector";
-import { getPageDataset } from "@/features/page-builder/datasetRepository";
+import { listPageDatasets } from "@/features/page-builder/datasetRepository";
 import { blocksInOrder } from "@/features/page-builder/pageOps";
 import { PageRenderer } from "@/features/page-builder/PageRenderer";
 import { PageRuntimeProvider } from "@/features/page-builder/pageRuntime";
@@ -41,7 +41,7 @@ import { createLandingDocument } from "@/features/page-builder/templates/landing
 import { DevicePreview } from "@/features/preview/DevicePreview";
 import { cn } from "@/lib/utils";
 import { useThemeStore } from "@/store/themeStore";
-import type { PageDataset } from "@/types/dataset";
+import type { PageDatasetRecord } from "@/types/dataset";
 
 export default function PageBuilderPage() {
   const { id } = useParams<{ id: string }>();
@@ -72,14 +72,14 @@ export default function PageBuilderPage() {
   const [published, setPublished] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
   const [showBounds, setShowBounds] = useState(false);
-  const [dataset, setDataset] = useState<PageDataset | null>(null);
   const [datasetError, setDatasetError] = useState<string | null>(null);
+  const [datasets, setDatasets] = useState<PageDatasetRecord[]>([]);
 
   useEffect(() => {
     let active = true;
     setError(null);
     setStatus(null);
-    setDataset(null);
+    setDatasets([]);
     setDatasetError(null);
 
     if (!id) {
@@ -107,11 +107,11 @@ export default function PageBuilderPage() {
 
         // Los datos son independientes de la página: si fallan, se puede seguir editando.
         try {
-          const savedDataset = await getPageDataset(record.id);
-          if (active) setDataset(savedDataset);
+          const savedDatasets = await listPageDatasets(record.id);
+          if (active) setDatasets(savedDatasets);
         } catch (cause) {
           if (active) {
-            setDataset(null);
+            setDatasets([]);
             setDatasetError(
               cause instanceof Error
                 ? cause.message
@@ -388,12 +388,12 @@ export default function PageBuilderPage() {
                 selectedId={selectedId}
                 onSelect={select}
                 debug={showBounds}
-                runtime={{ mode: "builder", pageId: savedId, dataset }}
+                runtime={{ mode: "builder", pageId: savedId, datasets }}
               />
             </DevicePreview>
           </main>
 
-          <PageRuntimeProvider runtime={{ mode: "builder", pageId: savedId, dataset }}>
+          <PageRuntimeProvider runtime={{ mode: "builder", pageId: savedId, datasets }}>
             <aside
               aria-label="Propiedades del bloque"
               className="w-full shrink-0 space-y-2 overflow-y-auto border-t bg-surface p-density lg:h-full lg:w-80 lg:border-l lg:border-t-0"

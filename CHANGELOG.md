@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [No publicado]
 
+### Añadido — Hito 2C, fase 3: varios datasets por página
+
+- Migración `006_multiple_datasets.sql` (sin aplicar): `page_datasets` gana `id uuid` como PK y `name` (1–60), conserva `data`, `updated_at`, trigger, grants y RLS, y añade unicidad por `(page_id, lower(name))`.
+- Hasta 10 datasets por página con nombre editable; `PageDatasetRecord` y repositorio con listado, carga por id, creación con reintento de nombre, guardado con confirmación, renombrado y borrado.
+- Lista `/pages/:id/datos` con tarjetas, creación, edición y borrado con confirmación; editor `/pages/:id/datos/:datasetId` con nombre, columnas, filas e importación CSV.
+- El bloque `table` elige un dataset con `datasetId` y mantiene el fallback al primero para las tablas 2B; un id inexistente muestra «Dataset no encontrado» en el builder.
+- `PageRuntime.datasets` carga la lista en la página pública y en el builder; se conservan buscador, paginación y CSV.
+- E2E `pages-multiple-datasets.spec.ts` escrito (no ejecutado) y matriz RLS ampliada a dos datasets por página (no ejecutada).
+- ADR-024 y documentación del modelo, la migración y el fallback.
+- Pruebas: 297 unitarias/componentes en verde (43 archivos); lint, typecheck y build correctos.
+
 ### Añadido — Hito 2C: buscador, paginación e importación CSV
 
 - Bloque `table` con `searchable` y `pageSize` (`0`, `5`, `10` o `20`) y defaults retrocompatibles para las tablas guardadas.

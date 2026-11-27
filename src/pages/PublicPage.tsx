@@ -4,10 +4,10 @@ import { Link, useParams } from "react-router-dom";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { getPageDataset } from "@/features/page-builder/datasetRepository";
+import { listPageDatasets } from "@/features/page-builder/datasetRepository";
 import { PageRenderer } from "@/features/page-builder/PageRenderer";
 import { getPublicPage } from "@/features/page-builder/pageRepository";
-import type { PageDataset } from "@/types/dataset";
+import type { PageDatasetRecord } from "@/types/dataset";
 import type { PageDocument } from "@/types/page";
 
 type State =
@@ -17,7 +17,7 @@ type State =
       status: "ready";
       page: PageDocument;
       id: string;
-      dataset: PageDataset | null;
+      datasets: PageDatasetRecord[];
     };
 
 export default function PublicPage() {
@@ -35,16 +35,16 @@ export default function PublicPage() {
 
     getPublicPage(slug)
       .then(async ({ page, id }) => {
-        let dataset: PageDataset | null = null;
+        let datasets: PageDatasetRecord[] = [];
         try {
-          dataset = await getPageDataset(id);
+          datasets = await listPageDatasets(id);
         } catch {
           // Un dataset dañado no debe ocultar la página publicada.
-          dataset = null;
+          datasets = [];
         }
         if (!active) return;
         document.title = `${page.name} · Theme Studio`;
-        setState({ status: "ready", page, id, dataset });
+        setState({ status: "ready", page, id, datasets });
       })
       .catch((cause: unknown) => {
         if (active) {
@@ -96,7 +96,7 @@ export default function PublicPage() {
     <div className="flex min-h-dvh flex-col bg-background">
       <PageRenderer
         page={state.page}
-        runtime={{ mode: "public", pageId: state.id, dataset: state.dataset }}
+        runtime={{ mode: "public", pageId: state.id, datasets: state.datasets }}
       />
     </div>
   );

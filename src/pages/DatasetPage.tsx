@@ -28,16 +28,21 @@ import {
 import {
   addColumn,
   addRow,
-  emptyDataset,
   removeColumn,
   removeRow,
   renameColumn,
   updateCell,
 } from "@/features/page-builder/datasetOps";
-import { getPageDataset, savePageDataset } from "@/features/page-builder/datasetRepository";
+import { getPageDatasetRecord, savePageDataset } from "@/features/page-builder/datasetRepository";
 import { getPageRecord, publicPageUrl } from "@/features/page-builder/pageRepository";
 import { datasetFromCsv, MAX_CSV_FILE_BYTES } from "@/lib/csv";
-import { MAX_DATASET_COLUMNS, MAX_DATASET_ROWS, validatePageDataset } from "@/lib/datasetSchema";
+import {
+  MAX_DATASET_COLUMNS,
+  MAX_DATASET_NAME_LENGTH,
+  MAX_DATASET_ROWS,
+  validateDatasetName,
+  validatePageDataset,
+} from "@/lib/datasetSchema";
 import type { DatasetColumn, PageDataset } from "@/types/dataset";
 
 interface PageInfo {
@@ -59,11 +64,11 @@ function readFileText(file: File): Promise<string> {
 }
 
 export default function DatasetPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id, datasetId } = useParams<{ id: string; datasetId: string }>();
   const [pageInfo, setPageInfo] = useState<PageInfo | null>(null);
+  const [name, setName] = useState("");
   const [dataset, setDataset] = useState<PageDataset | null>(null);
   const [baseline, setBaseline] = useState<string | null>(null);
-  const [hasStoredDataset, setHasStoredDataset] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -74,8 +79,8 @@ export default function DatasetPage() {
   const [pendingColumn, setPendingColumn] = useState<DatasetColumn | null>(null);
 
   useEffect(() => {
-    if (!id) {
-      setError("Falta el identificador de la página.");
+    if (!id || !datasetId) {
+      setError("Falta el identificador de la página o del dataset.");
       setLoading(false);
       return;
     }
@@ -86,14 +91,20 @@ export default function DatasetPage() {
 
     const load = async () => {
       try {
-        const [record, storedDataset] = await Promise.all([getPageRecord(id), getPageDataset(id)]);
+        const [record, datasetRecord] = await Promise.all([
+          getPageRecord(id),
+          getPageDatasetRecord(datasetId),
+        ]);
         if (!active) return;
 
-        const initial = storedDataset ?? emptyDataset();
+        if (datasetRecord.pageId !== id) {
+          throw new Error("Este dataset pertenece a otra página.");
+        }
+
         setPageInfo({ name: record.page.name, slug: record.slug, isPublic: record.isPublic });
-        setDataset(initial);
-        setBaseline(JSON.stringify(initial));
-        setHasStoredDataset(storedDataset !== null);
+        setName(datasetRecord.name);
+        setDataset(datasetRecord.dataset);
+        setBaseline(JSON.stringify({ name: datasetRecord.name, dataset: datasetRecord.dataset }));
       } catch (cause) {
         if (active) {
           setError(cause instanceof Error ? cause.message : "No se pudieron cargar los datos.");
@@ -108,7 +119,7 @@ export default function DatasetPage() {
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [id, datasetId]);
 
   const update = (next: PageDataset) => {
     setDataset(next);
@@ -116,6 +127,12 @@ export default function DatasetPage() {
     setSaveError(null);
     setImportStatus(null);
     setImportError(null);
+  };
+
+  const changeName = (value: string) => {
+    setName(value);
+    setStatus(null);
+    setSaveError(null);
   };
 
   const importCsv = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -146,7 +163,8 @@ export default function DatasetPage() {
     }
   };
 
-  const dirty = dataset !== null && baseline !== null && JSON.stringify(dataset) !== baseline;
+  const dirty =
+    dataset !== null && baseline !== null && JSON.stringify({ name, dataset }) !== baseline;
 
   const confirmRemoveColumn = () => {
     if (!dataset || !pendingColumn) return;
@@ -155,17 +173,18 @@ export default function DatasetPage() {
   };
 
   const save = async () => {
-    if (!dataset || !id) return;
+    if (!dataset || !id || !datasetId) return;
 
     setSaving(true);
     setSaveError(null);
     setStatus(null);
     try {
-      const validated = validatePageDataset(dataset);
-      await savePageDataset(id, validated);
-      setDataset(validated);
-      setBaseline(JSON.stringify(validated));
-      setHasStoredDataset(true);
+      const validatedDataset = validatePageDataset(dataset);
+      const validatedName = validateDatasetName(name);
+      await savePageDataset(datasetId, validatedDataset, validatedName);
+      setDataset(validatedDataset);
+      setName(validatedName);
+      setBaseline(JSON.stringify({ name: validatedName, dataset: validatedDataset }));
       setStatus("Datos guardados.");
       setImportStatus(null);
     } catch (cause) {
@@ -182,17 +201,17 @@ export default function DatasetPage() {
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div className="min-w-0">
             <Button variant="ghost" size="sm" asChild className="-ml-2 mb-1">
-              <Link to="/pages">
+              <Link to={id ? `/pages/${id}/datos` : "/pages"}>
                 <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-                Páginas
+                Datasets
               </Link>
             </Button>
             <h2 className="truncate text-xl font-semibold leading-tight">
               Datos{pageInfo ? ` de «${pageInfo.name}»` : ""}
             </h2>
             <p className="text-sm text-muted">
-              Un único dataset por página. El bloque Tabla puede leer estas columnas y filas en su
-              origen «Datos de la página».
+              Dataset «{name.trim() || "sin nombre"}». El bloque Tabla puede leer estas columnas y
+              filas en su origen «Datos de la página».
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -276,9 +295,7 @@ export default function DatasetPage() {
               <div className="space-y-1">
                 <AlertTitle>Datos de la página</AlertTitle>
                 <AlertDescription>
-                  {hasStoredDataset
-                    ? "Los cambios no se ven en la página hasta pulsar «Guardar datos»."
-                    : "Todavía no hay datos guardados. Añade filas y columnas y pulsa «Guardar datos»."}
+                  Los cambios no se ven en la página hasta pulsar «Guardar datos».
                 </AlertDescription>
               </div>
             </Alert>
@@ -297,6 +314,20 @@ export default function DatasetPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-density">
+                <div className="max-w-md space-y-1.5">
+                  <Label htmlFor="dataset-name">Nombre del dataset</Label>
+                  <Input
+                    id="dataset-name"
+                    value={name}
+                    maxLength={MAX_DATASET_NAME_LENGTH}
+                    onChange={(event) => changeName(event.target.value)}
+                  />
+                  <p className="text-xs text-muted">
+                    Entre 1 y {MAX_DATASET_NAME_LENGTH} caracteres. No puede repetirse en esta
+                    página, aunque cambien las mayúsculas.
+                  </p>
+                </div>
+
                 <div className="flex flex-wrap items-center gap-2">
                   <input
                     id="dataset-csv"

@@ -454,3 +454,27 @@ Una entrada por decisión, en orden cronológico.
 - Una importación descarta el dataset anterior en memoria solo después de parsear y validar con éxito; un archivo inválido no toca los datos actuales. El reemplazo no se persiste hasta «Guardar datos».
 - El parser propio hay que mantenerlo y probarlo; a cambio evita una dependencia, controla el mensaje de error y no ejecuta código de terceros sobre datos del usuario.
 - No se detectan codificaciones distintas de UTF-8 ni separadores alternativos (punto y coma): el CSV esperado es UTF-8 con comas.
+
+## ADR-024 · Varios datasets por página con id, nombre y selección explícita
+
+**Contexto.** El Hito 2B fijó `page_datasets.page_id` como clave primaria: una página solo podía tener un dataset y todas sus tablas conectadas mostraban lo mismo. El producto necesita varias tablas con datos distintos (por ejemplo, productos y servicios) sin duplicar páginas ni mezclar filas. Además, las páginas creadas con el modelo anterior deben seguir funcionando.
+
+**Opciones consideradas.**
+
+1. Un dataset por bloque `table`, guardado dentro del JSON del bloque.
+2. Varias filas por página en `page_datasets`, con un id propio y una referencia `datasetId` en cada tabla.
+3. Mantener un solo dataset y permitir «vistas» o filtros sobre él.
+4. Guardar todos los datasets como un array dentro de `pages.data` o de una sola fila `jsonb`.
+
+**Decisión.** Opción 2. `page_datasets` pasa a tener `id uuid` como clave primaria y `name text` (1–60) único por página sin distinguir mayúsculas (`unique (page_id, lower(name))`). Se conserva `page_id` con FK en cascada, `data jsonb` con su límite de tamaño, `updated_at` y el trigger. El bloque `table` añade `datasetId: string | null` con default `null`; si es `null` y `source` es `page`, usa el **primer** dataset ordenado por nombre (compatibilidad con tablas 2B). Si el id no existe, la tabla no cae al primero: muestra una ayuda «Dataset no encontrado» en el builder y no renderiza en público. El máximo es de **10 datasets por página**, comprobado en cliente antes de insertar; el nombre repetido se reintenta con «nombre 2», «nombre 3»… hasta encontrar uno libre. El editor se divide en lista (`/pages/:id/datos`) y detalle (`/pages/:id/datos/:datasetId`); el borrado vive solo en la lista y avisa de que las tablas afectadas dejarán de mostrar datos.
+
+**Consecuencias.**
+
+- Las tablas de una misma página pueden leer datasets distintos con una sola fila por dataset y sin duplicar datos entre bloques.
+- Las páginas y tablas anteriores siguen renderizando: `datasetId` ausente pasa a `null` y se usa el primer dataset, que en el modelo 2B era el único.
+- El límite de 10 y la unicidad de nombre se validan en el cliente; la unicidad también en Postgres. El límite de 10 no está en la base de datos: dos pestañas podrían superarlo a la vez. Se documenta como carrera aceptada para no añadir triggers y bloqueos a una migración que debe poder reejecutarse con seguridad.
+- La RLS no cambia de semántica: cada fila sigue autorizándose por `page_id` contra `pages` (lectura pública si la página es pública; escritura solo del dueño). Las políticas de `insert`, `update` y `delete` funcionan igual con varias filas porque son políticas por fila.
+- El guardado deja de ser un upsert por página: actualiza por `id`, pide la fila y confirma la lectura por `id` antes de mostrar «Datos guardados.». El coste es una lectura extra por guardado.
+- La exportación sigue limitada al JSON de la página: los datasets no se exportan ni se importan con ella. Mover datasets entre páginas queda fuera de alcance.
+- Guardar los datasets dentro del JSON de la página habría evitado la migración, pero invalidaba el snapshot completo en cada cambio de fila y hacía más difícil aplicar límites, RLS y el editor por dataset.
+- Un dataset por bloque habría permitido datos distintos sin cambiar la tabla, pero multiplicaba las escrituras y el editor, y seguía sin resolverse el caso de reutilizar los mismos datos en dos tablas.

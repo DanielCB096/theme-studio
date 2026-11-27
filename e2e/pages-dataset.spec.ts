@@ -20,23 +20,30 @@ test("editar los datos de una página y conectarlos a una tabla publicada", asyn
   await expect(page).toHaveURL(/\/builder\/[0-9a-f-]{36}$/, { timeout: 20_000 });
   const pageId = page.url().split("/builder/")[1];
 
-  // Editor de datos: renombrar columnas, añadir una fila y guardar.
+  // Lista de datasets: crear el primero y abrir su editor.
   await page.getByRole("link", { name: "Datos" }).click();
   await expect(page).toHaveURL(new RegExp(`/pages/${pageId}/datos$`), { timeout: 20_000 });
+  await expect(page.getByRole("heading", { name: /Datasets de/ })).toBeVisible();
+
+  await page.getByRole("button", { name: "Nuevo dataset" }).click();
+  await expect(page).toHaveURL(new RegExp(`/pages/${pageId}/datos/[0-9a-f-]{36}$`), {
+    timeout: 20_000,
+  });
   await expect(page.getByRole("heading", { name: /Datos de/ })).toBeVisible();
 
+  await page.getByLabel("Nombre del dataset").fill("Productos");
   await page.getByLabel("Etiqueta de la columna 1").fill("Producto");
   await page.getByLabel("Etiqueta de la columna 2").fill("Precio");
   await page.getByRole("button", { name: "Añadir fila" }).click();
   await page.getByLabel("Fila 1, columna 1 (Producto)").fill("Café E2E");
   await page.getByLabel("Fila 1, columna 2 (Precio)").fill("3 €");
-  // El E2E espera la respuesta del upsert antes de recargar: la interfaz puede
-  // mostrar el estado antes de que el navegador reciba el 201.
+  // El E2E espera la respuesta del update antes de recargar: la interfaz puede
+  // mostrar el estado antes de que el navegador reciba el 200.
   const saved = page.waitForResponse(
     (response) =>
       response.url().includes("page_datasets") &&
-      response.request().method() === "POST" &&
-      response.status() === 201,
+      response.request().method() === "PATCH" &&
+      response.status() === 200,
   );
 
   await page.getByRole("button", { name: "Guardar datos" }).click();
@@ -45,6 +52,9 @@ test("editar los datos de una página y conectarlos a una tabla publicada", asyn
 
   // La recarga confirma que el dataset se persistió de verdad en Supabase.
   await page.reload();
+  await expect(page.getByLabel("Nombre del dataset")).toHaveValue("Productos", {
+    timeout: 20_000,
+  });
   await expect(page.getByLabel("Etiqueta de la columna 1")).toHaveValue("Producto", {
     timeout: 20_000,
   });

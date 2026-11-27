@@ -11,6 +11,8 @@ export const tableSchema = blockBase(
       title: blockText(80),
       // Default retrocompatible: las páginas antiguas siguen siendo estáticas.
       source: z.enum(["static", "page"]).default("static"),
+      // Default retrocompatible: sin id, una tabla 2B usa el primer dataset.
+      datasetId: z.string().uuid().nullable().default(null),
       columns: z.array(blockText(40)).min(2).max(6),
       rows: z
         .array(z.array(z.string().trim().max(80)).max(6))
@@ -27,6 +29,7 @@ export const tableSchema = blockBase(
 export const tableDefaults: TableProps = {
   title: "Comparativa",
   source: "static",
+  datasetId: null,
   columns: ["Plan", "Precio", "Soporte"],
   rows: [
     ["Starter", "0 €", "Correo"],
