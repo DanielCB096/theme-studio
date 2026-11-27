@@ -30,8 +30,18 @@ test("editar los datos de una página y conectarlos a una tabla publicada", asyn
   await page.getByRole("button", { name: "Añadir fila" }).click();
   await page.getByLabel("Fila 1, columna 1 (Producto)").fill("Café E2E");
   await page.getByLabel("Fila 1, columna 2 (Precio)").fill("3 €");
+  // El E2E espera la respuesta del upsert antes de recargar: la interfaz puede
+  // mostrar el estado antes de que el navegador reciba el 201.
+  const saved = page.waitForResponse(
+    (response) =>
+      response.url().includes("page_datasets") &&
+      response.request().method() === "POST" &&
+      response.status() === 201,
+  );
+
   await page.getByRole("button", { name: "Guardar datos" }).click();
   await expect(page.getByText("Datos guardados.")).toBeVisible({ timeout: 20_000 });
+  await saved;
 
   // La recarga confirma que el dataset se persistió de verdad en Supabase.
   await page.reload();

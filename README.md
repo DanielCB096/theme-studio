@@ -27,6 +27,7 @@ Elegir una paleta, una escala tipográfica y un radio de borde "a ojo" y descubr
 - **Constructor de páginas**: landing desde plantilla, 9 tipos de bloque, edición de contenido, publicación en `/p/:slug` y vista previa móvil/tableta/escritorio.
 - **Formularios con respuestas**: envío real desde páginas publicadas, bandeja del dueño con leídas/no leídas y exportación CSV.
 - **Datos de página**: un dataset editable por página y una tabla conectada a esos datos, visible solo en lectura al publicar.
+- **Tablas prácticas**: buscador sin acentos, paginación en cliente e importación de CSV para el dataset de la página.
 
 ## Constructor de páginas
 
@@ -34,7 +35,7 @@ Con una cuenta, entra en **Páginas → Nueva página**: se crea una landing des
 
 El bloque **form** es una demostración en el builder. En una página publicada envía de verdad a `POST /api/submit-page-form` (honeypot y rate limit), guarda la respuesta en Supabase con RLS y la muestra en `/pages/:id/respuestas`, donde puedes marcarla como leída o eliminarla y descargar un CSV. Límites del Hito 2A: sin correo, adjuntos ni captcha.
 
-El bloque **table** puede usar columnas y filas estáticas o conectarse al **dataset de la página**. Edítalo en **Datos** (`/pages/:id/datos`): hasta 8 columnas, 200 filas y 100 KB por dataset. En la página publicada la tabla es de solo lectura y se oculta si no hay datos. Límites del Hito 2B: un dataset por página, sin CSV, filtros, ordenación ni imágenes en celdas.
+El bloque **table** puede usar columnas y filas estáticas o conectarse al **dataset de la página**. Edítalo en **Datos** (`/pages/:id/datos`): hasta 8 columnas, 200 filas y 100 KB por dataset, con **Importar CSV** validado en el navegador. En la tabla puedes activar el **buscador** (filtra sin distinguir mayúsculas ni acentos) y las **filas por página** (Todas, 5, 10 o 20); ambos funcionan en la página publicada. Límites del Hito 2C: un dataset por página, búsqueda y paginación en cliente, y la importación reemplaza el dataset en edición hasta guardar.
 
 ![Constructor de páginas con estructura, lienzo y propiedades](docs/assets/builder.png)
 
@@ -145,7 +146,7 @@ docker run --rm -p 8080:80 theme-studio
 | Lighthouse · Buenas prácticas     | 100                                                       |
 | Lighthouse · SEO                  | 100                                                       |
 | Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                      |
-| Pruebas                           | 251 unitarias/componentes · 9 E2E ejecutadas · 29 RLS     |
+| Pruebas                           | 273 unitarias/componentes · 11 E2E ejecutadas · 29 RLS    |
 | Respuesta de la IA                | 2–22 s según el modelo disponible; reserva local si falla |
 
 ## Pruebas
@@ -167,7 +168,7 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 - **Enlace mágico en producción**: su destino depende de _Redirect URLs_ en Supabase. Si no añades `https://theme-studio-queserabernal.vercel.app/**`, el correo apuntará a `localhost`. El acceso con contraseña sí funciona en la demo.
 - El nivel gratuito de Gemini devuelve 503 con frecuencia; la función prueba varios modelos y, si todos fallan, responde con la reserva local etiquetada como tal.
 - Los formularios del Hito 2A no envían correo ni aceptan adjuntos; el rate limit es en memoria y no sustituye a un captcha. La bandeja no tiene paginación.
-- Los datos del Hito 2B son un único dataset por página, sin CSV, ordenación, filtros, paginación ni imágenes en celdas. El E2E y la matriz RLS de datasets se ejecutaron contra el proyecto real.
+- Los datos del Hito 2B son un único dataset por página, sin ordenación, filtros por columna ni imágenes en celdas. El buscador y la paginación de la tabla son en cliente; la importación CSV reemplaza el dataset completo. El E2E y la matriz RLS de datasets se ejecutaron contra el proyecto real, igual que los E2E de 2C.
 - El rate limit de la IA vive en memoria: no es global entre instancias serverless ni sustituye a una cuota de producción.
 - «Confirm email» está desactivado en Supabase para permitir los E2E; es un tradeoff de demo, no una configuración recomendable en producción.
 - Los E2E usan una cuenta fija (`theme-studio-e2e@example.com`) y crean temas de prueba; los temas se pueden borrar desde la cuenta y las cuentas antiguas desde el dashboard.

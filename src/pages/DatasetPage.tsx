@@ -1,5 +1,5 @@
-import { ArrowLeft, Database, Loader2, Plus, Save, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowLeft, Database, Loader2, Plus, Save, Trash2, Upload } from "lucide-react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -36,6 +36,7 @@ import {
 } from "@/features/page-builder/datasetOps";
 import { getPageDataset, savePageDataset } from "@/features/page-builder/datasetRepository";
 import { getPageRecord, publicPageUrl } from "@/features/page-builder/pageRepository";
+import { datasetFromCsv, MAX_CSV_FILE_BYTES } from "@/lib/csv";
 import { MAX_DATASET_COLUMNS, MAX_DATASET_ROWS, validatePageDataset } from "@/lib/datasetSchema";
 import type { DatasetColumn, PageDataset } from "@/types/dataset";
 
@@ -43,6 +44,18 @@ interface PageInfo {
   name: string;
   slug: string;
   isPublic: boolean;
+}
+
+/** `File.text()` no existe en todos los navegadores/jsdom antiguos. */
+function readFileText(file: File): Promise<string> {
+  if (typeof file.text === "function") return file.text();
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
+    reader.readAsText(file);
+  });
 }
 
 export default function DatasetPage() {
@@ -56,6 +69,8 @@ export default function DatasetPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [importStatus, setImportStatus] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
   const [pendingColumn, setPendingColumn] = useState<DatasetColumn | null>(null);
 
   useEffect(() => {
@@ -99,6 +114,36 @@ export default function DatasetPage() {
     setDataset(next);
     setStatus(null);
     setSaveError(null);
+    setImportStatus(null);
+    setImportError(null);
+  };
+
+  const importCsv = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Permite volver a elegir el mismo archivo después de un error o de guardar.
+    event.target.value = "";
+    if (!file) return;
+
+    setImportStatus(null);
+    setImportError(null);
+
+    if (file.size > MAX_CSV_FILE_BYTES) {
+      setImportError(`El archivo ocupa ${Math.ceil(file.size / 1024)} KB y el máximo es 100 KB.`);
+      return;
+    }
+
+    try {
+      const text = await readFileText(file);
+      const imported = datasetFromCsv(text);
+      update(imported);
+      setImportStatus(
+        `CSV importado: ${imported.rows.length} fila${
+          imported.rows.length === 1 ? "" : "s"
+        }. Pulsa “Guardar datos”.`,
+      );
+    } catch (cause) {
+      setImportError(cause instanceof Error ? cause.message : "No se pudo leer el archivo CSV.");
+    }
   };
 
   const dirty = dataset !== null && baseline !== null && JSON.stringify(dataset) !== baseline;
@@ -122,6 +167,7 @@ export default function DatasetPage() {
       setBaseline(JSON.stringify(validated));
       setHasStoredDataset(true);
       setStatus("Datos guardados.");
+      setImportStatus(null);
     } catch (cause) {
       setSaveError(cause instanceof Error ? cause.message : "No se pudieron guardar los datos.");
     } finally {
@@ -198,9 +244,24 @@ export default function DatasetPage() {
           </Alert>
         ) : null}
 
+        {importError ? (
+          <Alert variant="danger">
+            <div className="space-y-1">
+              <AlertTitle>No se pudo importar el CSV</AlertTitle>
+              <AlertDescription>{importError}</AlertDescription>
+            </div>
+          </Alert>
+        ) : null}
+
         {status ? (
           <p role="status" className="text-sm text-success">
             {status}
+          </p>
+        ) : null}
+
+        {importStatus ? (
+          <p role="status" className="text-sm text-success">
+            {importStatus}
           </p>
         ) : null}
 
@@ -236,7 +297,23 @@ export default function DatasetPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-density">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    id="dataset-csv"
+                    type="file"
+                    accept=".csv,text/csv"
+                    className="peer sr-only"
+                    onChange={(event) => void importCsv(event)}
+                  />
+                  <Button variant="outline" size="sm" asChild>
+                    <label
+                      htmlFor="dataset-csv"
+                      className="cursor-pointer peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+                    >
+                      <Upload aria-hidden="true" className="h-4 w-4" />
+                      Importar CSV
+                    </label>
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -256,6 +333,11 @@ export default function DatasetPage() {
                     Añadir fila
                   </Button>
                 </div>
+                <p className="text-xs text-muted">
+                  Importar CSV: máximo 100 KB, primera fila como cabeceras, 8 columnas, 200 filas y
+                  200 caracteres por celda. Reemplaza el dataset en edición; no se guarda hasta
+                  pulsar «Guardar datos».
+                </p>
 
                 <Table className="min-w-[40rem]">
                   <TableHeader>

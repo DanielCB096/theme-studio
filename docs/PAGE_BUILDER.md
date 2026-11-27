@@ -1,6 +1,6 @@
 # Page Builder (Anexo A)
 
-Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1, 1.2 (assets), 2A (formularios) y 2B (datasets) completados y en producción**: https://theme-studio-queserabernal.vercel.app.
+Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1, 1.2 (assets), 2A (formularios), 2B (datasets) y 2C fases 1-2 (buscador, paginación y CSV) completados y verificados**. En producción: https://theme-studio-queserabernal.vercel.app.
 
 ## Alcance
 
@@ -174,24 +174,31 @@ type PageDataset = { columns: DatasetColumn[]; rows: Record<string, string>[] };
 - **Guardar datos** valida con Zod, hace upsert por `page_id`, pide la fila devuelta y confirma la lectura antes de mostrar «Datos guardados.» o un error legible. El indicador «Sin guardar» compara con el último estado guardado.
 - Todos los controles tienen `aria-label` único, foco visible y navegación por teclado; la tabla usa scroll horizontal. No se usa `window.confirm`.
 - Si la página está publicada, se muestra su URL `/p/:slug` para probar.
+- **Importar CSV**: botón/etiqueta con un `input type="file"` oculto (`accept=".csv,text/csv"`) accesible por teclado. Rechaza archivos de más de 100 KB. Lee el archivo en el navegador, valida con Zod y reemplaza el dataset **en edición**; muestra «CSV importado: N filas. Pulsa “Guardar datos”.» o una alerta «No se pudo importar el CSV» con el mensaje. No guarda hasta pulsar «Guardar datos» y permite reimportar el mismo archivo.
 
 ### Bloque `table`
 
 - `TableProps.source` es `static` (por defecto) o `page`; el esquema aplica `default("static")` para que un JSON anterior siga leyéndose sin cambios.
+- `TableProps.searchable` (booleano) y `TableProps.pageSize` (`0`, `5`, `10` o `20`) tienen defaults retrocompatibles `false` y `0`: una tabla guardada antes de esta versión conserva su aspecto. Un bloque nuevo usa `searchable: true` y `pageSize: 10`.
 - Origen **estático**: conserva columnas y filas del bloque, como antes.
 - Origen **datos de la página**: usa las columnas del dataset y una fila por registro (`row[column.id] ?? ""`). Añade `<caption class="sr-only">` con el título.
+- **Buscador**: si `searchable`, aparece un `input type="search"` etiquetado con placeholder «Buscar…». Filtra por cualquier celda sin distinguir mayúsculas ni acentos (`normalize("NFD")`, se eliminan los diacríticos y se usa `toLocaleLowerCase("es")`) y anuncia «N resultados» con `aria-live="polite"`. Si no hay coincidencias muestra una fila «No hay resultados.» con `colSpan`; la tabla no se oculta.
+- **Paginación**: si `pageSize > 0`, muestra `Página X de Y` y botones **Anterior**/**Siguiente** deshabilitados en los extremos. Vuelve a la página 1 al cambiar la búsqueda o el tamaño y recorta la página al rango válido si cambian las filas. `0` muestra todas las filas.
+- Los controles se renderizan igual en builder y público, pero en el lienzo del builder la capa de selección de `BlockShell` los cubre; se usan en la página publicada y en la vista previa. Esto es intencional y no cambia la capa de selección.
 - Sin dataset o sin columnas: en el builder muestra una ayuda con enlace a `/pages/{pageId}/datos` o «Guarda la página para conectar datos»; en público devuelve `null`.
 - Con cero filas: en el builder muestra cabeceras y «Sin filas todavía» con enlace; en público devuelve `null` para no dejar una sección vacía.
-- El inspector mantiene el título, añade **Origen de datos** y, en modo página, una nota y el enlace al editor. En modo estático conserva los campos de columnas y filas.
+- El inspector mantiene el título, añade **Origen de datos**, **Buscador** y **Filas por página** (Todas, 5, 10, 20) para ambos orígenes. En modo página añade una nota y el enlace al editor; en modo estático conserva los campos de columnas y filas.
 - `PageRuntime` incorpora `dataset?: PageDataset | null` (por defecto `null`); `PublicPage` y el lienzo del builder lo cargan y lo pasan al `PageRenderer`.
 
-### Límites del Hito 2B
+### Límites de los Hitos 2B y 2C
 
-- Un único dataset por página; no hay varios datasets ni dataset por bloque.
-- Sin CSV/importación, ordenación, filtros, paginación ni imágenes en celdas.
+- Un único dataset por página; no hay varios datasets ni dataset por bloque (**la fase posterior del Hito 2C**).
+- La búsqueda y la paginación son en cliente sobre las filas ya cargadas: no hay consultas, índices ni filtros por columna, y no se ordena.
+- La importación CSV sustituye el dataset completo en edición; no fusiona filas ni admite varios archivos a la vez. El archivo debe ser UTF-8 con comas (no se detecta punto y coma).
+- Sin imágenes en celdas.
 - Un dataset dañado no rompe la página pública (se renderiza sin datos). En el builder se avisa sin impedir editar la página.
 - La tabla estática sigue disponible y es el valor por defecto de las páginas existentes.
-- La migración está aplicada en Supabase; el flujo real se verificó con el E2E y la matriz RLS.
+- La migración del Hito 2B está aplicada en Supabase; los E2E de 2C se ejecutaron y están en verde (11/11).
 
 ## Seguridad
 
@@ -219,14 +226,19 @@ type PageDataset = { columns: DatasetColumn[]; rows: Record<string, string>[] };
 - Respuestas: parseo de fila, fila dañada y CSV exacto con acentos, comillas, comas, saltos de línea y neutralización de fórmulas.
 - Datos: esquema Zod (válido, sin columnas, más de 8, ids duplicados, etiqueta vacía, clave desconocida, valor de más de 200, más de 200 filas y tamaño excesivo), operaciones puras e inmutabilidad, y repositorio (parseo válido/dañado y upsert con Supabase simulado).
 - Tabla: render estático, datos del dataset en builder y público, ayuda sin dataset, «Sin filas todavía» y ausencia de sección vacía en público.
+- Tabla 2C: defaults retrocompatibles (`searchable: false`, `pageSize: 0`), búsqueda sin acentos ni mayúsculas, «No hay resultados.», paginación 5 de 7, botones deshabilitados en los extremos, reinicio de página al buscar y recorte al cambiar las filas; sin controles cuando ambos están desactivados.
+- CSV: comas, comillas, saltos dentro de comillas, `""`, CRLF, BOM, comilla sin cerrar, cabeceras vacías/duplicadas, límites de 8 columnas/200 filas/200 caracteres y fila con más celdas que cabeceras.
+- Editor de datos: importación de un CSV en jsdom sin guardar hasta pulsar «Guardar datos», archivo de más de 100 KB y error del parser.
 - Editor de datos: carga, edición de celda, añadir fila, guardado con el dataset esperado, confirmación de borrado de columna y error de guardado.
 - E2E (`e2e/pages.spec.ts`): plantilla → editar → guardar → publicar → abrir anónimo en 375/768/1280.
 - E2E (`e2e/pages-upload.spec.ts`): subir logo a Storage, guardar, publicar y verificar la imagen pública.
 - E2E (`e2e/pages-form.spec.ts`): publicar → enviar el formulario anónimo → ver la respuesta, marcarla leída y descargar el CSV.
 - E2E (`e2e/pages-dataset.spec.ts`): crear página → editar datos → conectar la tabla → publicar → ver los datos en anónimo. **Ejecutado y en verde.**
+- E2E (`e2e/pages-table.spec.ts`): tabla estática de 7 filas con búsqueda y paginación en la página publicada. **Ejecutado y en verde.**
+- E2E (`e2e/pages-csv.spec.ts`): importar `e2e/fixtures/dataset.csv`, guardar, recargar y publicar una tabla conectada. **Ejecutado y en verde.**
 - `npm run verify:rls` amplía la matriz con páginas, respuestas y datasets privados/públicos. **Ejecutada: 29/29.**
 
-## Limitaciones conocidas (Hitos 1, 2A y 2B)
+## Limitaciones conocidas (Hitos 1, 2A, 2B y 2C fases 1–2)
 
 - Sin anidación, drag & drop ni historial propio del builder.
 - Layout v1 no incluye fondo, borde ni padding por bloque; el ancho se aplica al contenedor completo del bloque.
@@ -234,5 +246,5 @@ type PageDataset = { columns: DatasetColumn[]; rows: Record<string, string>[] };
 - Formularios sin correo de notificación, adjuntos ni captcha; el rate limit es en memoria por instancia.
 - Sin paginación ni filtros en la bandeja de respuestas.
 - Sin edición de listas complejas de planes/formularios desde el inspector (se completará).
-- Datos de página: un dataset por página y sin CSV, ordenación, filtros, paginación ni imágenes en celdas.
+- Datos de página: un dataset por página, sin ordenación, filtros por columna ni imágenes en celdas. La búsqueda y la paginación de la tabla son en cliente; la importación CSV sustituye el dataset completo.
 - El tema se captura al crear la página; cambiarlo después no afecta a páginas existentes salvo que se edite el snapshot.

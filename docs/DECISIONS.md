@@ -411,3 +411,46 @@ Una entrada por decisión, en orden cronológico.
 - En público, una tabla sin dataset, sin columnas o sin filas no renderiza una sección vacía; en el builder se muestra una ayuda con enlace al editor de datos.
 - No hay filtros, ordenación, paginación, importación CSV ni imágenes en celdas en este hito.
 - El guardado pide la fila al upsert y confirma con una lectura posterior: si PostgREST devuelve la fila antes de que la transacción sea visible, la interfaz no muestra «guardado» hasta comprobarlo. Evita perder datos si se recarga de inmediato, a costa de una lectura extra por guardado.
+
+## ADR-022 · Buscador y paginación en cliente
+
+**Contexto.** Las tablas del builder y de las páginas publicadas podían mostrar hasta 200 filas de golpe. El autor necesita encontrar un dato y los visitantes una tabla manejable, sin añadir otra llamada de red ni cambiar la RLS del dataset. El origen puede ser estático (filas dentro del JSON del bloque) o el dataset de la página, que ya se descarga completo para renderizar.
+
+**Opciones consideradas.**
+
+1. Buscar y paginar en Postgres con consultas nuevas sobre `page_datasets`, parámetros de búsqueda en la URL e índices.
+2. Buscar y paginar en el cliente sobre las filas que ya están en memoria.
+3. No ofrecer controles y dejar que el autor divida manualmente el contenido en varias tablas.
+
+**Decisión.** Opción 2. `TableProps` añade `searchable` (por defecto `false` en tablas antiguas y `true` en bloques nuevos) y `pageSize` (`0`, `5`, `10` o `20`; `0` = todas, por defecto `0` en tablas antiguas y `10` en bloques nuevos). El renderer normaliza las filas a `string[][]`, filtra por cualquier celda normalizando mayúsculas y acentos y pagina el resultado con estado local. El buscador y los botones Anterior/Siguiente solo viven en el renderer; no se guardan en el documento ni en la base de datos.
+
+**Consecuencias.**
+
+- El límite de 200 filas del dataset hace que filtrar y paginar en memoria sea barato; no hay consultas nuevas, índices ni endpoints que mantener.
+- Cada visitante puede buscar y cambiar de página sin afectar a otros: el estado es local y se reinicia al recargar.
+- El documento guardado sigue siendo el mismo JSON y el dataset sigue siendo el mismo `jsonb`; no hay migración y las tablas antiguas no cambian.
+- La búsqueda es textual y recorre el contenido de cada celda; no hay ordenación, filtros por columna ni resaltado de coincidencias en esta fase.
+- En el builder la capa transparente de selección del `BlockShell` cubre el buscador y los botones. Es intencional: los controles se prueban en la página publicada o en la vista previa; el inspector permite activarlos y configurarlos.
+- La corrección de acentos usa `normalize("NFD")` y elimina los diacríticos, de modo que «cafe» encuentra «Café»; no se implementa una búsqueda difusa.
+
+## ADR-023 · Importación CSV en cliente
+
+**Contexto.** El editor de datos del Hito 2B obliga a crear columnas y escribir celdas una a una. Cargar un CSV es la forma natural de traer datos existentes, pero el archivo es contenido externo: puede tener comillas, comas, saltos de línea y tamaños abusivos.
+
+**Opciones consideradas.**
+
+1. Subir el CSV a un endpoint y parsearlo en servidor antes de guardar el dataset.
+2. Parsearlo en el navegador con una librería CSV de terceros.
+3. Parsearlo en el navegador con una máquina de estados propia y validar el resultado con Zod.
+
+**Decisión.** Opción 3. `src/lib/csv.ts` implementa un parser RFC 4180 (comillas, `""` escapado, comas y saltos dentro de comillas, CRLF/LF, BOM inicial y salto final) sin dependencias nuevas. `datasetFromCsv` toma la primera fila como cabeceras, recorta espacios, genera `Columna N` para cabeceras vacías, limita a 8 columnas y 200 filas, recorta etiquetas a 40 caracteres, rellena filas cortas con `""`, rechaza filas con más celdas que cabeceras y celdas de más de 200 caracteres, y valida el resultado con `pageDatasetSchema`. El editor rechaza archivos de más de 100 KB, lee el archivo con `File.text()` (con `FileReader` de reserva), reemplaza el dataset en edición y no lo guarda hasta pulsar «Guardar datos».
+
+**Consecuencias.**
+
+- No hay endpoint nuevo ni se sube el archivo a Supabase: el CSV nunca sale del navegador. El dataset resultante se guarda con la misma validación y RLS que la edición manual.
+- El contenido se renderiza siempre como texto por React; no se usa `dangerouslySetInnerHTML` ni se interpreta HTML del CSV. Tampoco se usa `window.confirm`.
+- Los límites coinciden con los del dataset (8 columnas, 200 filas, 200 caracteres por celda, 100 KB) para que un archivo aceptado se pueda guardar; la validación Zod es la última barrera.
+- Las cabeceras vacías se renombran y las duplicadas se conservan: los ids `col-1…col-N` son los que identifican cada columna, no la etiqueta.
+- Una importación descarta el dataset anterior en memoria solo después de parsear y validar con éxito; un archivo inválido no toca los datos actuales. El reemplazo no se persiste hasta «Guardar datos».
+- El parser propio hay que mantenerlo y probarlo; a cambio evita una dependencia, controla el mensaje de error y no ejecuta código de terceros sobre datos del usuario.
+- No se detectan codificaciones distintas de UTF-8 ni separadores alternativos (punto y coma): el CSV esperado es UTF-8 con comas.

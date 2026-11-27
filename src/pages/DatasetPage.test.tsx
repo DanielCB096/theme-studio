@@ -132,4 +132,67 @@ describe("DatasetPage", () => {
     expect(await screen.findByText("No se pudo guardar en Supabase.")).toBeInTheDocument();
     expect(screen.queryByText("Datos guardados.")).toBeNull();
   });
+
+  it("importa un CSV y no guarda hasta pulsar Guardar datos", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByLabelText("Fila 1, columna 1 (Nombre)");
+    const csv =
+      'Producto,Precio,Notas\nCafé,3,"Con leche, sin azúcar"\nTé,2,\nZumo,2.5,"Recién exprimido"\n';
+    const file = new File([csv], "datos.csv", { type: "text/csv" });
+
+    await user.upload(screen.getByLabelText("Importar CSV"), file);
+
+    expect(
+      await screen.findByText("CSV importado: 3 filas. Pulsa “Guardar datos”."),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Fila 1, columna 1 (Producto)")).toHaveValue("Café");
+    expect(screen.getByLabelText("Fila 1, columna 3 (Notas)")).toHaveValue("Con leche, sin azúcar");
+    expect(screen.getByText(/3 de 8 columnas/)).toBeInTheDocument();
+    expect(savePageDatasetMock).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Guardar datos" }));
+
+    await waitFor(() => expect(savePageDatasetMock).toHaveBeenCalledTimes(1));
+    expect(savePageDatasetMock).toHaveBeenCalledWith(pageId, {
+      columns: [
+        { id: "col-1", label: "Producto" },
+        { id: "col-2", label: "Precio" },
+        { id: "col-3", label: "Notas" },
+      ],
+      rows: [
+        { "col-1": "Café", "col-2": "3", "col-3": "Con leche, sin azúcar" },
+        { "col-1": "Té", "col-2": "2", "col-3": "" },
+        { "col-1": "Zumo", "col-2": "2.5", "col-3": "Recién exprimido" },
+      ],
+    });
+  });
+
+  it("rechaza un CSV de más de 100 KB con un mensaje claro", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByLabelText("Fila 1, columna 1 (Nombre)");
+    const file = new File([new Uint8Array(100 * 1024 + 1)], "grande.csv", { type: "text/csv" });
+
+    await user.upload(screen.getByLabelText("Importar CSV"), file);
+
+    expect(await screen.findByText("No se pudo importar el CSV")).toBeInTheDocument();
+    expect(screen.getByText(/el máximo es 100 KB/)).toBeInTheDocument();
+    expect(savePageDatasetMock).not.toHaveBeenCalled();
+  });
+
+  it("muestra el error del parser si el CSV tiene una comilla sin cerrar", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByLabelText("Fila 1, columna 1 (Nombre)");
+    const file = new File(['A,B\n"sin cerrar,2\n'], "roto.csv", { type: "text/csv" });
+
+    await user.upload(screen.getByLabelText("Importar CSV"), file);
+
+    expect(await screen.findByText("No se pudo importar el CSV")).toBeInTheDocument();
+    expect(screen.getByText(/comilla sin cerrar/)).toBeInTheDocument();
+  });
 });
