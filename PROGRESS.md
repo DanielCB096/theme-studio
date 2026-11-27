@@ -348,7 +348,7 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 ## Hito 2C — Fase 1 y 2: buscador, paginación y CSV (2026-11-27)
 
-**Estado: implementado y verificado en local; pendiente de merge.** Rama `feat/table-enhancements`; sin tocar `main` y sin migraciones.
+**Estado: implementado, verificado y desplegado en producción.** Rama `feat/table-enhancements`; sin tocar `main` y sin migraciones.
 
 **Hecho**
 
@@ -369,6 +369,8 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - `npm test` — **42 archivos, 273 pruebas en verde**.
 - `npm run build` — pasa (chunk mayor 235,62 kB; vendor Supabase 230,92 kB; CSS 30,19 kB).
 - Playwright — **11/11 en verde**, incluidos `pages-table.spec.ts` y `pages-csv.spec.ts`.
+- Fusionado a `main` (`4a5eb3c`) y desplegado; etiqueta `v1.5-table-tools`.
+- E2E contra producción: **11/11**.
 
 **Problemas encontrados**
 
@@ -380,5 +382,5 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 **Siguiente**
 
-- Revisión humana, merge y despliegue.
+- Revisión humana en producción.
 - Después, la fase de varios datasets por página (migración `006`).
