@@ -32,8 +32,10 @@ test("el enlace compartido abre el tema en modo lectura y pide sesión para dupl
   const href = await link.getAttribute("href");
   expect(href).toBeTruthy();
 
-  // Visitante anónimo: contexto limpio, sin sesión.
-  const anonymous = await browser.newContext();
+  // Visitante anónimo: contexto limpio, sin la sesión del storageState.
+  const anonymous = await browser.newContext({
+    storageState: { cookies: [], origins: [] },
+  });
   const visitor = await anonymous.newPage();
   await visitor.goto(href ?? "/");
 

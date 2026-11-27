@@ -68,6 +68,12 @@ jobs:
       - name: Crear .env para E2E
         run: printf 'VITE_SUPABASE_URL=%s\nVITE_SUPABASE_ANON_KEY=%s\n' "${{ secrets.VITE_SUPABASE_URL }}" "${{ secrets.VITE_SUPABASE_ANON_KEY }}" > .env
 
+      - name: Comprobar Supabase E2E
+        run: node scripts/ci-supabase-check.mjs
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
       - name: Instalar Chromium
         run: npx playwright install --with-deps chromium
 

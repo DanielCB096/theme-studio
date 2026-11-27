@@ -12,6 +12,15 @@ export const E2E_PASSWORD = "theme-studio-e2e-Aa1";
  * `/temas`.
  */
 export async function signInOrCreate(page: Page): Promise<void> {
+  // Con `storageState` la sesión ya está iniciada; se evita un login por test.
+  await page.goto("/temas");
+  const signedIn = await page
+    .getByRole("button", { name: "Salir" })
+    .waitFor({ state: "visible", timeout: 2_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (signedIn) return;
+
   await page.goto("/entrar");
   if (await page.getByText("Supabase no está configurado").isVisible()) {
     test.skip(true, "Supabase no configurado en este entorno");
@@ -33,8 +42,8 @@ export async function signInOrCreate(page: Page): Promise<void> {
     .then(() => false)
     .catch(() => null);
 
-  const signedIn = await Promise.race([signedInPromise, failedPromise]);
-  if (signedIn === true) return;
+  const result = await Promise.race([signedInPromise, failedPromise]);
+  if (result === true) return;
 
   // Primera ejecución o cuenta borrada: se crea con las mismas credenciales.
   await page.getByRole("button", { name: "Crear cuenta con estos datos" }).click();
