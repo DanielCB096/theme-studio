@@ -22,7 +22,13 @@ function finish(ok, detail) {
 }
 
 if (!url || !key) {
-  finish(false, "faltan VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY en los secretos.");
+  const message =
+    "faltan VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY en los secretos; las pruebas que necesitan Supabase se omitirán.";
+  const summary = `## Comprobación de Supabase para E2E\n\n- ${message}\n`;
+  appendFileSync(process.env.GITHUB_STEP_SUMMARY ?? "ci-supabase-summary.md", summary);
+  console.log(summary);
+  console.log(`::warning::${message}`);
+  process.exit(0);
 }
 
 let response;

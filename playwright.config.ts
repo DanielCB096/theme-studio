@@ -36,7 +36,6 @@ export default defineConfig({
     {
       name: "anonymous",
       use: { ...devices["Desktop Chrome"] },
-      dependencies: ["setup"],
       testMatch: anonymousTests,
     },
   ],

@@ -22,7 +22,12 @@ export async function signInOrCreate(page: Page): Promise<void> {
   if (signedIn) return;
 
   await page.goto("/entrar");
-  if (await page.getByText("Supabase no está configurado").isVisible()) {
+  const notConfigured = await page
+    .getByText("Supabase no está configurado")
+    .waitFor({ state: "visible", timeout: 2_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (notConfigured) {
     test.skip(true, "Supabase no configurado en este entorno");
   }
 
