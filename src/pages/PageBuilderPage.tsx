@@ -155,13 +155,15 @@ export default function PageBuilderPage() {
   };
 
   const togglePublished = async () => {
-    const saved = savedId ? { id: savedId, slug: slug ?? "" } : await persist();
+    // Publicar debe incluir siempre los cambios que el usuario ve en el lienzo:
+    // si se publica sin guardar, la página pública se queda con la versión anterior.
+    const saved = await persist();
     if (!saved) return;
     setSaving(true);
     try {
       await setPageVisibility(saved.id, !published);
       setPublished((current) => !current);
-      if (slug) setStatus(published ? "Página despublicada." : "Página publicada.");
+      if (saved.slug) setStatus(published ? "Página despublicada." : "Página publicada.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "No se pudo publicar.");
     } finally {
