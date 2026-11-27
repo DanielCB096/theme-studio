@@ -65,16 +65,24 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Crear .env para E2E
+        run: printf 'VITE_SUPABASE_URL=%s\nVITE_SUPABASE_ANON_KEY=%s\n' "${{ secrets.VITE_SUPABASE_URL }}" "${{ secrets.VITE_SUPABASE_ANON_KEY }}" > .env
+
       - name: Instalar Chromium
         run: npx playwright install --with-deps chromium
 
       # Sin los secretos, las pruebas de auth y compartir se omiten solas;
       # las de vista previa siguen ejecutándose.
       - name: Pruebas E2E
-        run: npm run test:e2e
+        run: npx playwright test --reporter=list,json
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          PLAYWRIGHT_JSON_OUTPUT_NAME: e2e-results.json
+
+      - name: Resumen de fallos E2E
+        if: failure()
+        run: node scripts/ci-e2e-summary.mjs
 
       - name: Guardar informe si falla
         if: failure()

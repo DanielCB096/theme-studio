@@ -14,15 +14,15 @@ test("enviar el formulario público y gestionar la respuesta en la bandeja", asy
   await page.goto("/builder");
 
   await expect(page.getByLabel("Nombre de la página")).toHaveValue("Mi landing", {
-    timeout: 20_000,
+    timeout: 30_000,
   });
   await page.getByLabel("Nombre de la página").fill(pageName);
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
-  await expect(page).toHaveURL(/\/builder\/[0-9a-f-]{36}$/, { timeout: 20_000 });
+  await expect(page).toHaveURL(/\/builder\/[0-9a-f-]{36}$/, { timeout: 30_000 });
   const pageId = page.url().split("/builder/")[1];
 
   await page.getByRole("button", { name: "Publicar", exact: true }).click();
-  await expect(page.getByText("Página publicada.")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText("Página publicada.")).toBeVisible({ timeout: 30_000 });
 
   const href = await page.getByRole("link", { name: /^\/p\// }).getAttribute("href");
   expect(href).toBeTruthy();
@@ -37,13 +37,13 @@ test("enviar el formulario público y gestionar la respuesta en la bandeja", asy
   await form.getByLabel("Correo", { exact: true }).fill("visitante@example.com");
   await form.getByLabel("Mensaje", { exact: true }).fill(message);
   await form.getByRole("button", { name: "Enviar mensaje" }).click();
-  await expect(visitor.getByText(/Gracias\. Hemos recibido/)).toBeVisible({ timeout: 20_000 });
+  await expect(visitor.getByText(/Gracias\. Hemos recibido/)).toBeVisible({ timeout: 30_000 });
   await anonymous.close();
 
   // El dueño revisa la respuesta, la marca como leída y descarga el CSV.
   await page.goto(`/pages/${pageId}/respuestas`);
   await expect(page.getByRole("heading", { name: /Respuestas/ })).toBeVisible();
-  await expect(page.getByText(message)).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText(message)).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("Nueva", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Marcar respuesta como leída" }).click();

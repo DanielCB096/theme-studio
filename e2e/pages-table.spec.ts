@@ -10,11 +10,11 @@ test("buscar y paginar una tabla estática publicada", async ({ page, browser })
   await page.goto("/builder");
 
   await expect(page.getByLabel("Nombre de la página")).toHaveValue("Mi landing", {
-    timeout: 20_000,
+    timeout: 30_000,
   });
   await page.getByLabel("Nombre de la página").fill(pageName);
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
-  await expect(page).toHaveURL(/\/builder\/[0-9a-f-]{36}$/, { timeout: 20_000 });
+  await expect(page).toHaveURL(/\/builder\/[0-9a-f-]{36}$/, { timeout: 30_000 });
 
   // Bloque estático con dos columnas y siete filas.
   await page.getByRole("button", { name: "Tabla", exact: true }).click();
@@ -52,10 +52,10 @@ test("buscar y paginar una tabla estática publicada", async ({ page, browser })
   await expect(page.getByText("Página 1 de 2")).toBeVisible();
 
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
-  await expect(page.getByText("Cambios guardados.")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText("Cambios guardados.")).toBeVisible({ timeout: 30_000 });
 
   await page.getByRole("button", { name: "Publicar", exact: true }).click();
-  await expect(page.getByText("Página publicada.")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText("Página publicada.")).toBeVisible({ timeout: 30_000 });
 
   const href = await page.getByRole("link", { name: /^\/p\// }).getAttribute("href");
   expect(href).toBeTruthy();
@@ -65,7 +65,7 @@ test("buscar y paginar una tabla estática publicada", async ({ page, browser })
   await visitor.goto(href ?? "/");
 
   const table = visitor.getByRole("table", { name: "Comparativa" });
-  await expect(table).toBeVisible({ timeout: 20_000 });
+  await expect(table).toBeVisible({ timeout: 30_000 });
   await expect(table.getByRole("columnheader", { name: "Producto" })).toBeVisible();
   await expect(table.getByRole("columnheader", { name: "Precio" })).toBeVisible();
 

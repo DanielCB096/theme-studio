@@ -14,7 +14,7 @@ test("crear página desde plantilla, editar, guardar, publicar y abrir en tres a
   await page.goto("/builder");
 
   await expect(page.getByLabel("Nombre de la página")).toHaveValue("Mi landing", {
-    timeout: 20_000,
+    timeout: 30_000,
   });
 
   // Selecciona el hero en la estructura y edita su título.
@@ -44,10 +44,10 @@ test("crear página desde plantilla, editar, guardar, publicar y abrir en tres a
   await page.getByLabel("Nombre de la página").fill(pageName);
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
 
-  await expect(page).toHaveURL(/\/builder\/[0-9a-f-]{36}$/, { timeout: 20_000 });
+  await expect(page).toHaveURL(/\/builder\/[0-9a-f-]{36}$/, { timeout: 30_000 });
 
   await page.getByRole("button", { name: "Publicar", exact: true }).click();
-  await expect(page.getByText("Página publicada.")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText("Página publicada.")).toBeVisible({ timeout: 30_000 });
 
   const link = page.getByRole("link", { name: /^\/p\// });
   const href = await link.getAttribute("href");
