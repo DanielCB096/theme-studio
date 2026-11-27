@@ -437,3 +437,4 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - Se añade un aviso de **máximo 20 filas y 6 columnas** en la tabla estática; para más datos hay que usar un dataset. La página reportada tenía filas con celdas de más y texto concatenado de una edición manual; no se modificó su contenido.
 - Durante la revisión se creó y eliminó un dataset de prueba en esa página; el resto de datos quedó intacto.
 - Pruebas: **297 unitarias**, **13/13 E2E**.
+- Fusionado a `main` (`5123b2c`), desplegado y etiquetado `v1.6.1-builder-fixes`; E2E contra producción: **13/13**.
