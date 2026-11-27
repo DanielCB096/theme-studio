@@ -387,11 +387,11 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 
 ## Hito 2C — Fase 3: varios datasets por página (2026-11-27)
 
-**Estado: implementado, pendiente de migración y de E2E/RLS.** Rama `feat/multiple-datasets`; sin tocar `main`, formularios ni `AGENTS.md`/`CLAUDE.md`. No se ha hecho commit, push ni despliegue.
+**Estado: implementado, verificado y desplegado en producción.** Rama `feat/multiple-datasets`; sin tocar `main`, formularios ni `AGENTS.md`/`CLAUDE.md`.
 
 **Hecho**
 
-- Migración `006_multiple_datasets.sql`, idempotente: añade `id uuid` (PK) y `name text` (1–60, default `'Datos'`), rellena la fila de 005 antes de los `not null`, mueve la PK de `page_id` a `id`, añade índice por `page_id`, único por `(page_id, lower(name))`, check de longitud, y conserva `data`, `updated_at`, trigger, grants y políticas RLS. **Sin aplicar en Supabase.**
+- Migración `006_multiple_datasets.sql`, idempotente: añade `id uuid` (PK) y `name text` (1–60, default `'Datos'`), rellena la fila de 005 antes de los `not null`, mueve la PK de `page_id` a `id`, añade índice por `page_id`, único por `(page_id, lower(name))`, check de longitud, y conserva `data`, `updated_at`, trigger, grants y políticas RLS. **Aplicada en Supabase.**
 - `PageDatasetRecord` (`id`, `pageId`, `name`, `dataset`, `updatedAt`), tipos de `page_datasets` actualizados y límites de nombre/máximo en `datasetSchema.ts`.
 - `datasetRepository.ts`: `listPageDatasets` (orden por nombre, Zod y error que identifica el dataset dañado), `getPageDatasetRecord`, `createPageDataset` (límite de 10 con consulta previa y reintento `nombre 2`, `nombre 3`… ante `23505`), `savePageDataset(id, dataset, name)` con confirmación de lectura por id, `renamePageDataset` y `deletePageDataset`. Se mantiene `parseDatasetData` y el patrón de errores legibles.
 - `PageRuntime.datasets` (default `[]`). `PublicPage` carga la lista y degrada a `[]` si falla; `PageBuilderPage` la carga junto a la página, avisa sin bloquear la edición y la pasa al lienzo y al inspector.
@@ -411,8 +411,10 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - `npm run typecheck` — pasa.
 - `npm test` — **43 archivos, 297 pruebas en verde**.
 - `npm run build` — pasa (chunk mayor 235,84 kB; vendor Supabase 230,92 kB; CSS 30,37 kB).
-- Playwright — **no ejecutado** en esta fase, por indicación del encargo.
-- `npm run verify:rls` — **no ejecutado**; la matriz nueva requiere aplicar `006`.
+- Playwright — **12/12 en verde**, incluida `pages-multiple-datasets.spec.ts` y los flujos adaptados de dataset y CSV.
+- `npm run verify:rls` — **33/33** (temas, páginas, respuestas y varios datasets).
+- Fusión a `main` (`de06820`), despliegue y etiqueta `v1.6-multiple-datasets`.
+- E2E contra producción: **12/12**.
 
 **Problemas encontrados**
 
@@ -421,9 +423,9 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - El límite de 10 se aplica en cliente; dos pestañas podrían superarlo porque Postgres no lo impone. Se documenta como carrera aceptada en ADR-024.
 - Al cambiar el modelo, los E2E de dataset y CSV ya no podían entrar directos al editor: ahora crean un dataset en la lista y esperan un `PATCH` (update por id) antes de recargar.
 - La lista no puede distinguir un dataset borrado de un id mal escrito; ambos se explican como «Dataset no encontrado» y enlazan a la lista.
+- La migración `006` cambia la PK y deja temporalmente incompatible el upsert del código 2B (`onConflict: page_id`). Se aplicó y se desplegó el código nuevo en la misma ventana; entre ambos pasos, guardar datasets en producción habría fallado.
 
 **Siguiente**
 
-- Aplicar `006_multiple_datasets.sql` en Supabase.
-- Ejecutar la suite E2E (incluida `pages-multiple-datasets.spec.ts`) y `npm run verify:rls`; actualizar los resultados reales.
-- Revisión humana antes de fusionar o desplegar.
+- Revisión humana en producción.
+- No iniciar un hito posterior sin aprobación explícita.

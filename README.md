@@ -35,7 +35,7 @@ Con una cuenta, entra en **Páginas → Nueva página**: se crea una landing des
 
 El bloque **form** es una demostración en el builder. En una página publicada envía de verdad a `POST /api/submit-page-form` (honeypot y rate limit), guarda la respuesta en Supabase con RLS y la muestra en `/pages/:id/respuestas`, donde puedes marcarla como leída o eliminarla y descargar un CSV. Límites del Hito 2A: sin correo, adjuntos ni captcha.
 
-El bloque **table** puede usar columnas y filas estáticas o conectarse a **un dataset de la página**. En **Datos** (`/pages/:id/datos`) gestionas hasta 10 datasets por página; cada uno se edita en `/pages/:id/datos/:datasetId` con hasta 8 columnas, 200 filas y 100 KB, nombre único de 1–60 caracteres y **Importar CSV** validado en el navegador. En el inspector de la tabla eliges el dataset (o «Primero disponible» para las tablas creadas antes de esta versión). En la tabla puedes activar el **buscador** (filtra sin distinguir mayúsculas ni acentos) y las **filas por página** (Todas, 5, 10 o 20); ambos funcionan en la página publicada. La migración `006` de varios datasets está escrita pero **pendiente de aplicar** en Supabase, y los E2E/RLS nuevos están pendientes de ejecutar.
+El bloque **table** puede usar columnas y filas estáticas o conectarse a **un dataset de la página**. En **Datos** (`/pages/:id/datos`) gestionas hasta 10 datasets por página; cada uno se edita en `/pages/:id/datos/:datasetId` con hasta 8 columnas, 200 filas y 100 KB, nombre único de 1–60 caracteres y **Importar CSV** validado en el navegador. En el inspector de la tabla eliges el dataset (o «Primero disponible» para las tablas creadas antes de esta versión). En la tabla puedes activar el **buscador** (filtra sin distinguir mayúsculas ni acentos) y las **filas por página** (Todas, 5, 10 o 20); ambos funcionan en la página publicada. La migración `006` de varios datasets está aplicada y los E2E/RLS se ejecutaron contra el proyecto real.
 
 ![Constructor de páginas con estructura, lienzo y propiedades](docs/assets/builder.png)
 
@@ -103,7 +103,7 @@ npm run dev
 
 La IA usa una función serverless. En local, `npm run dev` sirve también `/api/*` con un plugin de Vite que lee `.env` (incluidas `GEMINI_API_KEY` y `GEMINI_MODEL`); `vercel dev` sigue siendo la alternativa para reproducir el entorno de producción. Los formularios y los datos de página usan además `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
 
-Aplica las migraciones de `supabase/migrations/` en orden. La migración **`005_page_datasets.sql`** crea la tabla de datasets y su RLS, y **`006_multiple_datasets.sql`** la evoluciona a varios datasets por página; la 005 está aplicada en el proyecto de Supabase y la **006 está pendiente**. Sin la 006, la lista y el editor por id no funcionan contra la base de datos real.
+Aplica las migraciones de `supabase/migrations/` en orden. La migración **`005_page_datasets.sql`** crea la tabla de datasets y su RLS, y **`006_multiple_datasets.sql`** la evoluciona a varios datasets por página; ambas están aplicadas en el proyecto de Supabase.
 
 Comandos:
 
@@ -146,7 +146,7 @@ docker run --rm -p 8080:80 theme-studio
 | Lighthouse · Buenas prácticas     | 100                                                       |
 | Lighthouse · SEO                  | 100                                                       |
 | Chunk mayor                       | 231 kB (60 kB gzip, vendor Supabase)                      |
-| Pruebas                           | 297 unitarias/componentes · 11 E2E ejecutadas · 29 RLS    |
+| Pruebas                           | 297 unitarias/componentes · 12 E2E ejecutadas · 33 RLS    |
 | Respuesta de la IA                | 2–22 s según el modelo disponible; reserva local si falla |
 
 ## Pruebas
@@ -168,7 +168,7 @@ Ver [`docs/TESTING.md`](docs/TESTING.md).
 - **Enlace mágico en producción**: su destino depende de _Redirect URLs_ en Supabase. Si no añades `https://theme-studio-queserabernal.vercel.app/**`, el correo apuntará a `localhost`. El acceso con contraseña sí funciona en la demo.
 - El nivel gratuito de Gemini devuelve 503 con frecuencia; la función prueba varios modelos y, si todos fallan, responde con la reserva local etiquetada como tal.
 - Los formularios del Hito 2A no envían correo ni aceptan adjuntos; el rate limit es en memoria y no sustituye a un captcha. La bandeja no tiene paginación.
-- Los datos de página admiten hasta 10 datasets por página, uno por bloque, sin mover datasets entre páginas ni ordenación o filtros por columna. La búsqueda y la paginación de la tabla son en cliente; la importación CSV reemplaza el dataset completo. La migración `006` de varios datasets está pendiente de aplicar y el E2E/RLS nuevos están pendientes de ejecutar; los E2E de 2C fases 1–2 se ejecutaron contra el proyecto real (11/11) y la matriz RLS registrada es 29/29.
+- Los datos de página admiten hasta 10 datasets por página, uno por bloque, sin mover datasets entre páginas ni ordenación o filtros por columna. La búsqueda y la paginación de la tabla son en cliente; la importación CSV reemplaza el dataset completo. La migración `006` está aplicada, los E2E de 2C se ejecutaron contra el proyecto real (12/12) y la matriz RLS registrada es 33/33.
 - El rate limit de la IA vive en memoria: no es global entre instancias serverless ni sustituye a una cuota de producción.
 - «Confirm email» está desactivado en Supabase para permitir los E2E; es un tradeoff de demo, no una configuración recomendable en producción.
 - Los E2E usan una cuenta fija (`theme-studio-e2e@example.com`) y crean temas de prueba; los temas se pueden borrar desde la cuenta y las cuentas antiguas desde el dashboard.

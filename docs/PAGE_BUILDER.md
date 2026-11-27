@@ -1,6 +1,6 @@
 # Page Builder (Anexo A)
 
-Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1, 1.2 (assets), 2A (formularios), 2B (datasets) y 2C fases 1-2 (buscador, paginación y CSV) completados y en producción**. La **fase 3 de 2C (varios datasets por página)** está implementada en la rama `feat/multiple-datasets`, con la migración `006` escrita pero **sin aplicar** y los E2E/RLS nuevos pendientes de ejecutar. En producción: https://theme-studio-queserabernal.vercel.app.
+Constructor de páginas alojadas que reutiliza el editor de temas como sistema de estilos. **Hito 1, 1.2 (assets), 2A (formularios), 2B (datasets) y 2C (buscador, paginación, CSV y varios datasets) completados y en producción**. En producción: https://theme-studio-queserabernal.vercel.app.
 
 ## Alcance
 
@@ -229,7 +229,7 @@ RLS (sin cambios de semántica):
 - Sin imágenes en celdas.
 - Un dataset dañado hace fallar la carga de la lista: en público la página se muestra sin datasets y en el builder se avisa sin impedir editar la página.
 - La tabla estática sigue disponible y es el valor por defecto de las páginas existentes.
-- La migración del Hito 2B está aplicada en Supabase; la **006 está pendiente**. Los E2E de 2C fases 1–2 se ejecutaron y están en verde (11/11); el E2E de varios datasets está escrito pero sin ejecutar.
+- Las migraciones 005 y 006 están aplicadas en Supabase. Los E2E de 2C están en verde (12/12) y la matriz RLS en 33/33.
 
 ## Seguridad
 
@@ -267,11 +267,11 @@ RLS (sin cambios de semántica):
 - E2E (`e2e/pages.spec.ts`): plantilla → editar → guardar → publicar → abrir anónimo en 375/768/1280.
 - E2E (`e2e/pages-upload.spec.ts`): subir logo a Storage, guardar, publicar y verificar la imagen pública.
 - E2E (`e2e/pages-form.spec.ts`): publicar → enviar el formulario anónimo → ver la respuesta, marcarla leída y descargar el CSV.
-- E2E (`e2e/pages-dataset.spec.ts`): crear página → crear dataset → editar datos → conectar la tabla → publicar → ver los datos en anónimo. **Ejecutado y en verde (11/11 con la suite de 2C).**
+- E2E (`e2e/pages-dataset.spec.ts`): crear página → crear dataset → editar datos → conectar la tabla → publicar → ver los datos en anónimo. **Ejecutado y en verde (12/12 con la suite de 2C).**
 - E2E (`e2e/pages-table.spec.ts`): tabla estática de 7 filas con búsqueda y paginación en la página publicada. **Ejecutado y en verde.**
 - E2E (`e2e/pages-csv.spec.ts`): importar `e2e/fixtures/dataset.csv`, guardar, recargar y publicar una tabla conectada. **Ejecutado y en verde.**
 - E2E (`e2e/pages-multiple-datasets.spec.ts`): dos datasets, dos tablas con `datasetId` distinto, publicación anónima, lista conservada y editor recargado por id. **Escrito; no ejecutado en esta fase.**
-- `npm run verify:rls` amplía la matriz con páginas, respuestas y datasets privados/públicos. Incluye dos datasets en la misma página, unicidad de nombre, lectura anónima de ambos y borrado selectivo del dueño. **El script está actualizado; la última ejecución registrada es 29/29 y la nueva matriz está pendiente de ejecutar tras aplicar 006.**
+- `npm run verify:rls` amplía la matriz con páginas, respuestas y datasets privados/públicos. Incluye dos datasets en la misma página, unicidad de nombre, lectura anónima de ambos y borrado selectivo del dueño. **Ejecutado: 33/33.**
 
 ## Limitaciones conocidas (Hitos 1, 2A, 2B y 2C)
 
@@ -283,5 +283,5 @@ RLS (sin cambios de semántica):
 - Sin edición de listas complejas de planes/formularios desde el inspector (se completará).
 - Datos de página: hasta 10 datasets por página y uno por bloque, sin mover datasets entre páginas, ordenación, filtros por columna ni imágenes en celdas. La búsqueda y la paginación de la tabla son en cliente; la importación CSV sustituye el dataset completo.
 - El máximo de 10 datasets no está impuesto en Postgres: dos pestañas podrían superarlo a la vez.
-- La migración `006` está escrita pero no aplicada; hasta ejecutarla, el flujo real de varios datasets no funciona en Supabase.
+- La migración `006` está aplicada; el flujo real de varios datasets se verificó con E2E y RLS.
 - El tema se captura al crear la página; cambiarlo después no afecta a páginas existentes salvo que se edite el snapshot.
