@@ -22,6 +22,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - El buscador y la paginación de la tabla se pueden usar en el lienzo del builder: se elevan por encima de la capa de selección.
 - Aviso de máximo 50 filas y 6 columnas en la tabla estática, con indicación de usar un dataset para más datos.
 - E2E `pages-publish-saves.spec.ts` y clic real en los controles dentro de `pages-table.spec.ts`.
+- La página publicada usa un landmark `main` único (Lighthouse: accesibilidad 98 → 100); el builder conserva su `main` de lienzo sin anidarlo.
 
 ### Añadido — Hito 2C: buscador, paginación e importación CSV
 

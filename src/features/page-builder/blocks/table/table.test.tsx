@@ -188,6 +188,15 @@ describe("bloque table", () => {
     expect(screen.getByRole("cell", { name: "Starter" })).toBeInTheDocument();
   });
 
+  it("usa un landmark main en público y no lo anida en el builder", () => {
+    const publicView = renderPage(makeTablePage(), "public", []);
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    publicView.unmount();
+
+    renderPage(makeTablePage(), "builder", []);
+    expect(screen.queryByRole("main")).toBeNull();
+  });
+
   it("renderiza las columnas y celdas del dataset en el builder", () => {
     renderPage(makeTablePage({ source: "page", datasetId: productDatasetId }), "builder", [
       products,

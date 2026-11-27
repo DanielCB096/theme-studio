@@ -436,5 +436,5 @@ Bitácora honesta del proyecto. Al final de cada fase: fecha, qué se hizo, prue
 - El buscador y la paginación de la tabla se veían en el lienzo, pero la capa de selección del bloque los bloqueaba. Los controles se elevan (`relative z-20`) por encima de la capa; el resto del bloque sigue seleccionándose. El E2E de tabla hace un clic real en el buscador y en Anterior/Siguiente dentro del builder.
 - Se añade un aviso de **máximo 50 filas y 6 columnas** en la tabla estática (antes 20); para más datos hay que usar un dataset. La página reportada tenía filas con celdas de más y texto concatenado de una edición manual; no se modificó su contenido.
 - Durante la revisión se creó y eliminó un dataset de prueba en esa página; el resto de datos quedó intacto.
-- Pruebas: **298 unitarias**, **13/13 E2E**.
+- Pruebas: **299 unitarias**, **13/13 E2E**.
 - Fusionado a `main` (`5123b2c`), desplegado y etiquetado `v1.6.1-builder-fixes`; E2E contra producción: **13/13**. Se eleva además el límite de la tabla estática a 50 filas (`v1.6.2`).

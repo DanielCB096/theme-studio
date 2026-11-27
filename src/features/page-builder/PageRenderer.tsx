@@ -113,15 +113,25 @@ export function PageRenderer({
 
   const sidebar =
     navbar && (navbar.props.placement === "left" || navbar.props.placement === "right");
+  const content = middle.map((block) => shell(block));
+  // En la página publicada el contenido central es el landmark `main`; en el
+  // builder ya existe el `main` del lienzo y no se debe anidar otro.
+  const middleContent = runtime.mode === "public" ? <main>{content}</main> : <>{content}</>;
 
   return (
     <PageRuntimeProvider runtime={runtime}>
       <ThemeScope theme={page.theme} className="min-h-full">
         <div className="flex min-h-full flex-col bg-background text-fg @container">
           {blocks.length === 0 ? (
-            <div className="grid min-h-64 place-items-center p-density text-sm text-muted">
-              Esta página no tiene bloques todavía.
-            </div>
+            runtime.mode === "public" ? (
+              <main className="grid min-h-64 place-items-center p-density text-sm text-muted">
+                Esta página no tiene bloques todavía.
+              </main>
+            ) : (
+              <div className="grid min-h-64 place-items-center p-density text-sm text-muted">
+                Esta página no tiene bloques todavía.
+              </div>
+            )
           ) : sidebar && navbar ? (
             <div className="flex min-h-full flex-col @2xl:flex-row">
               <div
@@ -135,14 +145,14 @@ export function PageRenderer({
                 {shell(navbar, "@2xl:sticky @2xl:top-0")}
               </div>
               <div className="min-w-0 flex-1">
-                {middle.map((block) => shell(block))}
+                {middleContent}
                 {footer ? shell(footer) : null}
               </div>
             </div>
           ) : (
             <>
               {navbar && navbar.props.placement === "top" ? shell(navbar) : null}
-              {middle.map((block) => shell(block))}
+              {middleContent}
               {navbar && navbar.props.placement === "bottom" ? shell(navbar) : null}
               {footer ? shell(footer) : null}
             </>
