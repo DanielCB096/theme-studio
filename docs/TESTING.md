@@ -24,47 +24,47 @@ Antes de la primera ejecución E2E: `npx playwright install chromium`. El config
 
 ## Registro de ejecuciones
 
-| Fecha      | Fase   | Comando                              | Resultado                                           |
-| ---------- | ------ | ------------------------------------ | --------------------------------------------------- |
-| 2026-11-24 | 0      | `lint`, `typecheck`, `test`, `build` | Pasa: 1 archivo / 1 prueba                          |
-| 2026-11-24 | 1      | `lint`, `typecheck`, `test`, `build` | Pasa: 5 archivos / 18 pruebas                       |
-| 2026-11-24 | 2      | `lint`, `typecheck`, `test`, `build` | Pasa: 8 archivos / 44 pruebas                       |
-| 2026-11-24 | 3      | `test`                               | Pasa: 9 archivos / 50 pruebas                       |
-| 2026-11-24 | 3      | `test:e2e`                           | Pasa: 2 pruebas (chromium)                          |
-| 2026-11-25 | 4      | `test`                               | Pasa: 17 archivos / 87 pruebas                      |
-| 2026-11-25 | 4      | `test:e2e`                           | Pasa: 4 pruebas (chromium)                          |
-| 2026-11-25 | 4      | `verify:rls`                         | Pasa: 9/9 comprobaciones                            |
-| 2026-11-25 | 5      | `test`                               | Pasa: 23 archivos / 128 pruebas                     |
-| 2026-11-25 | 6      | `test`                               | Pasa: 24 archivos / 135 pruebas                     |
-| 2026-11-25 | 6      | `test:coverage`                      | Pasa: 93,75 % líneas / 92,07 % ramas                |
-| 2026-11-25 | 6      | `test:e2e`                           | Pasa: 5 pruebas (incluye Pixel 5 emulado)           |
-| 2026-11-25 | 6      | Lighthouse (preview)                 | A11y 100 · Best Practices 100 · SEO 100             |
-| 2026-11-25 | 6      | `check:deploy` (Vercel)              | Pasa: Supabase, login, IA y aplicación en preview   |
-| 2026-11-25 | A.1    | `test`                               | Pasa: 31 archivos / 184 pruebas                     |
-| 2026-11-25 | A.1    | `test:e2e`                           | Pasa: 7 pruebas (incluye subida a Storage)          |
-| 2026-11-25 | A.1    | `verify:rls`                         | Pasa: 14/14 (temas + paginas)                       |
-| 2026-11-26 | 2A     | `test`                               | Pasa: 36 archivos / 209 pruebas                     |
-| 2026-11-26 | 2A     | `test:e2e`                           | Pasa: 8 pruebas (incluye formulario y CSV)          |
-| 2026-11-26 | 2A     | `verify:rls`                         | Pasa: 21/21 (temas, páginas y respuestas)           |
-| 2026-11-26 | 2A     | `test:e2e` (producción)              | Pasa: 8/8 contra la URL pública                     |
-| 2026-11-26 | 2B     | `test`                               | Pasa: 41 archivos / 251 pruebas                     |
-| 2026-11-26 | 2B     | `test:e2e`                           | Pasa: 9 pruebas (incluye dataset y CSV)             |
-| 2026-11-26 | 2B     | `verify:rls`                         | Pasa: 29/29 (temas, páginas, respuestas y datasets) |
-| 2026-11-26 | 2B     | `test:e2e` (producción)              | Pasa: 9/9 contra la URL pública                     |
-| 2026-11-27 | 2C     | `test`                               | Pasa: 42 archivos / 273 pruebas                     |
-| 2026-11-27 | 2C     | `test:e2e`                           | Pasa: 11 pruebas (incluye tabla y CSV)              |
-| 2026-11-27 | 2C     | `verify:rls`                         | Pasa: 29/29 (sin cambios de esquema)                |
-| 2026-11-27 | 2C     | `test:e2e` (producción)              | Pasa: 11/11 contra la URL pública                   |
-| 2026-11-27 | 2C-3   | `test`                               | Pasa: 43 archivos / 297 pruebas                     |
-| 2026-11-27 | 2C-3   | `test:e2e`                           | Pasa: 12 pruebas (incluye varios datasets)          |
-| 2026-11-27 | 2C-3   | `verify:rls`                         | Pasa: 33/33 (varios datasets por página)            |
-| 2026-11-27 | 2C-3   | `test:e2e` (producción)              | Pasa: 12/12 contra la URL pública                   |
-| 2026-11-27 | 2C-fix | `test`                               | Pasa: 43 archivos / 299 pruebas                     |
-| 2026-11-27 | 2C-fix | `test:e2e`                           | Pasa: 14 (13 escenarios + setup de sesión)          |
-| 2026-11-27 | 2C-fix | `test:e2e` (producción)              | Pasa: 13/13 escenarios contra la URL pública        |
-| 2026-11-27 | 2C-fix | `test:coverage`                      | Pasa: 94,51 % líneas / 90,88 % ramas                |
-| 2026-11-27 | 2C-fix | Lighthouse (producción)              | A11y 100 · Best Practices 100 · SEO 100             |
-| 2026-11-27 | 2C-fix | CI (sin secretos de Supabase)        | Pasa: calidad + 4 E2E (10 omitidas)                 |
+| Fecha      | Fase   | Comando                              | Resultado                                                 |
+| ---------- | ------ | ------------------------------------ | --------------------------------------------------------- |
+| 2026-11-24 | 0      | `lint`, `typecheck`, `test`, `build` | Pasa: 1 archivo / 1 prueba                                |
+| 2026-11-24 | 1      | `lint`, `typecheck`, `test`, `build` | Pasa: 5 archivos / 18 pruebas                             |
+| 2026-11-24 | 2      | `lint`, `typecheck`, `test`, `build` | Pasa: 8 archivos / 44 pruebas                             |
+| 2026-11-24 | 3      | `test`                               | Pasa: 9 archivos / 50 pruebas                             |
+| 2026-11-24 | 3      | `test:e2e`                           | Pasa: 2 pruebas (chromium)                                |
+| 2026-11-25 | 4      | `test`                               | Pasa: 17 archivos / 87 pruebas                            |
+| 2026-11-25 | 4      | `test:e2e`                           | Pasa: 4 pruebas (chromium)                                |
+| 2026-11-25 | 4      | `verify:rls`                         | Pasa: 9/9 comprobaciones                                  |
+| 2026-11-25 | 5      | `test`                               | Pasa: 23 archivos / 128 pruebas                           |
+| 2026-11-25 | 6      | `test`                               | Pasa: 24 archivos / 135 pruebas                           |
+| 2026-11-25 | 6      | `test:coverage`                      | Pasa: 93,75 % líneas / 92,07 % ramas                      |
+| 2026-11-25 | 6      | `test:e2e`                           | Pasa: 5 pruebas (incluye Pixel 5 emulado)                 |
+| 2026-11-25 | 6      | Lighthouse (preview)                 | A11y 100 · Best Practices 100 · SEO 100                   |
+| 2026-11-25 | 6      | `check:deploy` (Vercel)              | Pasa: Supabase, login, IA y aplicación en preview         |
+| 2026-11-25 | A.1    | `test`                               | Pasa: 31 archivos / 184 pruebas                           |
+| 2026-11-25 | A.1    | `test:e2e`                           | Pasa: 7 pruebas (incluye subida a Storage)                |
+| 2026-11-25 | A.1    | `verify:rls`                         | Pasa: 14/14 (temas + paginas)                             |
+| 2026-11-26 | 2A     | `test`                               | Pasa: 36 archivos / 209 pruebas                           |
+| 2026-11-26 | 2A     | `test:e2e`                           | Pasa: 8 pruebas (incluye formulario y CSV)                |
+| 2026-11-26 | 2A     | `verify:rls`                         | Pasa: 21/21 (temas, páginas y respuestas)                 |
+| 2026-11-26 | 2A     | `test:e2e` (producción)              | Pasa: 8/8 contra la URL pública                           |
+| 2026-11-26 | 2B     | `test`                               | Pasa: 41 archivos / 251 pruebas                           |
+| 2026-11-26 | 2B     | `test:e2e`                           | Pasa: 9 pruebas (incluye dataset y CSV)                   |
+| 2026-11-26 | 2B     | `verify:rls`                         | Pasa: 29/29 (temas, páginas, respuestas y datasets)       |
+| 2026-11-26 | 2B     | `test:e2e` (producción)              | Pasa: 9/9 contra la URL pública                           |
+| 2026-11-27 | 2C     | `test`                               | Pasa: 42 archivos / 273 pruebas                           |
+| 2026-11-27 | 2C     | `test:e2e`                           | Pasa: 11 pruebas (incluye tabla y CSV)                    |
+| 2026-11-27 | 2C     | `verify:rls`                         | Pasa: 29/29 (sin cambios de esquema)                      |
+| 2026-11-27 | 2C     | `test:e2e` (producción)              | Pasa: 11/11 contra la URL pública                         |
+| 2026-11-27 | 2C-3   | `test`                               | Pasa: 43 archivos / 297 pruebas                           |
+| 2026-11-27 | 2C-3   | `test:e2e`                           | Pasa: 12 pruebas (incluye varios datasets)                |
+| 2026-11-27 | 2C-3   | `verify:rls`                         | Pasa: 33/33 (varios datasets por página)                  |
+| 2026-11-27 | 2C-3   | `test:e2e` (producción)              | Pasa: 12/12 contra la URL pública                         |
+| 2026-11-27 | 2C-fix | `test`                               | Pasa: 43 archivos / 299 pruebas                           |
+| 2026-11-27 | 2C-fix | `test:e2e`                           | Pasa: 14 (13 escenarios + setup de sesión)                |
+| 2026-11-27 | 2C-fix | `test:e2e` (producción)              | Pasa: 14/14 (13 escenarios + setup) contra la URL pública |
+| 2026-11-27 | 2C-fix | `test:coverage`                      | Pasa: 94,51 % líneas / 90,88 % ramas                      |
+| 2026-11-27 | 2C-fix | Lighthouse (producción)              | A11y 100 · Best Practices 100 · SEO 100                   |
+| 2026-11-27 | 2C-fix | CI (sin secretos de Supabase)        | Pasa: calidad + 4 E2E (10 omitidas)                       |
 
 ## Page Builder (Anexo A)
 
