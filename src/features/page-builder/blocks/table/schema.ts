@@ -17,7 +17,7 @@ export const tableSchema = blockBase(
       rows: z
         .array(z.array(z.string().trim().max(80)).max(6))
         .min(1)
-        .max(20),
+        .max(50),
       // Defaults retrocompatibles: una tabla guardada sin buscador ni paginación
       // se sigue viendo exactamente igual.
       searchable: z.boolean().default(false),

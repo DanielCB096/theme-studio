@@ -20,7 +20,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 - **Publicar** guarda la página antes de cambiar la visibilidad; antes publicaba la última versión guardada y el preview podía mostrar cambios que no llegaban a `/p/:slug`.
 - El buscador y la paginación de la tabla se pueden usar en el lienzo del builder: se elevan por encima de la capa de selección.
-- Aviso de máximo 20 filas y 6 columnas en la tabla estática, con indicación de usar un dataset para más datos.
+- Aviso de máximo 50 filas y 6 columnas en la tabla estática, con indicación de usar un dataset para más datos.
 - E2E `pages-publish-saves.spec.ts` y clic real en los controles dentro de `pages-table.spec.ts`.
 
 ### Añadido — Hito 2C: buscador, paginación e importación CSV

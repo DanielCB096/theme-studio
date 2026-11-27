@@ -273,7 +273,7 @@ export const tableBlock: BlockDefinition<"table"> = {
               label="Filas (una por línea, celdas con |)"
               value={props.rows.map((row) => row.join(" | ")).join("\n")}
               rows={6}
-              maxLength={2000}
+              maxLength={20000}
               onChange={(value) =>
                 onChange({
                   ...props,
@@ -290,7 +290,7 @@ export const tableBlock: BlockDefinition<"table"> = {
               }
             />
             <p className="text-xs text-muted">
-              Máximo 20 filas y 6 columnas en una tabla estática. Para más datos, crea un dataset y
+              Máximo 50 filas y 6 columnas en una tabla estática. Para más datos, crea un dataset y
               usa «Datos de la página».
             </p>
           </>

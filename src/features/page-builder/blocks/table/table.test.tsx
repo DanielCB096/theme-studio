@@ -158,6 +158,28 @@ describe("bloque table", () => {
     expect(parsed.props.pageSize).toBe(0);
   });
 
+  it("admite hasta 50 filas estáticas y rechaza 51", () => {
+    const rows = Array.from({ length: 50 }, (_, index) => [`A${index}`, "B", "C"]);
+    const block = {
+      id: "table-50",
+      type: "table",
+      childIds: [],
+      props: {
+        title: "Tabla grande",
+        columns: ["A", "B", "C"],
+        rows,
+      },
+    };
+
+    expect(tableSchema.safeParse(block).success).toBe(true);
+    expect(
+      tableSchema.safeParse({
+        ...block,
+        props: { ...block.props, rows: [...rows, ["X", "Y", "Z"]] },
+      }).success,
+    ).toBe(false);
+  });
+
   it("mantiene el render estático por defecto", () => {
     renderPage(makeTablePage(), "builder", []);
 
