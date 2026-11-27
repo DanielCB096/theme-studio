@@ -430,7 +430,7 @@ Una entrada por decisión, en orden cronológico.
 - Cada visitante puede buscar y cambiar de página sin afectar a otros: el estado es local y se reinicia al recargar.
 - El documento guardado sigue siendo el mismo JSON y el dataset sigue siendo el mismo `jsonb`; no hay migración y las tablas antiguas no cambian.
 - La búsqueda es textual y recorre el contenido de cada celda; no hay ordenación, filtros por columna ni resaltado de coincidencias en esta fase.
-- En el builder la capa transparente de selección del `BlockShell` cubre el buscador y los botones. Es intencional: los controles se prueban en la página publicada o en la vista previa; el inspector permite activarlos y configurarlos.
+- Los controles del buscador y la paginación se elevan por encima de la capa de selección del `BlockShell` (`z-20`) para poder probarlos en el lienzo; el resto del bloque sigue seleccionándose. En público no hay capa de selección.
 - La corrección de acentos usa `normalize("NFD")` y elimina los diacríticos, de modo que «cafe» encuentra «Café»; no se implementa una búsqueda difusa.
 
 ## ADR-023 · Importación CSV en cliente

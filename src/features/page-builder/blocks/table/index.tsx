@@ -23,7 +23,7 @@ import { usePageRuntime } from "@/features/page-builder/pageRuntime";
 import { cn } from "@/lib/utils";
 
 const linkClass =
-  "rounded-sm text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+  "relative z-20 rounded-sm text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
 function dataLink(pageId: string | null) {
   if (!pageId) return null;
@@ -289,6 +289,10 @@ export const tableBlock: BlockDefinition<"table"> = {
                 })
               }
             />
+            <p className="text-xs text-muted">
+              Máximo 20 filas y 6 columnas en una tabla estática. Para más datos, crea un dataset y
+              usa «Datos de la página».
+            </p>
           </>
         )}
 

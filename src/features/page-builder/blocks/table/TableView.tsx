@@ -34,8 +34,9 @@ interface TableViewProps {
 
 /**
  * Tabla de solo lectura con buscador y paginación en cliente. Se usa igual en
- * el lienzo del builder y en la página publicada; en el builder la capa de
- * selección del bloque cubre los controles, que están pensados para publicar.
+ * el lienzo del builder y en la página publicada. En el builder los controles
+ * se elevan por encima de la capa de selección para poder probarlos; el resto
+ * del bloque sigue seleccionándose con normalidad.
  */
 export function TableView({ title, columns, rows, searchable, pageSize, gap }: TableViewProps) {
   const [query, setQuery] = useState("");
@@ -70,7 +71,7 @@ export function TableView({ title, columns, rows, searchable, pageSize, gap }: T
         <h2 className="text-xl font-semibold leading-tight">{title}</h2>
 
         {searchable || pageSize > 0 ? (
-          <div className="flex flex-col gap-2 @sm:flex-row @sm:items-end @sm:justify-between">
+          <div className="relative z-20 flex flex-col gap-2 @sm:flex-row @sm:items-end @sm:justify-between">
             {searchable ? (
               <div className="w-full max-w-sm space-y-1.5">
                 <Label htmlFor={searchId} className="sr-only">

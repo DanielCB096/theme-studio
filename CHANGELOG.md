@@ -16,6 +16,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - ADR-024 y documentación del modelo, la migración y el fallback.
 - Pruebas: 297 unitarias/componentes en verde (43 archivos); lint, typecheck y build correctos; **12/12** E2E y **33/33** RLS, también contra producción.
 
+### Corregido — revisión del builder
+
+- **Publicar** guarda la página antes de cambiar la visibilidad; antes publicaba la última versión guardada y el preview podía mostrar cambios que no llegaban a `/p/:slug`.
+- El buscador y la paginación de la tabla se pueden usar en el lienzo del builder: se elevan por encima de la capa de selección.
+- Aviso de máximo 20 filas y 6 columnas en la tabla estática, con indicación de usar un dataset para más datos.
+- E2E `pages-publish-saves.spec.ts` y clic real en los controles dentro de `pages-table.spec.ts`.
+
 ### Añadido — Hito 2C: buscador, paginación e importación CSV
 
 - Bloque `table` con `searchable` y `pageSize` (`0`, `5`, `10` o `20`) y defaults retrocompatibles para las tablas guardadas.

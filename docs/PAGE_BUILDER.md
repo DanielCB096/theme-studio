@@ -213,10 +213,11 @@ RLS (sin cambios de semántica):
 - Origen **dataset**: usa las columnas del dataset elegido y una fila por registro (`row[column.id] ?? ""`). Añade `<caption class="sr-only">` con el título.
 - **Buscador**: si `searchable`, aparece un `input type="search"` etiquetado con placeholder «Buscar…». Filtra por cualquier celda sin distinguir mayúsculas ni acentos (`normalize("NFD")`, se eliminan los diacríticos y se usa `toLocaleLowerCase("es")`) y anuncia «N resultados» con `aria-live="polite"`. Si no hay coincidencias muestra una fila «No hay resultados.» con `colSpan`; la tabla no se oculta.
 - **Paginación**: si `pageSize > 0`, muestra `Página X de Y` y botones **Anterior**/**Siguiente** deshabilitados en los extremos. Vuelve a la página 1 al cambiar la búsqueda o el tamaño y recorta la página al rango válido si cambian las filas. `0` muestra todas las filas.
-- Los controles se renderizan igual en builder y público, pero en el lienzo del builder la capa de selección de `BlockShell` los cubre; se usan en la página publicada y en la vista previa. Esto es intencional y no cambia la capa de selección.
+- Los controles se renderizan igual en builder y público. En el lienzo del builder se elevan por encima de la capa de selección de `BlockShell` (`z-20`), así que el buscador y la paginación se pueden usar también ahí; el resto del bloque sigue seleccionándose con normalidad.
 - Sin datasets o sin columnas: en el builder muestra una ayuda con enlace a `/pages/{pageId}/datos` o «Guarda la página para conectar datos»; en público devuelve `null`.
 - Con cero filas: en el builder muestra cabeceras y «Sin filas todavía» con enlace; en público devuelve `null` para no dejar una sección vacía.
-- El inspector mantiene el título y añade **Origen de datos**, **Dataset** (con «Primero disponible» para el fallback legacy), **Buscador** y **Filas por página** (Todas, 5, 10, 20) para ambos orígenes. Al pasar de estático a página con datasets y `datasetId: null`, selecciona el primero. Enlaza a la lista y, si hay uno seleccionado, a su editor; sin datasets, invita a crearlos. En modo estático conserva los campos de columnas y filas.
+- El inspector mantiene el título y añade **Origen de datos**, **Dataset** (con «Primero disponible» para el fallback legacy), **Buscador** y **Filas por página** (Todas, 5, 10, 20) para ambos orígenes. Al pasar de estático a página con datasets y `datasetId: null`, selecciona el primero. Enlaza a la lista y, si hay uno seleccionado, a su editor; sin datasets, invita a crearlos. En modo estático conserva los campos de columnas y filas, con el aviso de **máximo 20 filas y 6 columnas**; para más datos hay que usar un dataset.
+- **Publicar** guarda la página antes de cambiar la visibilidad: la versión pública coincide con lo que se ve en el lienzo, aunque no se haya pulsado Guardar. Si la página no es válida, se muestra el error y no se publica.
 - `PageRuntime` incorpora `datasets?: PageDatasetRecord[]` (por defecto `[]`); `PublicPage` y el lienzo del builder cargan la lista y la pasan al `PageRenderer`.
 
 ### Límites de los Hitos 2B y 2C
@@ -270,7 +271,8 @@ RLS (sin cambios de semántica):
 - E2E (`e2e/pages-dataset.spec.ts`): crear página → crear dataset → editar datos → conectar la tabla → publicar → ver los datos en anónimo. **Ejecutado y en verde (12/12 con la suite de 2C).**
 - E2E (`e2e/pages-table.spec.ts`): tabla estática de 7 filas con búsqueda y paginación en la página publicada. **Ejecutado y en verde.**
 - E2E (`e2e/pages-csv.spec.ts`): importar `e2e/fixtures/dataset.csv`, guardar, recargar y publicar una tabla conectada. **Ejecutado y en verde.**
-- E2E (`e2e/pages-multiple-datasets.spec.ts`): dos datasets, dos tablas con `datasetId` distinto, publicación anónima, lista conservada y editor recargado por id. **Escrito; no ejecutado en esta fase.**
+- E2E (`e2e/pages-multiple-datasets.spec.ts`): dos datasets, dos tablas con `datasetId` distinto, publicación anónima, lista conservada y editor recargado por id. **Ejecutado y en verde.**
+- E2E (`e2e/pages-publish-saves.spec.ts`): editar el lienzo y pulsar **Publicar** sin Guardar; la página pública incluye el cambio. **Ejecutado y en verde.**
 - `npm run verify:rls` amplía la matriz con páginas, respuestas y datasets privados/públicos. Incluye dos datasets en la misma página, unicidad de nombre, lectura anónima de ambos y borrado selectivo del dueño. **Ejecutado: 33/33.**
 
 ## Limitaciones conocidas (Hitos 1, 2A, 2B y 2C)

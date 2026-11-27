@@ -38,6 +38,19 @@ test("buscar y paginar una tabla estática publicada", async ({ page, browser })
     );
   await page.getByLabel("Filas por página").selectOption("5");
 
+  // Los controles de la tabla deben poder usarse en el lienzo, por encima de
+  // la capa de selección del bloque.
+  const builderSearch = page.locator('main input[type="search"]').first();
+  await builderSearch.click();
+  await builderSearch.fill("Té");
+  await expect(page.getByText("1 resultado")).toBeVisible();
+  await builderSearch.fill("");
+  await expect(page.getByText("7 resultados")).toBeVisible();
+  await page.getByRole("button", { name: "Siguiente" }).click();
+  await expect(page.getByText("Página 2 de 2")).toBeVisible();
+  await page.getByRole("button", { name: "Anterior" }).click();
+  await expect(page.getByText("Página 1 de 2")).toBeVisible();
+
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
   await expect(page.getByText("Cambios guardados.")).toBeVisible({ timeout: 20_000 });
 
